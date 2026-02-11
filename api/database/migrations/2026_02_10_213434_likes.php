@@ -11,7 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
+        Schema::create('likes', function (Blueprint $table) {
+    $table->id('id_like');
+    $table->unsignedBigInteger('id_producto');
+    $table->unsignedBigInteger('id_usuario');
+
+    $table->foreign('id_producto')->references('id_productos')->on('productos');
+    $table->foreign('id_usuario')->references('id_usuario')->on('usuarios');
+});
+
     }
 
     /**

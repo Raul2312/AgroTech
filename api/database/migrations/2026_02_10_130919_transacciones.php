@@ -11,7 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
+        Schema::create('transacciones', function (Blueprint $table) {
+    $table->id('id_transaccion');
+    $table->string('forma_pago', 20);
+    $table->string('banco', 20);
+});
     }
 
     /**

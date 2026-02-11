@@ -11,7 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
+                Schema::create('empresas', function (Blueprint $table) {
+                $table->id('id_empresa');
+                $table->string('nombre', 30);
+                $table->string('marca', 30);
+                $table->string('logo', 30);
+                $table->string('descripcion', 100);
+                $table->string('tipo', 30);
+            });
     }
 
     /**

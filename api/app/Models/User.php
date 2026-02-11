@@ -12,16 +12,37 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+
+    protected $table = 'usuarios';
+    protected $primaryKey = 'id_usuario';
+    public $timestamps = false;
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'name',
+     protected $fillable = [
+        'nombre',
+        'apellido',
+        'fecha_nacimiento',
         'email',
         'password',
+        'telefono',
+        'tipo',
+        'fecha_registro',
+        'estado_cuenta',
+        'reputacion'
     ];
+
+      public function rancho()
+    {
+        return $this->hasMany(Rancho::class, 'id_usuario');
+    }
+
+    public function productos()
+    {
+        return $this->hasMany(Producto::class, 'id_usuario');
+    }
 
     /**
      * The attributes that should be hidden for serialization.
