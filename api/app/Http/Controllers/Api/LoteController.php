@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\Lote;
+
+class LoteController extends Controller
+{
+    public function index()
+    {
+        return Lote::all();
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->all();
+        $registro = Lote::create($data);
+        return response()->json($registro, 201);
+    }
+
+    public function show($id)
+    {
+        return Lote::findOrFail($id);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $registro = Lote::findOrFail($id);
+        $registro->update($request->all());
+        return response()->json($registro, 200);
+    }
+
+    public function destroy($id)
+    {
+        $registro = Lote::findOrFail($id);
+        $registro->delete();
+        return response()->json(['message' => 'Eliminado correctamente']);
+    }
+}

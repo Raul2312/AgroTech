@@ -1,0 +1,41 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\EmpresaController;
+use App\Http\Controllers\Api\CategoriaController;
+use App\Http\Controllers\Api\TransaccionController;
+use App\Http\Controllers\Api\RanchoController;
+use App\Http\Controllers\Api\ProductoController;
+use App\Http\Controllers\Api\AnuncioController;
+use App\Http\Controllers\Api\LoteController;
+use App\Http\Controllers\Api\GanadoController;
+use App\Http\Controllers\Api\GaleriaController;
+use App\Http\Controllers\Api\ComentarioController;
+use App\Http\Controllers\Api\LikeController;
+use App\Http\Controllers\Api\CompraController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+
+
+Route::post('login', [UserController::class, 'login']);
+Route::post('register', [UserController::class, 'register']);
+
+
+
+
+    Route::apiResource('ranchos', RanchoController::class);
+    Route::apiResource('productos', ProductoController::class);
+    Route::apiResource('ganados', GanadoController::class);
+    Route::apiResource('categorias', CategoriaController::class);
+    Route::apiResource('empresas', EmpresaController::class);
+    Route::apiResource('lotes', LoteController::class);
+    Route::apiResource('anuncios', AnuncioController::class);
+    Route::apiResource('galerias', GaleriaController::class);
+    Route::apiResource('comentarios', ComentarioController::class);
+    Route::apiResource('likes', LikeController::class);
+    Route::apiResource('transacciones', TransaccionController::class);
+    Route::apiResource('compras', CompraController::class);
+
+    
