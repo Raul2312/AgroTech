@@ -1,21 +1,21 @@
-import React from "react";
+
 import { Link } from "react-router-dom";
-import "./index.css";
+import "./../css/index.css";
 
 // Si tus imágenes están en src/assets
-import logo from "../assets/agro.png";
-import trazabilidadImg from "../assets/trazabilidad.jpg";
-import marketplaceImg from "../assets/marketplace.png";
-import ganado1 from "../assets/ganado1.jpg";
-import ganado2 from "../assets/ganado2.webp";
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet"></link>
-const Landing = () => {
+import logo from "../assets/img/agro.png";
+import trazabilidadImg from "../assets/img/trazabilidad.jpg";
+import marketplaceImg from "../assets/img/marketplace.png";
+import ganado1 from "../assets/img/ganado1.jpg";
+import ganado2 from "../assets/img/ganado2.webp";
+
+const IndexScreen = () => {
   return (
     <>
       {/* HEADER */}
       <header>
         <div className="logo">
-          <img src={logo} alt="AgroTech Logo" />
+           <img src={logo} alt="AgroTech Logo" /> 
           <h1>AgroTech</h1>
         </div>
 
@@ -29,8 +29,8 @@ const Landing = () => {
 
       {/* HERO */}
       <section className="hero">
+        
         <div className="overlay"></div>
-
         <div className="hero-content">
           <h2>Innovación Digital en la Ganadería</h2>
           <p>
@@ -62,7 +62,7 @@ const Landing = () => {
         </div>
 
         <div className="info-img">
-          <img src={trazabilidadImg} alt="Sistema de Trazabilidad" />
+          <img src={trazabilidadImg} alt="Sistema de Trazabilidad" /> 
         </div>
       </section>
 
@@ -84,7 +84,7 @@ const Landing = () => {
         </div>
 
         <div className="info-img">
-          <img src={marketplaceImg} alt="Marketplace Ganadero" />
+         <img src={marketplaceImg} alt="Marketplace Ganadero" /> 
         </div>
       </section>
 
@@ -93,8 +93,8 @@ const Landing = () => {
         <h2>Producción y Control en Campo</h2>
 
         <div className="gallery-grid">
-          <img src={ganado1} alt="Ganado 1" />
-          <img src={ganado2} alt="Ganado 2" />
+           <img src={ganado1} alt="Ganado 1" />
+          <img src={ganado2} alt="Ganado 2" /> 
         </div>
       </section>
 
@@ -112,4 +112,4 @@ const Landing = () => {
   );
 };
 
-export default Landing;
+export default IndexScreen;

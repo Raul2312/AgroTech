@@ -27,7 +27,7 @@ Route::post('register', [AuthController::class, 'register']);
 
 Route::middleware(['auth:api'])->group(function () {
 
-    Route::apiResource('ranchos', RanchoController::class);
+     Route::apiResource('ranchos', RanchoController::class);
     Route::apiResource('productos', ProductoController::class);
     Route::apiResource('ganados', GanadoController::class);
     Route::apiResource('categorias', CategoriaController::class);
