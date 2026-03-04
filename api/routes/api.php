@@ -15,15 +15,17 @@ use App\Http\Controllers\Api\GaleriaController;
 use App\Http\Controllers\Api\ComentarioController;
 use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\CompraController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 
-Route::post('login', [UserController::class, 'login']);
-Route::post('register', [UserController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
+Route::post('register', [AuthController::class, 'register']);
 
 
 
+Route::middleware(['auth:api'])->group(function () {
 
     Route::apiResource('ranchos', RanchoController::class);
     Route::apiResource('productos', ProductoController::class);
@@ -38,4 +40,5 @@ Route::post('register', [UserController::class, 'register']);
     Route::apiResource('transacciones', TransaccionController::class);
     Route::apiResource('compras', CompraController::class);
 
+});
     
