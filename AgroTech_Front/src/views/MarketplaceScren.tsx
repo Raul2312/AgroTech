@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "../css/marketplace.css";
+import logo from "../assets/img/agro.png";
 
 type CartItem = {
   name: string;
@@ -108,13 +109,17 @@ const Marketplace: React.FC = () => {
 
       {/* HEADER */}
       <header>
-        <div className="logo">AgroTech Marketplace</div>
+        <div className="logo">
+          <img src={logo} alt="AgroTech Logo" />
+        </div>
+        <h1>AgroTech Marketplace</h1>
 
         <nav>
-          <a href="#">Inicio</a>
+          <a href="/indexScreen">Inicio</a>
           <a href="#">Categorías</a>
           <a href="#">Ofertas</a>
-          <a href="#">Vender</a>
+          <a href="#">Recomendaciones</a>
+          <a href="/Login">Login</a>
         </nav>
 
         <div className="cart-icon" onClick={toggleCart}>

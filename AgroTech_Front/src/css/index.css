@@ -1,20 +1,22 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap");
 
-*{
+/* TODO encapsulado dentro de .index-page */
+
+.index-page *{
     margin:0;
     padding:0;
     box-sizing:border-box;
     font-family:'Poppins',sans-serif;
 }
 
-body{
+.index-page{
     background:#f4f7fa;
     color:#1e293b;
 }
 
 /* NAVBAR */
 
-header{
+.index-page header{
     position:fixed;
     width:100%;
     top:0;
@@ -27,22 +29,22 @@ header{
     z-index:1000;
 }
 
-.logo{
+.index-page .logo{
     display:flex;
     align-items:center;
     gap:10px;
 }
 
-.logo img{
-    width:45px;
+.index-page .logo img{
+    width:65px;
 }
 
-.logo h1{
+.index-page .logo h1{
     color:white;
     font-size:1.4rem;
 }
 
-nav a{
+.index-page nav a{
     color:white;
     text-decoration:none;
     margin-left:30px;
@@ -50,13 +52,13 @@ nav a{
     transition:0.3s;
 }
 
-nav a:hover{
+.index-page nav a:hover{
     color:#22c55e;
 }
 
 /* HERO */
 
-.hero{
+.index-page .hero{
     height:100vh;
     background:url('../assets/img/hero.jpg') center/cover no-repeat;
     position:relative;
@@ -67,31 +69,31 @@ nav a:hover{
     color:white;
 }
 
-.overlay{
+.index-page .overlay{
     position:absolute;
     width:100%;
     height:100%;
-    background:rgba(0,0,0,0.6);
+    background:rgba(0, 0, 0, 0.015);
 }
 
-.hero-content{
+.index-page .hero-content{
     position:relative;
     z-index:2;
     max-width:800px;
 }
 
-.hero h2{
+.index-page .hero h2{
     font-size:3.2rem;
     font-weight:800;
     margin-bottom:20px;
 }
 
-.hero p{
+.index-page .hero p{
     font-size:1.2rem;
     margin-bottom:30px;
 }
 
-.btn{
+.index-page .btn{
     padding:15px 40px;
     background:#22c55e;
     border-radius:50px;
@@ -101,14 +103,14 @@ nav a:hover{
     transition:0.3s;
 }
 
-.btn:hover{
+.index-page .btn:hover{
     background:#16a34a;
     transform:scale(1.05);
 }
 
-/* INFO SECTIONS */
+/* INFO */
 
-.info-section{
+.index-page .info-section{
     display:flex;
     align-items:center;
     justify-content:center;
@@ -116,33 +118,33 @@ nav a:hover{
     gap:60px;
 }
 
-.info-section.reverse{
+.index-page .info-section.reverse{
     flex-direction:row-reverse;
     background:#f1f5f9;
 }
 
-.info-text{
+.index-page .info-text{
     flex:1;
 }
 
-.info-text h2{
+.index-page .info-text h2{
     font-size:2rem;
     margin-bottom:20px;
 }
 
-.info-text ul{
+.index-page .info-text ul{
     margin-top:20px;
 }
 
-.info-text li{
+.index-page .info-text li{
     margin-bottom:10px;
 }
 
-.info-img{
+.index-page .info-img{
     flex:1;
 }
 
-.info-img img{
+.index-page .info-img img{
     width:100%;
     border-radius:20px;
     box-shadow:0 10px 30px rgba(0,0,0,0.2);
@@ -150,48 +152,48 @@ nav a:hover{
 
 /* GALERÍA */
 
-.gallery{
+.index-page .gallery{
     padding:100px 80px;
     text-align:center;
 }
 
-.gallery h2{
+.index-page .gallery h2{
     margin-bottom:40px;
 }
 
-.gallery-grid{
+.index-page .gallery-grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
     gap:30px;
 }
 
-.gallery-grid img{
+.index-page .gallery-grid img{
     width:100%;
     border-radius:20px;
     transition:0.3s;
 }
 
-.gallery-grid img:hover{
+.index-page .gallery-grid img:hover{
     transform:scale(1.05);
 }
 
 /* FOOTER */
 
-footer{
+.index-page footer{
     background:#0f172a;
     color:white;
     text-align:center;
     padding:60px 20px;
 }
 
-.footer-content h3{
+.index-page .footer-content h3{
     margin-bottom:15px;
 }
 
 /* RESPONSIVE */
 
 @media(max-width:900px){
-    .info-section{
+    .index-page .info-section{
         flex-direction:column;
         padding:80px 30px;
     }

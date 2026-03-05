@@ -1,8 +1,6 @@
-
 import { Link } from "react-router-dom";
 import "./../css/index.css";
 
-// Si tus imágenes están en src/assets
 import logo from "../assets/img/agro.png";
 import trazabilidadImg from "../assets/img/trazabilidad.jpg";
 import marketplaceImg from "../assets/img/marketplace.png";
@@ -11,11 +9,12 @@ import ganado2 from "../assets/img/ganado2.webp";
 
 const IndexScreen = () => {
   return (
-    <>
+    <div className="index-page">
+
       {/* HEADER */}
       <header>
         <div className="logo">
-           <img src={logo} alt="AgroTech Logo" /> 
+          <img src={logo} alt="AgroTech Logo" />
           <h1>AgroTech</h1>
         </div>
 
@@ -29,7 +28,6 @@ const IndexScreen = () => {
 
       {/* HERO */}
       <section className="hero">
-        
         <div className="overlay"></div>
         <div className="hero-content">
           <h2>Innovación Digital en la Ganadería</h2>
@@ -62,7 +60,7 @@ const IndexScreen = () => {
         </div>
 
         <div className="info-img">
-          <img src={trazabilidadImg} alt="Sistema de Trazabilidad" /> 
+          <img src={trazabilidadImg} alt="Sistema de Trazabilidad" />
         </div>
       </section>
 
@@ -84,7 +82,7 @@ const IndexScreen = () => {
         </div>
 
         <div className="info-img">
-         <img src={marketplaceImg} alt="Marketplace Ganadero" /> 
+          <img src={marketplaceImg} alt="Marketplace Ganadero" />
         </div>
       </section>
 
@@ -93,8 +91,8 @@ const IndexScreen = () => {
         <h2>Producción y Control en Campo</h2>
 
         <div className="gallery-grid">
-           <img src={ganado1} alt="Ganado 1" />
-          <img src={ganado2} alt="Ganado 2" /> 
+          <img src={ganado1} alt="Ganado 1" />
+          <img src={ganado2} alt="Ganado 2" />
         </div>
       </section>
 
@@ -108,7 +106,8 @@ const IndexScreen = () => {
           <p>© 2026 Todos los derechos reservados</p>
         </div>
       </footer>
-    </>
+
+    </div>
   );
 };
 
