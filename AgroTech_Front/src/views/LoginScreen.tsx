@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../css/login.css";
-
-// IMPORTA la imagen correctamente (si está en src/assets)
 import logo from "../assets/img/agro.png";
+
+const API_URL = "http://localhost:8000/api";
 
 const Login = () => {
 
@@ -23,53 +23,95 @@ const Login = () => {
 
   const [rememberMe, setRememberMe] = useState(false);
 
-  // 🚀 AUTO LOGIN
+  // AUTO LOGIN
   useEffect(() => {
     const session =
       localStorage.getItem("agroSession") ||
       sessionStorage.getItem("agroSession");
 
     if (session) {
-      navigate("/admin");
+      navigate("/marketplace");
     }
   }, [navigate]);
 
-  // 📝 REGISTRO
-  const handleRegister = (e: React.FormEvent) => {
+  // REGISTRO
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    localStorage.setItem("agroUser", JSON.stringify(registerData));
-    alert("Usuario registrado correctamente ✅");
-    setIsLogin(true);
-  };
+    try {
 
-  // 🔐 LOGIN
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+      const response = await fetch(`${API_URL}/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(registerData)
+      });
 
-    const storedUser = JSON.parse(localStorage.getItem("agroUser") || "null");
+      const data = await response.json();
 
-    if (
-      storedUser &&
-      storedUser.email === loginData.email &&
-      storedUser.password === loginData.password
-    ) {
-      const sessionData = {
-        name: storedUser.name,
-        email: storedUser.email
-      };
+      if (data.token) {
 
-      if (rememberMe) {
+        const sessionData = {
+          token: data.token,
+          user: data.user
+        };
+
         localStorage.setItem("agroSession", JSON.stringify(sessionData));
+
+        alert("Usuario registrado correctamente 🌱");
+
+        navigate("/marketplace");
+
       } else {
-        sessionStorage.setItem("agroSession", JSON.stringify(sessionData));
+        alert("Error al registrar");
       }
 
-      alert("Bienvenido " + storedUser.name + " 🌱");
-      navigate("/admin");
+    } catch (error) {
+      console.error(error);
+      alert("Error conectando con la API");
+    }
+  };
 
-    } else {
-      alert("Credenciales incorrectas ❌");
+  // LOGIN
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+
+      const response = await fetch(`${API_URL}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(loginData)
+      });
+
+      const data = await response.json();
+
+      if (data.token) {
+
+        const sessionData = {
+          token: data.token
+        };
+
+        if (rememberMe) {
+          localStorage.setItem("agroSession", JSON.stringify(sessionData));
+        } else {
+          sessionStorage.setItem("agroSession", JSON.stringify(sessionData));
+        }
+
+        alert("Bienvenido 🌱");
+
+        navigate("/marketplace");
+
+      } else {
+        alert("Credenciales incorrectas");
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert("Error conectando con la API");
     }
   };
 
