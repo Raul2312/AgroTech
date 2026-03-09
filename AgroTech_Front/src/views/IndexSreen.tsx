@@ -20,7 +20,7 @@ const IndexScreen = () => {
 
         <nav>
           <a href="#">Inicio</a>
-          <a href="#trazabilidad">Trazabilidad</a>
+          <a href="/trazabilidad">Trazabilidad</a>
           <Link to="/marketplace">Marketplace</Link>
           <a href="#contacto">Contacto</a>
         </nav>
