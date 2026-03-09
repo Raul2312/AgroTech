@@ -1,10 +1,19 @@
+
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Chart from "chart.js/auto";
 import "../css/admin.css";
 import logo from "../assets/img/agro.png";
 
 const AdminDashboard = () => {
+
+const navigate = useNavigate();
+
+const logout = () => {
+  localStorage.removeItem("agroSession");
+  sessionStorage.removeItem("agroSession");
+  navigate("/login");
+};
 
 const [collapsed,setCollapsed] = useState(false);
 
@@ -94,7 +103,9 @@ return(
 </li>
 
 <li className="logout">
-<Link to="/login">❌ {!collapsed && "Cerrar sesión"}</Link>
+<button onClick={logout}>
+❌ {!collapsed && "Cerrar sesión"}
+</button>
 </li>
 
 </ul>

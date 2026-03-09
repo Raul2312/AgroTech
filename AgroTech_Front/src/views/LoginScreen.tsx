@@ -30,7 +30,7 @@ const Login = () => {
       sessionStorage.getItem("agroSession");
 
     if (session) {
-      navigate("/marketplace");
+      navigate("/dashboard");
     }
   }, [navigate]);
 
@@ -61,7 +61,7 @@ const Login = () => {
 
         alert("Usuario registrado correctamente 🌱");
 
-        navigate("/marketplace");
+        navigate("/dashboard");
 
       } else {
         alert("Error al registrar");
@@ -103,7 +103,7 @@ const Login = () => {
 
         alert("Bienvenido 🌱");
 
-        navigate("/marketplace");
+        navigate("/dashboard");
 
       } else {
         alert("Credenciales incorrectas");
