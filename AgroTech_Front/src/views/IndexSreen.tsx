@@ -1,30 +1,17 @@
 import { Link } from "react-router-dom";
 import "./../css/index.css";
 
-import logo from "../assets/img/agro.png";
+
 import trazabilidadImg from "../assets/img/trazabilidad.jpg";
 import marketplaceImg from "../assets/img/marketplace.png";
 import ganado1 from "../assets/img/ganado1.jpg";
 import ganado2 from "../assets/img/ganado2.webp";
+import Header from "../Layouts/Header";
 
 const IndexScreen = () => {
   return (
     <div className="index-page">
-
-      {/* HEADER */}
-      <header>
-        <div className="logo">
-          <img src={logo} alt="AgroTech Logo" />
-          <h1>AgroTech</h1>
-        </div>
-
-        <nav>
-          <a href="#">Inicio</a>
-          <a href="/trazabilidad">Trazabilidad</a>
-          <Link to="/marketplace">Marketplace</Link>
-          <a href="#contacto">Contacto</a>
-        </nav>
-      </header>
+      <Header/>
 
       {/* HERO */}
       <section className="hero">

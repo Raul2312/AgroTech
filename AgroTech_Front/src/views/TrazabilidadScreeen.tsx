@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import "../css/trazabilidad.css";
 
-import logo from "../assets/img/agro.png";
+
 import trazabilidadImg from "../assets/img/trazabilidad.jpg";
 import ganado1 from "../assets/img/ganado1.jpg";
 import ganado2 from "../assets/img/ganado2.webp";
+import Header from "../Layouts/Header";
+
 
 const TrazabilidadScreen = () => {
   return (
@@ -12,19 +14,7 @@ const TrazabilidadScreen = () => {
 
       {/* HEADER */}
 
-      <header>
-        <div className="logo">
-          <img src={logo} alt="AgroTech Logo" />
-          <h1>AgroTech</h1>
-        </div>
-
-        <nav>
-          <Link to="/">Inicio</Link>
-          <a href="#">Trazabilidad</a>
-          <Link to="/marketplace">Marketplace</Link>
-          <a href="#contacto">Contacto</a>
-        </nav>
-      </header>
+    <Header/>
 
       {/* HERO */}
 
