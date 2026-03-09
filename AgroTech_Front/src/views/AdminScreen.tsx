@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import Chart from "chart.js/auto";
 import "../css/admin.css";
@@ -8,17 +8,17 @@ const AdminDashboard = () => {
 
 const [collapsed,setCollapsed] = useState(false);
 
+const chartRef = useRef<HTMLCanvasElement | null>(null);
+
 const toggleSidebar = () =>{
 setCollapsed(!collapsed);
 };
 
 useEffect(()=>{
 
-const ctx = document.getElementById("salesChart") as HTMLCanvasElement;
+if(!chartRef.current) return;
 
-if(!ctx) return;
-
-new Chart(ctx,{
+const chart = new Chart(chartRef.current,{
 type:"line",
 data:{
 labels:["Ene","Feb","Mar","Abr","May","Jun","Jul"],
@@ -40,6 +40,10 @@ legend:{display:false}
 }
 }
 });
+
+return ()=>{
+chart.destroy();
+};
 
 },[]);
 
@@ -170,7 +174,7 @@ return(
 
 <h3>Ventas Mensuales</h3>
 
-<canvas id="salesChart"></canvas>
+<canvas ref={chartRef}></canvas>
 
 </div>
 
@@ -268,4 +272,4 @@ return(
 
 }
 
-export default AdminDashboard
+export default AdminDashboard;
