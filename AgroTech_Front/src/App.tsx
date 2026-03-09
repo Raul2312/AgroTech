@@ -6,6 +6,8 @@ import Marketplace from './views/MarketplaceScren'
 import Login from './views/LoginScreen'
 import TrazabilidadScreen from './views/TrazabilidadScreeen'
 import AdminDashboard from './views/AdminScreen'
+import ClientDashboard from './views/ClientDashboard'
+import ClientProfile from './views/ClientProfile'
 
 function App() {
   return(
@@ -17,6 +19,8 @@ function App() {
           <Route path='/login' element={<Login />} />
           <Route path='/trazabilidad' element={<TrazabilidadScreen />} />
           <Route path='/dashboard' element={<AdminDashboard />} />
+          <Route path='/areacliente' element={<ClientDashboard />} />
+          <Route path='/perfil' element={<ClientProfile />} />
            
           
   

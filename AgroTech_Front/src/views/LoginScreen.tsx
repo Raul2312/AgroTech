@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import Swal from "sweetalert2";
 import "../css/login.css";
 import logo from "../assets/img/agro.png";
 
@@ -59,17 +60,38 @@ const Login = () => {
 
         localStorage.setItem("agroSession", JSON.stringify(sessionData));
 
-        alert("Usuario registrado correctamente 🌱");
+        Swal.fire({
+          title: "¡Registro exitoso!",
+          text: "Usuario registrado correctamente 🌱",
+          icon: "success",
+          confirmButtonColor: "#2e7d32",
+          background: "#162a33",
+          color: "#ffffff"
+        });
 
         navigate("/dashboard");
 
       } else {
-        alert("Error al registrar");
+
+        Swal.fire({
+          title: "Error",
+          text: "Error al registrar",
+          icon: "error",
+          confirmButtonColor: "#d33"
+        });
+
       }
 
     } catch (error) {
       console.error(error);
-      alert("Error conectando con la API");
+
+      Swal.fire({
+        title: "Error",
+        text: "Error conectando con la API",
+        icon: "error",
+        confirmButtonColor: "#d33"
+      });
+
     }
   };
 
@@ -101,17 +123,38 @@ const Login = () => {
           sessionStorage.setItem("agroSession", JSON.stringify(sessionData));
         }
 
-        alert("Bienvenido 🌱");
+        Swal.fire({
+          title: "Bienvenido 🌱",
+          text: "Inicio de sesión exitoso",
+          icon: "success",
+          confirmButtonColor: "#2e7d32",
+          background: "#162a33",
+          color: "#ffffff"
+        });
 
         navigate("/dashboard");
 
       } else {
-        alert("Credenciales incorrectas");
+
+        Swal.fire({
+          title: "Credenciales incorrectas",
+          text: "Verifica tu email y contraseña",
+          icon: "warning",
+          confirmButtonColor: "#f9a825"
+        });
+
       }
 
     } catch (error) {
       console.error(error);
-      alert("Error conectando con la API");
+
+      Swal.fire({
+        title: "Error",
+        text: "Error conectando con la API",
+        icon: "error",
+        confirmButtonColor: "#d33"
+      });
+
     }
   };
 
