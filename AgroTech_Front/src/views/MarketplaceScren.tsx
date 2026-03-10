@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../css/marketplace.css";
 import logo from "../assets/img/agro.png";
 
@@ -11,6 +12,8 @@ type CartItem = {
 
 const Marketplace: React.FC = () => {
 
+  const navigate = useNavigate();
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [discount, setDiscount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +21,25 @@ const Marketplace: React.FC = () => {
   const [search, setSearch] = useState("");
 
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const checkSession = () => {
+    const session =
+      localStorage.getItem("agroSession") ||
+      sessionStorage.getItem("agroSession");
+
+    return session ? true : false;
+  };
+
+  const goPanel = () => {
+
+    if (!checkSession()) {
+      navigate("/login");
+      return;
+    }
+
+    navigate("/areacliente");
+
+  };
 
   const products = [
     {
@@ -46,6 +68,12 @@ const Marketplace: React.FC = () => {
   };
 
   const addToCart = (name: string, price: number, image: string) => {
+
+    if (!checkSession()) {
+      navigate("/login");
+      return;
+    }
+
     setCart(prev => {
       const existing = prev.find(item => item.name === name);
 
@@ -122,7 +150,6 @@ const Marketplace: React.FC = () => {
 
         <h1>AgroTech Marketplace</h1>
 
-        {/* BOTON HAMBURGUESA */}
         <div className="menu-toggle" onClick={toggleMenu}>
           ☰
         </div>
@@ -132,6 +159,7 @@ const Marketplace: React.FC = () => {
           <a href="#">Categorías</a>
           <a href="#">Ofertas</a>
           <a href="#">Recomendaciones</a>
+          <a onClick={goPanel}>Panel</a>
           <a href="/Login">Login</a>
         </nav>
 
@@ -140,8 +168,6 @@ const Marketplace: React.FC = () => {
         </div>
 
       </header>
-
-      {/* TODO LO DEMÁS DE TU CÓDIGO SIGUE IGUAL */}
 
       {/* HERO */}
       <section className="hero">
@@ -219,7 +245,6 @@ const Marketplace: React.FC = () => {
         © 2026 AgroTech - Marketplace Profesional
       </footer>
 
-      {/* OVERLAY */}
       {isOpen && (
         <div
           className="cart-overlay active"
@@ -227,7 +252,6 @@ const Marketplace: React.FC = () => {
         ></div>
       )}
 
-      {/* CARRITO */}
       <div className={`cart ${isOpen ? "active" : ""}`}>
 
         <div className="cart-header">
@@ -251,15 +275,11 @@ const Marketplace: React.FC = () => {
                   </div>
 
                   <div className="quantity-controls">
-                    <button
-                      onClick={() => changeQty(index, -1)}
-                    >
+                    <button onClick={() => changeQty(index, -1)}>
                       −
                     </button>
                     <span>{item.quantity}</span>
-                    <button
-                      onClick={() => changeQty(index, 1)}
-                    >
+                    <button onClick={() => changeQty(index, 1)}>
                       +
                     </button>
                   </div>
@@ -291,19 +311,11 @@ const Marketplace: React.FC = () => {
           </div>
 
           <div className="cart-summary">
-            <div>
-              Subtotal: ${subtotal}
-            </div>
-            <div>
-              Envío: ${shipping}
-            </div>
-            <div>
-              Descuento: -${discount}
-            </div>
+            <div>Subtotal: ${subtotal}</div>
+            <div>Envío: ${shipping}</div>
+            <div>Descuento: -${discount}</div>
             <div className="total-row">
-              <strong>
-                Total: ${total} MXN
-              </strong>
+              <strong>Total: ${total} MXN</strong>
             </div>
           </div>
 

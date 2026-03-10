@@ -15,14 +15,14 @@ return new class extends Migration
     $table->id('id_usuario');
     $table->string('nombre', 30);
     $table->string('apellido', 30);
-    $table->year('fecha_nacimiento');
+    $table->date('fecha_nacimiento')->nullable();
     $table->string('email')->unique();
     $table->string('password');
-    $table->string('telefono', 15);
-    $table->string('tipo', 30);
-    $table->date('fecha_registro');
-    $table->string('estado_cuenta', 20);
-    $table->string('reputacion', 20);
+    $table->string('telefono', 15)->nullable();
+    $table->string('tipo', 30)->nullable();
+    $table->date('fecha_registro')->nullable();
+    $table->string('estado_cuenta', 20)->nullable();
+    $table->string('reputacion', 20)->nullable();
 });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

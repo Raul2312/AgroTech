@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import "../css/login.css";
 import logo from "../assets/img/agro.png";
+import axios from "axios";
 
 const API_URL = "http://localhost:8000/api";
 
@@ -18,21 +19,30 @@ const Login = () => {
 
   const [registerData, setRegisterData] = useState({
     name: "",
+    apellido: "",
     email: "",
     password: ""
   });
 
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
+
+  const adminEmails = [
+    "22cg0095@itsncg.edu.mx",
+    "sebastiannn231@gmail.com",
+    "raulmadridflores202@gmail.com"
+  ];
 
   // AUTO LOGIN
   useEffect(() => {
+
     const session =
       localStorage.getItem("agroSession") ||
       sessionStorage.getItem("agroSession");
 
     if (session) {
-      navigate("/dashboard");
+      navigate("/marketplace");
     }
+
   }, [navigate]);
 
   // REGISTRO
@@ -41,15 +51,14 @@ const Login = () => {
 
     try {
 
-      const response = await fetch(`${API_URL}/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(registerData)
+      const response = await axios.post(`${API_URL}/register`, {
+        nombre: registerData.name,
+        apellido: registerData.apellido,
+        email: registerData.email,
+        password: registerData.password
       });
 
-      const data = await response.json();
+      const data = response.data;
 
       if (data.token) {
 
@@ -67,27 +76,25 @@ const Login = () => {
           confirmButtonColor: "#2e7d32",
           background: "#162a33",
           color: "#ffffff"
-        });
+        }).then(() => {
 
-        navigate("/dashboard");
+          if (adminEmails.includes(data.user.email)) {
+            navigate("/dashboard");
+          } else {
+            navigate("/marketplace");
+          }
 
-      } else {
-
-        Swal.fire({
-          title: "Error",
-          text: "Error al registrar",
-          icon: "error",
-          confirmButtonColor: "#d33"
         });
 
       }
 
-    } catch (error) {
+    } catch (error: any) {
+
       console.error(error);
 
       Swal.fire({
         title: "Error",
-        text: "Error conectando con la API",
+        text: error.response?.data?.message || "Error al registrar",
         icon: "error",
         confirmButtonColor: "#d33"
       });
@@ -101,20 +108,15 @@ const Login = () => {
 
     try {
 
-      const response = await fetch(`${API_URL}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(loginData)
-      });
+      const response = await axios.post(`${API_URL}/login`, loginData);
 
-      const data = await response.json();
+      const data = response.data;
 
       if (data.token) {
 
         const sessionData = {
-          token: data.token
+          token: data.token,
+          user: data.user
         };
 
         if (rememberMe) {
@@ -130,27 +132,29 @@ const Login = () => {
           confirmButtonColor: "#2e7d32",
           background: "#162a33",
           color: "#ffffff"
-        });
+        }).then(() => {
 
-        navigate("/dashboard");
+          if (adminEmails.includes(data.user.email)) {
 
-      } else {
+            navigate("/dashboard");
 
-        Swal.fire({
-          title: "Credenciales incorrectas",
-          text: "Verifica tu email y contraseña",
-          icon: "warning",
-          confirmButtonColor: "#f9a825"
+          } else {
+
+            navigate("/marketplace");
+
+          }
+
         });
 
       }
 
-    } catch (error) {
+    } catch (error: any) {
+
       console.error(error);
 
       Swal.fire({
         title: "Error",
-        text: "Error conectando con la API",
+        text: error.response?.data?.message || "Credenciales incorrectas",
         icon: "error",
         confirmButtonColor: "#d33"
       });
@@ -161,7 +165,6 @@ const Login = () => {
   return (
     <div className="login-page">
 
-      {/* HEADER */}
       <header className="login-header">
         <div className="logo-header">
           <img src={logo} alt="AgroTech Logo" />
@@ -238,7 +241,7 @@ const Login = () => {
                   <input
                     type="checkbox"
                     checked={rememberMe}
-                    onChange={() => setRememberMe(!rememberMe)}
+                    onChange={(e) => setRememberMe(e.target.checked)}
                   />
                   Recordarme
                 </label>
@@ -254,13 +257,26 @@ const Login = () => {
               <form className="form active-form" onSubmit={handleRegister}>
 
                 <div className="input-group">
-                  <label>Nombre completo</label>
+                  <label>Nombre</label>
                   <input
                     type="text"
-                    placeholder="Juan Pérez"
+                    placeholder="Juan"
                     value={registerData.name}
                     onChange={(e) =>
                       setRegisterData({ ...registerData, name: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label>Apellido</label>
+                  <input
+                    type="text"
+                    placeholder="Pérez"
+                    value={registerData.apellido}
+                    onChange={(e) =>
+                      setRegisterData({ ...registerData, apellido: e.target.value })
                     }
                     required
                   />

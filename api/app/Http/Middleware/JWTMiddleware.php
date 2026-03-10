@@ -3,27 +3,29 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Exception;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Exception;
 
 class JwtMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        $token = $request->bearerToken(); // obtiene el token del header Authorization
-
-        if (!$token) {
-            return response()->json(['error' => 'Token no proporcionado'], 401);
-        }
 
         try {
-            $credentials = JWT::decode($token, new Key(env('JWT_SECRET'), 'HS256'));
-            // opcional: puedes guardar los datos del usuario en el request
-            $request->auth = $credentials;
+
+            $user = JWTAuth::parseToken()->authenticate();
+
+            if (!$user) {
+                return response()->json(['error' => 'Usuario no encontrado'], 404);
+            }
+
         } catch (Exception $e) {
-            return response()->json(['error' => 'Token inválido: ' . $e->getMessage()], 401);
+
+            return response()->json([
+                'error' => 'Token inválido o no proporcionado'
+            ], 401);
+
         }
 
         return $next($request);

@@ -1,9 +1,15 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../css/clientDashboard.css";
 import logo from "../assets/img/agro.png";
 
 const ClientDashboard = () => {
+ const navigate = useNavigate();
+    const logout = () => {
+  localStorage.removeItem("agroSession");
+  sessionStorage.removeItem("agroSession");
+  navigate("/login");
+};
 
 const [collapsed,setCollapsed] = useState(false);
 
@@ -50,7 +56,9 @@ return(
 </li>
 
 <li className="logout">
-<Link to="/login">❌ {!collapsed && "Cerrar sesión"}</Link>
+<button onClick={logout}>
+❌ {!collapsed && "Cerrar sesión"}
+</button>
 </li>
 
 </ul>

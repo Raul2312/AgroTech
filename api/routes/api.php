@@ -24,8 +24,7 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
 
 
-
-Route::middleware(['auth:api'])->group(function () {
+Route::middleware(['jwt.auth'])->group(function () {
 
      Route::apiResource('ranchos', RanchoController::class);
     Route::apiResource('productos', ProductoController::class);
@@ -39,6 +38,10 @@ Route::middleware(['auth:api'])->group(function () {
     Route::apiResource('likes', LikeController::class);
     Route::apiResource('transacciones', TransaccionController::class);
     Route::apiResource('compras', CompraController::class);
+
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/refresh', [AuthController::class, 'refresh']);
 
 });
     

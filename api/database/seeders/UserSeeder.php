@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
           User::create([
             'nombre' => 'Raul',
             'apellido' => 'Madrid',
-            'fecha_nacimiento' => 2004,
+            'fecha_nacimiento' => "2004/12/23",
             'email' => 'raulmadridflores202@gmail.com',
             'password' => Hash::make('12345678'),
             'telefono' => '6361353989',
@@ -29,7 +29,7 @@ class UserSeeder extends Seeder
          User::create([
             'nombre' => 'Sebastian',
             'apellido' => 'Flores',
-            'fecha_nacimiento' => 2004,
+            'fecha_nacimiento' => "2004/09/07",
             'email' => 'sebastiannn231@gmail.com',
             'password' => Hash::make('12345678'),
             'telefono' => '6361034074',
@@ -41,7 +41,7 @@ class UserSeeder extends Seeder
          User::create([
             'nombre' => 'Javier',
             'apellido' => 'Valverde',
-            'fecha_nacimiento' => 2004,
+            'fecha_nacimiento' => "2004/05/17",
             'email' => '22cg0095@itsncg.edu.mx',
             'password' => Hash::make('12345678'),
             'telefono' => '6361122978',

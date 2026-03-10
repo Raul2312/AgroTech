@@ -1,70 +1,59 @@
 <?php
 
-
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    // Register a new user
+
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-        ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'email' => 'required|email|unique:usuarios,email',
+            'password' => 'required|min:6'
+        ]);
 
         $user = User::create([
-            'name' => $request->name,
+            'nombre' => $request->nombre,
+            'apellido' => $request->apellido,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($request->password)
         ]);
 
-        $token = JWTAuth::fromUser($user);
+        $token = auth()->login($user);
 
         return response()->json([
-            'message' => 'User registered successfully',
-            'user' => $user,
             'token' => $token,
-        ], 201);
+            'user' => $user
+        ]);
+
     }
 
-    // Login and generate a JWT
+
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
 
-        if (!$token = JWTAuth::attempt($credentials)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
+        $credentials = $request->only('email','password');
+
+        if (!$token = auth()->attempt($credentials)) {
+
+            return response()->json([
+                'error' => 'Credenciales incorrectas'
+            ],401);
+
         }
 
         return response()->json([
-            'message' => 'Login successful',
             'token' => $token,
+            'user' => auth()->user()
         ]);
+
     }
 
-    // Get authenticated user details
-    public function user()
-    {
-        return response()->json(auth()->user());
-    }
-
-    // Logout the user
-    public function logout()
-    {
-        auth()->logout();
-
-        return response()->json(['message' => 'Successfully logged out']);
-    }
 }
