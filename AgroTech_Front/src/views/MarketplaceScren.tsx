@@ -17,6 +17,8 @@ const Marketplace: React.FC = () => {
   const [couponInput, setCouponInput] = useState("");
   const [search, setSearch] = useState("");
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const products = [
     {
       name: "Alimento Balanceado Premium",
@@ -37,6 +39,10 @@ const Marketplace: React.FC = () => {
 
   const toggleCart = () => {
     setIsOpen(!isOpen);
+  };
+
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
   };
 
   const addToCart = (name: string, price: number, image: string) => {
@@ -109,12 +115,19 @@ const Marketplace: React.FC = () => {
 
       {/* HEADER */}
       <header>
+
         <div className="logo">
           <img src={logo} alt="AgroTech Logo" />
         </div>
+
         <h1>AgroTech Marketplace</h1>
 
-        <nav>
+        {/* BOTON HAMBURGUESA */}
+        <div className="menu-toggle" onClick={toggleMenu}>
+          ☰
+        </div>
+
+        <nav className={menuOpen ? "active" : ""}>
           <a href="/indexScreen">Inicio</a>
           <a href="#">Categorías</a>
           <a href="#">Ofertas</a>
@@ -125,7 +138,10 @@ const Marketplace: React.FC = () => {
         <div className="cart-icon" onClick={toggleCart}>
           🛒 <span>{cartCount}</span>
         </div>
+
       </header>
+
+      {/* TODO LO DEMÁS DE TU CÓDIGO SIGUE IGUAL */}
 
       {/* HERO */}
       <section className="hero">

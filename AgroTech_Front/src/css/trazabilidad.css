@@ -6,6 +6,12 @@ color:#1e293b;
 font-family:'Poppins',sans-serif;
 }
 
+img{
+max-width:100%;
+height:auto;
+display:block;
+}
+
 /* HEADER */
 
 .trazabilidad-page header{
@@ -76,6 +82,7 @@ max-width:700px;
 font-size:3rem;
 margin-bottom:20px;
 }
+
 
 /* INTRO */
 
@@ -432,4 +439,137 @@ margin-bottom:18px;
 .beneficio-icon i{
 color:white;
 font-size:24px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+/* TABLETS */
+
+@media (max-width:1024px){
+
+.trazabilidad-page .intro{
+padding:80px 40px;
+}
+
+.trazabilidad-page .info-section{
+padding:80px 40px;
+gap:40px;
+}
+
+.trazabilidad-page .funciona{
+padding:80px 40px;
+}
+
+.trazabilidad-page .beneficios{
+padding:80px 40px;
+}
+
+.trazabilidad-page .timeline-section{
+padding:80px 40px;
+}
+
+.trazabilidad-page .gallery{
+padding:80px 40px;
+}
+
+.trazabilidad-page .cta{
+padding:100px 40px;
+}
+
+}
+
+/* CELULAR */
+
+@media (max-width:768px){
+
+/* HERO */
+
+.trazabilidad-page .hero-trazabilidad{
+height:auto;
+padding:140px 20px 80px 20px;
+}
+
+.trazabilidad-page .hero-content h2{
+font-size:2rem;
+}
+
+/* INTRO */
+
+.trazabilidad-page .intro{
+padding:60px 20px;
+}
+
+/* INFO (TEXTO ARRIBA FOTO ABAJO) */
+
+.trazabilidad-page .info-section{
+flex-direction:column;
+padding:60px 20px;
+gap:30px;
+text-align:center;
+}
+
+.trazabilidad-page .info-text{
+order:1;
+}
+
+.trazabilidad-page .info-img{
+order:2;
+}
+
+.trazabilidad-page .info-img img{
+width:100%;
+}
+
+/* FUNCIONA */
+
+.trazabilidad-page .funciona{
+padding:60px 20px;
+}
+
+/* BENEFICIOS */
+
+.trazabilidad-page .beneficios{
+padding:60px 20px;
+}
+
+/* TIMELINE */
+
+.trazabilidad-page .timeline-section{
+padding:60px 20px;
+}
+
+/* GALERIA */
+
+.trazabilidad-page .gallery{
+padding:60px 20px;
+}
+
+.trazabilidad-page .gallery-grid{
+grid-template-columns:1fr;
+}
+
+/* CTA */
+
+.trazabilidad-page .cta{
+padding:80px 20px;
+}
+
+}
+
+/* CELULARES PEQUEÑOS */
+
+@media (max-width:480px){
+
+.section-title{
+font-size:28px;
+}
+
+.trazabilidad-page .hero-content h2{
+font-size:1.6rem;
+}
+
+.section-sub{
+font-size:14px;
+}
+
 }

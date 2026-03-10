@@ -482,3 +482,44 @@ opacity:1;
 transform:translateY(0);
 }
 }
+
+/* BOTON HAMBURGUESA */
+
+.menu-toggle{
+display:none;
+font-size:28px;
+cursor:pointer;
+}
+
+/* RESPONSIVE */
+
+@media (max-width:768px){
+
+header{
+flex-wrap:wrap;
+}
+
+.menu-toggle{
+display:block;
+color:white;
+}
+
+nav{
+width:100%;
+display:none;
+flex-direction:column;
+background:#0f172a;
+margin-top:20px;
+padding:20px;
+border-radius:10px;
+}
+
+nav.active{
+display:flex;
+}
+
+nav a{
+margin:10px 0;
+}
+
+}

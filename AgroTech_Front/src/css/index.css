@@ -2,6 +2,12 @@
 
 /* TODO encapsulado dentro de .index-page */
 
+img{
+max-width:100%;
+height:auto;
+display:block;
+}
+
 .index-page *{
     margin:0;
     padding:0;
@@ -27,6 +33,7 @@
     background:linear-gradient(135deg,#0f172a,#14532d);
     backdrop-filter:blur(12px);
     z-index:1000;
+    flex-wrap:wrap;
 }
 
 .index-page .logo{
@@ -42,6 +49,12 @@
 .index-page .logo h1{
     color:white;
     font-size:1.4rem;
+}
+
+.index-page nav{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
 }
 
 .index-page nav a{
@@ -67,13 +80,14 @@
     align-items:center;
     text-align:center;
     color:white;
+    padding:0 20px;
 }
 
 .index-page .overlay{
     position:absolute;
     width:100%;
     height:100%;
-    background:rgba(0, 0, 0, 0.015);
+    background:rgba(0, 0, 0, 0.15);
 }
 
 .index-page .hero-content{
@@ -190,11 +204,185 @@
     margin-bottom:15px;
 }
 
+/* ================= RESPONSIVE ================= */
+
+/* Tablets */
+
+@media(max-width:1024px){
+
+.index-page header{
+padding:15px 30px;
+}
+
+.index-page .hero h2{
+font-size:2.5rem;
+}
+
+.index-page .info-section{
+padding:80px 40px;
+gap:40px;
+}
+
+}
+
+/* Celular */
+
+@media(max-width:768px){
+
+.index-page header{
+padding:15px 20px;
+}
+
+/* HERO */
+
+.index-page .hero{
+height:auto;
+padding:140px 20px 80px 20px;
+}
+
+.index-page .hero h2{
+font-size:2rem;
+}
+
+.index-page .hero p{
+font-size:1rem;
+}
+
+/* TEXTO ARRIBA FOTO ABAJO */
+
+.index-page .info-section{
+flex-direction:column;
+padding:60px 20px;
+text-align:center;
+gap:30px;
+}
+
+.index-page .info-text{
+order:1;
+}
+
+.index-page .info-img{
+order:2;
+}
+
+.index-page .info-img img{
+width:100%;
+}
+
+/* GALERIA */
+
+.index-page .gallery{
+padding:70px 20px;
+}
+
+.index-page .gallery-grid{
+grid-template-columns:1fr;
+}
+
+}
+
+/* Celular pequeño */
+
+@media(max-width:480px){
+
+.index-page .hero h2{
+font-size:1.6rem;
+}
+
+.index-page .hero p{
+font-size:0.9rem;
+}
+
+}
+.header{
+position:fixed;
+top:0;
+width:100%;
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px 60px;
+background:linear-gradient(135deg,#0f172a,#14532d);
+z-index:1000;
+}
+
+.logo{
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.logo img{
+width:50px;
+}
+
+.logo h1{
+color:white;
+font-size:1.3rem;
+}
+
+.nav{
+display:flex;
+align-items:center;
+}
+
+.nav a{
+color:white;
+text-decoration:none;
+margin-left:30px;
+font-weight:500;
+transition:.3s;
+}
+
+.nav a:hover{
+color:#22c55e;
+}
+
+.login-btn{
+background:#22c55e;
+padding:8px 18px;
+border-radius:20px;
+}
+
+/* HAMBURGER */
+
+.hamburger{
+display:none;
+font-size:28px;
+background:none;
+border:none;
+color:white;
+cursor:pointer;
+}
+
 /* RESPONSIVE */
 
-@media(max-width:900px){
-    .index-page .info-section{
-        flex-direction:column;
-        padding:80px 30px;
-    }
+@media(max-width:768px){
+
+.hamburger{
+display:block;
+}
+
+.nav{
+position:absolute;
+top:70px;
+left:0;
+width:100%;
+background:#0f172a;
+flex-direction:column;
+align-items:center;
+max-height:0;
+overflow:hidden;
+transition:0.4s;
+}
+
+.nav.active{
+max-height:400px;
+padding:20px 0;
+}
+
+.nav a{
+margin:12px 0;
+}
+
 }
