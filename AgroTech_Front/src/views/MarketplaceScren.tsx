@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "../css/marketplace.css";
 import logo from "../assets/img/agro.png";
 
@@ -10,17 +11,64 @@ type CartItem = {
   quantity: number;
 };
 
+type Producto = {
+  id_productos: number;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  moneda: string;
+  stock: number;
+  imagen: string;
+  id_usuario: number;
+  id_categoria: number;
+  fecha_publicacion: string;
+  estado: string;
+};
+
+type Categoria = {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  estado: string;
+};
+
 const Marketplace: React.FC = () => {
 
   const navigate = useNavigate();
+
+  const [products, setProducts] = useState<Producto[]>([]);
+  const [categories, setCategories] = useState<Categoria[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [discount, setDiscount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [search, setSearch] = useState("");
-
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/productos");
+      setProducts(res.data);
+    } catch (error) {
+      console.error("Error cargando productos:", error);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/categorias");
+      setCategories(res.data);
+    } catch (error) {
+      console.error("Error cargando categorias:", error);
+    }
+  };
 
   const checkSession = () => {
     const session =
@@ -31,33 +79,12 @@ const Marketplace: React.FC = () => {
   };
 
   const goPanel = () => {
-
     if (!checkSession()) {
       navigate("/login");
       return;
     }
-
     navigate("/areacliente");
-
   };
-
-  const products = [
-    {
-      name: "Alimento Balanceado Premium",
-      price: 480,
-      image: "https://images.unsplash.com/photo-1581579188871-45ea61f2a31c"
-    },
-    {
-      name: "Vacuna Bovimax",
-      price: 1250,
-      image: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b"
-    },
-    {
-      name: "Bebedero Automático",
-      price: 2300,
-      image: "https://images.unsplash.com/photo-1604186838309-c6715f0d3a16"
-    }
-  ];
 
   const toggleCart = () => {
     setIsOpen(!isOpen);
@@ -121,9 +148,22 @@ const Marketplace: React.FC = () => {
     }
   };
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filterByCategory = (id: number | null) => {
+    setSelectedCategory(id);
+  };
+
+  const filteredProducts = products.filter(product => {
+
+    const matchSearch =
+      product.nombre.toLowerCase().includes(search.toLowerCase());
+
+    const matchCategory =
+      selectedCategory === null ||
+      product.id_categoria === selectedCategory;
+
+    return matchSearch && matchCategory;
+
+  });
 
   const subtotal = cart.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -141,7 +181,6 @@ const Marketplace: React.FC = () => {
   return (
     <div>
 
-      {/* HEADER */}
       <header>
 
         <div className="logo">
@@ -169,19 +208,19 @@ const Marketplace: React.FC = () => {
 
       </header>
 
-      {/* HERO */}
       <section className="hero">
         <div className="hero-content">
           <h1>Productos Profesionales para Ganadería</h1>
 
           <div className="search-container">
             <div className="search-wrapper">
+
               <div className="search-icon">🔍</div>
 
               <input
                 type="text"
                 className="search-input"
-                placeholder="Buscar alimento, vacunas, maquinaria, herramientas..."
+                placeholder="Buscar alimento, vacunas, maquinaria..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -189,53 +228,80 @@ const Marketplace: React.FC = () => {
               <button className="search-button">
                 Buscar
               </button>
+
             </div>
           </div>
+
         </div>
       </section>
 
-      {/* CATEGORÍAS */}
       <section className="categories">
         <h2>Categorías</h2>
+
         <div className="category-grid">
-          <div className="category-card">🌾 Alimentos</div>
-          <div className="category-card">💉 Veterinaria</div>
-          <div className="category-card">🚜 Equipamiento</div>
-          <div className="category-card">🧴 Higiene</div>
-          <div className="category-card">💧 Sistemas de Agua</div>
-          <div className="category-card">⚙ Herramientas</div>
+
+          <div
+            className="category-card"
+            onClick={() => filterByCategory(null)}
+          >
+            🌎 Todas
+          </div>
+
+          {categories.map((cat) => (
+
+            <div
+              key={cat.id}
+              className="category-card"
+              onClick={() => filterByCategory(cat.id)}
+            >
+              {cat.nombre}
+            </div>
+
+          ))}
+
         </div>
+
       </section>
 
-      {/* PRODUCTOS */}
       <section className="products">
+
         <h2>Productos Destacados</h2>
+
         <div className="product-grid">
 
-          {filteredProducts.map((product, index) => (
-            <div key={index} className="product-card">
-              <img src={product.image} />
+          {filteredProducts.map((product) => (
+
+            <div key={product.id_productos} className="product-card">
+
+              <img src={`http://localhost:8000/images/${product.imagen}`} />
+
               <div className="product-info">
-                <h3>{product.name}</h3>
+
+                <h3>{product.nombre}</h3>
+
                 <div className="price">
-                  ${product.price} MXN
+                  ${product.precio} MXN
                 </div>
+
                 <button
                   className="buy-btn"
                   onClick={() =>
-                    addToCart(product.name, product.price, product.image)
+                    addToCart(product.nombre, product.precio, product.imagen)
                   }
                 >
                   Agregar al carrito
                 </button>
+
               </div>
+
             </div>
+
           ))}
 
         </div>
+
       </section>
 
-      {/* PUBLICIDAD */}
       <section className="ad-section">
         <h2>📢 Publicita tus Productos Aquí</h2>
         <p>Llega a miles de productores en todo México.</p>
@@ -246,42 +312,42 @@ const Marketplace: React.FC = () => {
       </footer>
 
       {isOpen && (
-        <div
-          className="cart-overlay active"
-          onClick={toggleCart}
-        ></div>
+        <div className="cart-overlay active" onClick={toggleCart}></div>
       )}
 
       <div className={`cart ${isOpen ? "active" : ""}`}>
 
         <div className="cart-header">
           <h2>🛒 Tu Carrito</h2>
-          <button className="cart-close" onClick={toggleCart}>
-            ✕
-          </button>
+          <button className="cart-close" onClick={toggleCart}>✕</button>
         </div>
 
         <div className="cart-body">
+
           <ul>
+
             {cart.map((item, index) => (
+
               <li key={index} className="cart-item">
+
                 <img src={item.image} />
+
                 <div className="cart-item-info">
-                  <div className="cart-item-title">
-                    {item.name}
-                  </div>
+
+                  <div className="cart-item-title">{item.name}</div>
+
                   <div className="cart-item-price">
                     ${item.price} MXN
                   </div>
 
                   <div className="quantity-controls">
-                    <button onClick={() => changeQty(index, -1)}>
-                      −
-                    </button>
+
+                    <button onClick={() => changeQty(index, -1)}>−</button>
+
                     <span>{item.quantity}</span>
-                    <button onClick={() => changeQty(index, 1)}>
-                      +
-                    </button>
+
+                    <button onClick={() => changeQty(index, 1)}>+</button>
+
                   </div>
 
                   <button
@@ -290,33 +356,44 @@ const Marketplace: React.FC = () => {
                   >
                     Eliminar
                   </button>
+
                 </div>
+
               </li>
+
             ))}
+
           </ul>
+
         </div>
 
         <div className="cart-footer">
 
           <div className="coupon-section">
+
             <input
               type="text"
               placeholder="Código de descuento"
               value={couponInput}
               onChange={(e) => setCouponInput(e.target.value)}
             />
-            <button onClick={applyCoupon}>
-              Aplicar
-            </button>
+
+            <button onClick={applyCoupon}>Aplicar</button>
+
           </div>
 
           <div className="cart-summary">
+
             <div>Subtotal: ${subtotal}</div>
+
             <div>Envío: ${shipping}</div>
+
             <div>Descuento: -${discount}</div>
+
             <div className="total-row">
               <strong>Total: ${total} MXN</strong>
             </div>
+
           </div>
 
           <button className="checkout-btn">
@@ -324,6 +401,7 @@ const Marketplace: React.FC = () => {
           </button>
 
         </div>
+
       </div>
 
     </div>
