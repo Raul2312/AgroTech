@@ -8,34 +8,72 @@ use App\Models\Producto;
 
 class ProductoController extends Controller
 {
+
     public function index()
     {
-        return Producto::all();
+        // para que React pueda mostrar usuario y categoria
+        return Producto::with(['usuario','categoria'])->get();
     }
 
     public function store(Request $request)
     {
-        $data = $request->all();
-        $registro = Producto::create($data);
-        return response()->json($registro, 201);
+
+        $data = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+            'precio' => 'required|numeric',
+            'moneda' => 'required|string|max:10',
+            'stock' => 'required|integer',
+            'imagen' => 'nullable|string',
+
+            // ahora sí recibimos estos
+            'id_usuario' => 'required|integer',
+            'id_categoria' => 'required|integer',
+
+            'estado' => 'nullable|string'
+        ]);
+
+        // valores automáticos
+        $data['fecha_publicacion'] = now();
+
+        $producto = Producto::create($data);
+
+        return response()->json($producto, 201);
     }
 
     public function show($id)
     {
-        return Producto::findOrFail($id);
+        return Producto::with(['usuario','categoria'])->findOrFail($id);
     }
 
     public function update(Request $request, $id)
     {
-        $registro = Producto::findOrFail($id);
-        $registro->update($request->all());
-        return response()->json($registro, 200);
+
+        $producto = Producto::findOrFail($id);
+
+        $data = $request->validate([
+            'nombre' => 'string|max:255',
+            'descripcion' => 'nullable|string',
+            'precio' => 'numeric',
+            'moneda' => 'string|max:10',
+            'stock' => 'integer',
+            'imagen' => 'nullable|string',
+            'id_categoria' => 'integer',
+            'estado' => 'nullable|string'
+        ]);
+
+        $producto->update($data);
+
+        return response()->json($producto, 200);
     }
 
     public function destroy($id)
     {
-        $registro = Producto::findOrFail($id);
-        $registro->delete();
-        return response()->json(['message' => 'Eliminado correctamente']);
+        $producto = Producto::findOrFail($id);
+        $producto->delete();
+
+        return response()->json([
+            'message' => 'Producto eliminado correctamente'
+        ]);
     }
 }
