@@ -8,6 +8,7 @@ import TrazabilidadScreen from './views/TrazabilidadScreeen'
 import AdminDashboard from './views/AdminScreen'
 import ClientDashboard from './views/ClientDashboard'
 import ClientProfile from './views/ClientProfile'
+import AdminProductos from "./views/AdminProductos";
 
 function App() {
   return(
@@ -21,6 +22,7 @@ function App() {
           <Route path='/dashboard' element={<AdminDashboard />} />
           <Route path='/areacliente' element={<ClientDashboard />} />
           <Route path='/perfil' element={<ClientProfile />} />
+          <Route path="/productos" element={<AdminProductos />} />
            
           
   
