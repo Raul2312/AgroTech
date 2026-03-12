@@ -10,79 +10,138 @@ TextInput,
 ScrollView
 } from "react-native";
 
-type CartItem = {
-name: string;
-price: number;
-image: string;
-quantity: number;
-};
+type Product = {
+name:string
+price:number
+image:string
+rating:number
+sale?:boolean
+}
 
-export default function Marketplace() {
+type CartItem = Product & { quantity:number }
 
-const [cart, setCart] = useState<CartItem[]>([]);
-const [search, setSearch] = useState("");
-const [cartOpen, setCartOpen] = useState(false);
+export default function Marketplace(){
 
-const products = [
+const [cart,setCart] = useState<CartItem[]>([])
+const [search,setSearch] = useState("")
+const [cartOpen,setCartOpen] = useState(false)
+
+const products:Product[] = [
+
 {
 name:"Alimento Balanceado Premium",
 price:480,
+rating:4.8,
+sale:true,
 image:"https://images.unsplash.com/photo-1581579188871-45ea61f2a31c"
 },
+
 {
 name:"Vacuna Bovimax",
 price:1250,
+rating:4.6,
 image:"https://images.unsplash.com/photo-1598515214211-89d3c73ae83b"
 },
+
 {
 name:"Bebedero Automático",
 price:2300,
+rating:4.7,
+sale:true,
 image:"https://images.unsplash.com/photo-1604186838309-c6715f0d3a16"
-}
-];
+},
 
-const addToCart = (product:any)=>{
+{
+name:"Comedero Ganadero",
+price:1800,
+rating:4.5,
+image:"https://images.unsplash.com/photo-1606788075761-9c0c4cbd7c66"
+},
+
+{
+name:"Kit Veterinario Profesional",
+price:3200,
+rating:4.9,
+sale:true,
+image:"https://images.unsplash.com/photo-1581091215367-59ab6c6a1f0d"
+},
+
+{
+name:"Bomba de Agua Agrícola",
+price:4100,
+rating:4.7,
+image:"https://images.unsplash.com/photo-1592982537447-6c9d6a0e5e3b"
+},
+
+{
+name:"Medicamento Ganadero",
+price:950,
+rating:4.4,
+image:"https://images.unsplash.com/photo-1584367369853-9e1e1e96d6c1"
+},
+
+{
+name:"Herramienta Agrícola",
+price:760,
+rating:4.3,
+image:"https://images.unsplash.com/photo-1501004318641-b39e6451bec6"
+}
+
+]
+
+const addToCart = (product:Product)=>{
 
 setCart(prev=>{
 
-const exist = prev.find(p=>p.name===product.name);
+const exist = prev.find(p=>p.name===product.name)
 
 if(exist){
+
 return prev.map(p =>
 p.name===product.name
 ? {...p,quantity:p.quantity+1}
 :p
-);
+)
+
 }
 
-return [...prev,{...product,quantity:1}];
+return [...prev,{...product,quantity:1}]
 
-});
+})
 
-};
+}
 
-const changeQty = (index:number,change:number)=>{
+const changeQty=(index:number,change:number)=>{
 
-const updated=[...cart];
-updated[index].quantity+=change;
+const updated=[...cart]
+
+updated[index].quantity+=change
 
 if(updated[index].quantity<=0){
-updated.splice(index,1);
+updated.splice(index,1)
 }
 
-setCart(updated);
+setCart(updated)
 
-};
+}
 
-const subtotal = cart.reduce((acc,item)=>acc + item.price*item.quantity,0);
-const shipping = subtotal>2000 ? 0 : subtotal===0 ? 0 : 150;
-const total = subtotal + shipping;
+const removeItem=(index:number)=>{
 
-const cartCount = cart.reduce((acc,item)=>acc+item.quantity,0);
+const updated=[...cart]
+updated.splice(index,1)
+setCart(updated)
+
+}
+
+const subtotal = cart.reduce((acc,item)=>acc+item.price*item.quantity,0)
+const shipping = subtotal>2000 ? 0 : subtotal===0 ? 0 : 150
+const total = subtotal + shipping
+
+const cartCount = cart.reduce((acc,item)=>acc+item.quantity,0)
 
 const filtered = products.filter(p =>
 p.name.toLowerCase().includes(search.toLowerCase())
-);
+)
 
 return(
 
@@ -92,99 +151,86 @@ return(
 
 <View style={styles.header}>
 
-<View style={styles.logoRow}>
+<View style={styles.logoContainer}>
 
 <Image
 source={require("../../assets/images/agro.png")}
-style={styles.logoImg}
+style={styles.logo}
 />
 
-<Text style={styles.logoText}>
-AgroTech Marketplace
-</Text>
+<Text style={styles.logoText}>AgroTech</Text>
 
 </View>
 
-<TouchableOpacity onPress={()=>setCartOpen(true)}>
-
-<Text style={styles.cart}>
-🛒 {cartCount}
-</Text>
-
+<TouchableOpacity onPress={()=>setCartOpen(!cartOpen)}>
+<Text style={styles.cartBtn}>🛒 {cartCount}</Text>
 </TouchableOpacity>
 
 </View>
 
-<ScrollView>
+{/* BUSCADOR */}
 
-{/* HERO */}
-
-<View style={styles.hero}>
-
-<Text style={styles.heroTitle}>
-Productos Profesionales para Ganadería
-</Text>
+<View style={styles.searchContainer}>
 
 <TextInput
-placeholder="Buscar alimento, vacunas..."
-style={styles.search}
+placeholder="Buscar productos..."
+style={styles.searchInput}
 value={search}
 onChangeText={setSearch}
 />
 
+<TouchableOpacity style={styles.searchBtn}>
+<Text style={styles.searchBtnText}>🔍</Text>
+</TouchableOpacity>
+
 </View>
 
-{/* CATEGORIAS */}
-
-<Text style={styles.sectionTitle}>Categorías</Text>
+<Text style={styles.section}>Categorías</Text>
 
 <View style={styles.categories}>
 
 <View style={styles.category}><Text>🌾 Alimentos</Text></View>
 <View style={styles.category}><Text>💉 Veterinaria</Text></View>
-<View style={styles.category}><Text>🚜 Equipamiento</Text></View>
-<View style={styles.category}><Text>🧴 Higiene</Text></View>
+<View style={styles.category}><Text>🚜 Equipos</Text></View>
 <View style={styles.category}><Text>💧 Agua</Text></View>
-<View style={styles.category}><Text>⚙ Herramientas</Text></View>
 
 </View>
 
-{/* PRODUCTOS */}
-
-<Text style={styles.sectionTitle}>
-Productos Destacados
-</Text>
+<Text style={styles.section}>Productos</Text>
 
 <FlatList
 data={filtered}
 numColumns={2}
-scrollEnabled={false}
 keyExtractor={(item)=>item.name}
+contentContainerStyle={{paddingBottom:120}}
+
 renderItem={({item})=>(
 
 <View style={styles.productCard}>
+
+{item.sale && (
+<View style={styles.saleTag}>
+<Text style={styles.saleText}>OFERTA</Text>
+</View>
+)}
 
 <Image
 source={{uri:item.image}}
 style={styles.productImg}
 />
 
-<Text style={styles.productName}>
-{item.name}
-</Text>
+<Text style={styles.productName}>{item.name}</Text>
 
-<Text style={styles.price}>
-${item.price} MXN
-</Text>
+<Text style={styles.rating}>⭐ {item.rating}</Text>
+
+<Text style={styles.price}>${item.price} MXN</Text>
 
 <TouchableOpacity
-style={styles.buyBtn}
+style={styles.addBtn}
 onPress={()=>addToCart(item)}
 >
 
-<Text style={styles.buyText}>
-Agregar
-</Text>
+<Text style={styles.addText}>Agregar</Text>
 
 </TouchableOpacity>
 
@@ -193,27 +239,15 @@ Agregar
 )}
 />
 
-</ScrollView>
-
 {/* CARRITO */}
 
 {cartOpen && (
 
 <View style={styles.cartBox}>
 
-<View style={styles.cartHeader}>
+<Text style={styles.cartTitle}>Carrito</Text>
 
-<Text style={styles.cartTitle}>
-Tu carrito
-</Text>
-
-<TouchableOpacity onPress={()=>setCartOpen(false)}>
-<Text style={styles.closeBtn}>✕</Text>
-</TouchableOpacity>
-
-</View>
-
-<ScrollView>
+<ScrollView style={{flex:1}}>
 
 {cart.map((item,index)=>(
 
@@ -227,18 +261,23 @@ style={styles.cartImg}
 <View style={{flex:1}}>
 
 <Text>{item.name}</Text>
+
 <Text>${item.price}</Text>
 
 <View style={styles.qtyRow}>
 
 <TouchableOpacity onPress={()=>changeQty(index,-1)}>
-<Text style={styles.qtyBtn}>-</Text>
+<Text style={styles.qtyBtn}>−</Text>
 </TouchableOpacity>
 
 <Text>{item.quantity}</Text>
 
 <TouchableOpacity onPress={()=>changeQty(index,1)}>
 <Text style={styles.qtyBtn}>+</Text>
+</TouchableOpacity>
+
+<TouchableOpacity onPress={()=>removeItem(index)}>
+<Text style={styles.delete}>🗑</Text>
 </TouchableOpacity>
 
 </View>
@@ -249,17 +288,22 @@ style={styles.cartImg}
 
 ))}
 
-<Text style={styles.total}>Subtotal: ${subtotal}</Text>
-<Text style={styles.total}>Envío: ${shipping}</Text>
-<Text style={styles.total}>Total: ${total}</Text>
+</ScrollView>
 
-<TouchableOpacity style={styles.buyFinal}>
-<Text style={styles.buyFinalText}>
-Comprar
+<View style={styles.cartFooter}>
+
+<Text>Subtotal: ${subtotal}</Text>
+<Text>Envío: ${shipping}</Text>
+
+<Text style={styles.total}>
+Total: ${total}
 </Text>
+
+<TouchableOpacity style={styles.buyBtn}>
+<Text style={styles.buyText}>Comprar</Text>
 </TouchableOpacity>
 
-</ScrollView>
+</View>
 
 </View>
 
@@ -267,190 +311,144 @@ Comprar
 
 </View>
 
-);
+)
 
 }
 
 const styles = StyleSheet.create({
 
-container:{
-flex:1,
-backgroundColor:"#f2f6f4"
-},
+container:{flex:1,backgroundColor:"#f3f4f6"},
 
 header:{
 flexDirection:"row",
 justifyContent:"space-between",
 alignItems:"center",
-paddingTop:50,
+paddingTop:55,
 paddingHorizontal:20,
 paddingBottom:15,
-backgroundColor:"#14532d"
+backgroundColor:"#166534"
 },
 
-logoRow:{
-flexDirection:"row",
-alignItems:"center",
-gap:10
-},
+logoContainer:{flexDirection:"row",alignItems:"center"},
 
-logoImg:{
-width:35,
-height:35
-},
+logo:{width:35,height:35,marginRight:10},
 
-logoText:{
-color:"white",
-fontSize:18,
-fontWeight:"bold"
-},
+logoText:{color:"white",fontSize:18,fontWeight:"bold"},
 
-cart:{
-color:"white",
-fontSize:18
-},
+cartBtn:{color:"white",fontSize:18},
 
-hero:{
-padding:20
-},
+searchContainer:{flexDirection:"row",margin:20},
 
-heroTitle:{
-fontSize:20,
-fontWeight:"bold",
-marginBottom:10
-},
-
-search:{
+searchInput:{
+flex:1,
 backgroundColor:"white",
 padding:10,
-borderRadius:10
+borderTopLeftRadius:10,
+borderBottomLeftRadius:10
 },
 
-sectionTitle:{
-fontSize:18,
-fontWeight:"bold",
-margin:20
+searchBtn:{
+backgroundColor:"#16a34a",
+paddingHorizontal:20,
+justifyContent:"center",
+borderTopRightRadius:10,
+borderBottomRightRadius:10
 },
+
+searchBtnText:{color:"white",fontSize:18},
+
+section:{fontSize:18,fontWeight:"bold",marginLeft:20,marginTop:10},
 
 categories:{
 flexDirection:"row",
 flexWrap:"wrap",
 justifyContent:"space-between",
-paddingHorizontal:10
+paddingHorizontal:20,
+marginTop:10
 },
 
 category:{
-backgroundColor:"#e2e8f0",
+backgroundColor:"#e5e7eb",
 padding:12,
 borderRadius:10,
-width:"30%",
+width:"45%",
 alignItems:"center",
 marginBottom:10
 },
 
 productCard:{
 backgroundColor:"white",
-padding:10,
 margin:10,
+padding:10,
 borderRadius:10,
 width:"45%",
 elevation:3
 },
 
-productImg:{
-width:"100%",
-height:120,
-borderRadius:10
-},
+productImg:{width:"100%",height:120,borderRadius:10},
 
-productName:{
-fontWeight:"bold",
-marginTop:5
-},
+productName:{fontWeight:"bold",marginTop:5},
 
-price:{
-color:"#16a34a",
-marginBottom:5
-},
+rating:{color:"#f59e0b"},
 
-buyBtn:{
+price:{color:"#16a34a",marginVertical:5},
+
+addBtn:{
 backgroundColor:"#16a34a",
 padding:8,
 borderRadius:8
 },
 
-buyText:{
-color:"white",
-textAlign:"center"
+addText:{color:"white",textAlign:"center"},
+
+saleTag:{
+position:"absolute",
+top:10,
+left:10,
+backgroundColor:"#ef4444",
+paddingHorizontal:6,
+borderRadius:5,
+zIndex:5
 },
+
+saleText:{color:"white",fontSize:10},
 
 cartBox:{
 position:"absolute",
 right:0,
 top:90,
+width:320,
+height:"85%",
 backgroundColor:"white",
-width:280,
-height:"80%",
-padding:15,
 borderTopLeftRadius:15,
 borderBottomLeftRadius:15,
+padding:15,
 elevation:10
 },
 
-cartHeader:{
-flexDirection:"row",
-justifyContent:"space-between",
-marginBottom:10
-},
+cartTitle:{fontSize:18,fontWeight:"bold",marginBottom:10},
 
-closeBtn:{
-fontSize:20
-},
+cartItem:{flexDirection:"row",marginBottom:15},
 
-cartTitle:{
-fontWeight:"bold",
-fontSize:16
-},
+cartImg:{width:50,height:50,borderRadius:6,marginRight:10},
 
-cartItem:{
-flexDirection:"row",
-marginBottom:10
-},
+qtyRow:{flexDirection:"row",alignItems:"center",marginTop:5},
 
-cartImg:{
-width:50,
-height:50,
-marginRight:10,
-borderRadius:5
-},
+qtyBtn:{fontSize:18,paddingHorizontal:10},
 
-qtyRow:{
-flexDirection:"row",
-alignItems:"center",
-gap:10
-},
+delete:{marginLeft:10,fontSize:18},
 
-qtyBtn:{
-fontSize:18,
-paddingHorizontal:8
-},
+cartFooter:{borderTopWidth:1,borderColor:"#ddd",paddingTop:10},
 
-total:{
-marginTop:5,
-fontWeight:"bold"
-},
+total:{fontSize:18,fontWeight:"bold",marginTop:5},
 
-buyFinal:{
+buyBtn:{
 backgroundColor:"#16a34a",
-padding:10,
+padding:12,
 borderRadius:8,
 marginTop:10
 },
 
-buyFinalText:{
-color:"white",
-textAlign:"center",
-fontWeight:"bold"
-}
+buyText:{color:"white",textAlign:"center",fontWeight:"bold"}
 
-});
+})
