@@ -4,7 +4,8 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { CartProvider } from './context/CartContext';
+import { CartProvider } from '../context/CartContext';
+import { Ionicons } from "@expo/vector-icons";
 
 export const unstable_settings = {
   anchor: '(tabs)',

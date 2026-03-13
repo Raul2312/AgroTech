@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,7 +11,8 @@ import {
   Animated,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useCart } from "../context/CartContext";
+import { Ionicons } from "@expo/vector-icons";
+import { useCart } from "../../context/CartContext";
 
 type Product = {
   id: number;
@@ -25,21 +26,21 @@ type Product = {
 };
 
 export default function Marketplace() {
-
   const router = useRouter();
-  const { addToCart, cartCount } = useCart();
+  const { addToCart } = useCart();
+
+  /* LOGIN CHECK */
+  useEffect(() => {
+    const userLogged = true; // después lo conectaremos a backend
+    if (!userLogged) {
+      router.replace("/login");
+    }
+  }, []);
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Todos");
   const [favorites, setFavorites] = useState<number[]>([]);
-
   const scrollY = useRef(new Animated.Value(0)).current;
-
-  const heroHeight = scrollY.interpolate({
-    inputRange: [0, 150],
-    outputRange: [180, 90],
-    extrapolate: "clamp",
-  });
 
   const categories = ["Todos", "🌾 Alimentos", "💉 Veterinaria", "🚜 Equipos", "💧 Agua"];
 
@@ -52,8 +53,7 @@ export default function Marketplace() {
       rating: 4.8,
       category: "🌾 Alimentos",
       sale: true,
-      image:
-        "https://static.wixstatic.com/media/ac332e_d072d24231ba4342b4ddba80414fe0e4~mv2.png",
+      image: "https://static.wixstatic.com/media/ac332e_d072d24231ba4342b4ddba80414fe0e4~mv2.png",
     },
     {
       id: 2,
@@ -79,8 +79,7 @@ export default function Marketplace() {
       price: 1800,
       rating: 4.5,
       category: "🚜 Equipos",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4dVHcq1EQwxOgjKW6MK1VQSqjIeB7kibpTw&s",
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4dVHcq1EQwxOgjKW6MK1VQSqjIeB7kibpTw&s",
     },
     {
       id: 5,
@@ -89,8 +88,7 @@ export default function Marketplace() {
       oldPrice: 3600,
       rating: 4.9,
       category: "💉 Veterinaria",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQs-UOO86KC_osLr8bywucfcY_QhNMpqjJbg&s",
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQs-UOO86KC_osLr8bywucfcY_QhNMpqjJbg&s",
     },
     {
       id: 6,
@@ -104,23 +102,19 @@ export default function Marketplace() {
     {
       id: 7,
       name: "Tractores John Deere",
-      price: 1800,
+      price: 18000,
       rating: 4.5,
       category: "🚜 Equipos",
-      image:
-        "https://www.deere.com.mx/assets/images/region-3/home-page/trator-maquina-agricola.jpg",
+      image: "https://www.deere.com.mx/assets/images/region-3/home-page/trator-maquina-agricola.jpg",
     },
   ];
 
   const filtered = products.filter(
-    (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) &&
-      (category === "Todos" || p.category === category)
+    (p) => p.name.toLowerCase().includes(search.toLowerCase()) && (category === "Todos" || p.category === category)
   );
 
   const toggleFavorite = (id: number) => {
-    if (favorites.includes(id))
-      setFavorites(favorites.filter((f) => f !== id));
+    if (favorites.includes(id)) setFavorites(favorites.filter((f) => f !== id));
     else setFavorites([...favorites, id]);
   };
 
@@ -137,41 +131,23 @@ export default function Marketplace() {
   const renderStars = (rating: number) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <Text key={i} style={{ color: "#f59e0b" }}>
-          {i <= Math.round(rating) ? "★" : "☆"}
-        </Text>
-      );
+      stars.push(<Ionicons key={i} name={i <= Math.round(rating) ? "star" : "star-outline"} size={14} color="#f59e0b" />);
     }
     return <View style={{ flexDirection: "row" }}>{stars}</View>;
   };
 
   return (
     <View style={styles.container}>
-
       <LinearGradient colors={["#0f172a", "#14532d"]} style={styles.header}>
         <View style={styles.logoRow}>
           <Image source={require("../../assets/images/agro.png")} style={styles.logo} />
           <Text style={styles.logoText}>AgroTech MarketPlace</Text>
         </View>
-
-        <TouchableOpacity
-          style={styles.cartBox}
-          onPress={() => router.push("/carrito")}
-        >
-          <Text style={styles.cart}>🛒</Text>
-
-          {cartCount > 0 && (
-            <View style={styles.cartBadge}>
-              <Text style={styles.badgeText}>{cartCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
       </LinearGradient>
 
       <View style={styles.searchBox}>
         <View style={styles.searchWrapper}>
-          <Text style={styles.searchIcon}>🔍</Text>
+          <Ionicons name="search" size={18} color="#16a34a" style={{ marginRight: 10 }} />
           <TextInput
             placeholder="Buscar productos..."
             placeholderTextColor="#64748b"
@@ -193,14 +169,7 @@ export default function Marketplace() {
               onPress={() => setCategory(item)}
               style={[styles.categoryPill, category === item && styles.categoryActive]}
             >
-              <Text
-                style={[
-                  styles.categoryText,
-                  category === item && styles.categoryTextActive,
-                ]}
-              >
-                {item}
-              </Text>
+              <Text style={[styles.categoryText, category === item && styles.categoryTextActive]}>{item}</Text>
             </TouchableOpacity>
           )}
         />
@@ -227,19 +196,17 @@ export default function Marketplace() {
               })
             }
           >
-
-            <TouchableOpacity
-              style={styles.favorite}
-              onPress={() => toggleFavorite(item.id)}
-            >
-              <Text style={{ fontSize: 18 }}>
-                {favorites.includes(item.id) ? "❤️" : "🤍"}
-              </Text>
+            <TouchableOpacity style={styles.favorite} onPress={() => toggleFavorite(item.id)}>
+              <Ionicons
+                name={favorites.includes(item.id) ? "heart" : "heart-outline"}
+                size={20}
+                color={favorites.includes(item.id) ? "#ef4444" : "#64748b"}
+              />
             </TouchableOpacity>
 
             {item.sale && (
               <View style={styles.saleTag}>
-                <Text style={styles.saleText}>🔥 OFERTA</Text>
+                <Text style={styles.saleText}>OFERTA</Text>
               </View>
             )}
 
@@ -261,13 +228,10 @@ export default function Marketplace() {
               </View>
             </View>
 
-            <TouchableOpacity
-              style={styles.btn}
-              onPress={() => handleAddToCart(item)}
-            >
-              <Text style={styles.btnText}>Agregar</Text>
+            <TouchableOpacity style={styles.btn} onPress={() => handleAddToCart(item)}>
+              <Ionicons name="cart-outline" size={16} color="white" />
+              <Text style={styles.btnText}> Agregar</Text>
             </TouchableOpacity>
-
           </TouchableOpacity>
         )}
       />
@@ -276,135 +240,30 @@ export default function Marketplace() {
 }
 
 const styles = StyleSheet.create({
-
-container: { flex: 1, backgroundColor: "#f3f4f6" },
-
-header: {
-flexDirection: "row",
-justifyContent: "space-between",
-alignItems: "center",
-paddingTop: 55,
-paddingHorizontal: 20,
-paddingBottom: 15,
-},
-
-logoRow: { flexDirection: "row", alignItems: "center" },
-
-logo: { width: 35, height: 35, marginRight: 10 },
-
-logoText: { color: "white", fontSize: 18, fontWeight: "bold" },
-
-cartBox: { position: "relative" },
-
-cart: { fontSize: 22, color: "white" },
-
-cartBadge: {
-position: "absolute",
-top: -6,
-right: -10,
-backgroundColor: "#ef4444",
-borderRadius: 10,
-paddingHorizontal: 5,
-},
-
-badgeText: { color: "white", fontSize: 10 },
-
-searchBox: { padding: 15 },
-
-searchWrapper:{
-flexDirection:"row",
-alignItems:"center",
-backgroundColor:"white",
-paddingHorizontal:15,
-paddingVertical:10,
-borderRadius:15,
-shadowColor:"#000",
-shadowOffset:{width:0,height:2},
-shadowOpacity:0.15,
-shadowRadius:5,
-elevation:4
-},
-
-searchIcon:{
-fontSize:18,
-marginRight:10,
-color:"#16a34a"
-},
-
-search:{
-flex:1,
-fontSize:16,
-color:"#1e293b",
-padding:0
-},
-
-categoriesBar:{backgroundColor:"#f3f4f6",paddingVertical:10,paddingLeft:10},
-
-categoryPill:{
-backgroundColor:"white",
-paddingHorizontal:16,
-paddingVertical:8,
-borderRadius:20,
-marginRight:10
-},
-
-categoryActive:{backgroundColor:"#16a34a"},
-
-categoryText:{fontWeight:"600",color:"#1e293b"},
-
-categoryTextActive:{color:"white"},
-
-card:{
-backgroundColor:"white",
-margin:10,
-borderRadius:14,
-width:"45%",
-height:280,
-elevation:4,
-overflow:"hidden"
-},
-
-productImg:{
-  width:"100%",
-  height:120,
-  zIndex:1
-},
-
-cardContent:{padding:10,flex:1,justifyContent:"space-between"},
-
-productName:{fontWeight:"bold"},
-
-ratingRow:{flexDirection:"row",alignItems:"center"},
-
-ratingNumber:{marginLeft:4,color:"#64748b",fontSize:12},
-
-price:{color:"#16a34a",fontWeight:"bold"},
-
-oldPrice:{textDecorationLine:"line-through",color:"#64748b",fontSize:12},
-
-btn:{
-backgroundColor:"#16a34a",
-padding:8,
-margin:10,
-borderRadius:8,
-marginTop:"auto"
-},
-
-btnText:{color:"white",textAlign:"center"},
-
-saleTag:{
-  position:"absolute",
-  top:10,
-  left:10,
-  backgroundColor:"#ef4444",
-  paddingHorizontal:6,
-  borderRadius:5,
-  zIndex:50,
-  elevation:50
-},
-
-saleText:{color:"white",fontSize:10},
-
-favorite:{position:"absolute",right:10,top:10,zIndex:20}
-
+  container: { flex: 1, backgroundColor: "#f3f4f6" },
+  header: { flexDirection: "row", alignItems: "center", paddingTop: 55, paddingHorizontal: 20, paddingBottom: 15 },
+  logoRow: { flexDirection: "row", alignItems: "center" },
+  logo: { width: 35, height: 35, marginRight: 10 },
+  logoText: { color: "white", fontSize: 18, fontWeight: "bold" },
+  searchBox: { padding: 15 },
+  searchWrapper: { flexDirection: "row", alignItems: "center", backgroundColor: "white", paddingHorizontal: 15, paddingVertical: 10, borderRadius: 15, elevation: 4 },
+  search: { flex: 1, fontSize: 16, color: "#1e293b" },
+  categoriesBar: { backgroundColor: "#f3f4f6", paddingVertical: 10, paddingLeft: 10 },
+  categoryPill: { backgroundColor: "white", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginRight: 10 },
+  categoryActive: { backgroundColor: "#16a34a" },
+  categoryText: { fontWeight: "600", color: "#1e293b" },
+  categoryTextActive: { color: "white" },
+  card: { backgroundColor: "white", margin: 10, borderRadius: 14, width: "45%", height: 280, elevation: 4, overflow: "hidden" },
+  productImg: { width: "100%", height: 120 },
+  cardContent: { padding: 10, flex: 1, justifyContent: "space-between" },
+  productName: { fontWeight: "bold" },
+  ratingRow: { flexDirection: "row", alignItems: "center" },
+  ratingNumber: { marginLeft: 4, color: "#64748b", fontSize: 12 },
+  price: { color: "#16a34a", fontWeight: "bold" },
+  oldPrice: { textDecorationLine: "line-through", color: "#64748b", fontSize: 12 },
+  btn: { backgroundColor: "#16a34a", padding: 8, margin: 10, borderRadius: 8, marginTop: "auto", flexDirection: "row", justifyContent: "center", alignItems: "center" },
+  btnText: { color: "white", textAlign: "center" },
+  saleTag: { position: "absolute", top: 10, left: 10, backgroundColor: "#ef4444", paddingHorizontal: 6, borderRadius: 5, zIndex: 50 },
+  saleText: { color: "white", fontSize: 10 },
+  favorite: { position: "absolute", right: 10, top: 10, zIndex: 20 },
 });

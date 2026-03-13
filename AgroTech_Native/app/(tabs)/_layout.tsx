@@ -1,33 +1,110 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+// app/(tabs)/_layout.tsx
+import { Tabs } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { View, Text, Animated, Easing } from "react-native";
+import { useCart } from "../../context/CartContext";
+import { useEffect, useRef, useState } from "react";
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+export default function Layout() {
+  const { cartCount } = useCart();
+  const animatedValue = useRef(new Animated.Value(1)).current;
+  const [prevCount, setPrevCount] = useState(cartCount);
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  // Animación tipo pop cuando aumenta el carrito
+  useEffect(() => {
+    if (cartCount > prevCount) {
+      Animated.sequence([
+        Animated.timing(animatedValue, {
+          toValue: 1.5,
+          duration: 150,
+          easing: Easing.ease,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animatedValue, {
+          toValue: 1,
+          duration: 150,
+          easing: Easing.ease,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+    setPrevCount(cartCount);
+  }, [cartCount]);
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+        tabBarActiveTintColor: "#16a34a",
+        tabBarInactiveTintColor: "#94a3b8",
+        tabBarStyle: {
+          backgroundColor: "#0f172a",
+          height: 60,
+          paddingBottom: 5,
+        },
+      }}
+    >
+      {/* HOME */}
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Inicio",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" color={color} size={size} />
+          ),
         }}
       />
+
+      
+
+      {/* CARRITO */}
       <Tabs.Screen
-        name="explore"
+        name="carrito"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "Carrito",
+          tabBarStyle: { display: "none" }, // <- solo ocultar tabs aquí
+          tabBarIcon: ({ color, size }) => (
+            <View>
+              <Ionicons name="cart-outline" size={size} color={color} />
+              {cartCount > 0 && (
+                <Animated.View
+                  style={{
+                    position: "absolute",
+                    top: -4,
+                    right: -6,
+                    backgroundColor: "red",
+                    borderRadius: 8,
+                    width: 16,
+                    height: 16,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transform: [{ scale: animatedValue }],
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 10,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {cartCount}
+                  </Text>
+                </Animated.View>
+              )}
+            </View>
+          ),
+        }}
+      />
+
+      {/* PERFIL */}
+      <Tabs.Screen
+        name="perfil"
+        options={{
+          title: "Perfil",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-outline" color={color} size={size} />
+          ),
         }}
       />
     </Tabs>
