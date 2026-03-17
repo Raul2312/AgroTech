@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../css/marketplace.css";
 import logo from "../assets/img/agro.png";
+import ProductDetailsModal from "./ProductDetailsModal";
 
 type CartItem = {
   name: string;
@@ -15,7 +16,7 @@ type Producto = {
   id_productos: number;
   nombre: string;
   descripcion: string;
-  precio: string; // Laravel devuelve decimal como string
+  precio: string;
   moneda: string;
   stock: number;
   imagen: string;
@@ -43,6 +44,10 @@ const Marketplace: React.FC = () => {
   const [couponInput, setCouponInput] = useState("");
   const [search, setSearch] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Modal de detalles
+  const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -85,22 +90,27 @@ const Marketplace: React.FC = () => {
   const toggleCart = () => setIsOpen(!isOpen);
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
-  const addToCart = (name: string, price: string | number, image: string) => {
+  const addToCart = (
+    name: string,
+    price: string | number,
+    image: string,
+    quantity: number = 1
+  ) => {
     if (!checkSession()) {
       navigate("/login");
       return;
     }
-    const priceNumber = parseFloat(price as any); // Convertimos a número
+    const priceNumber = Number(price);
     setCart((prev) => {
       const existing = prev.find((item) => item.name === name);
       if (existing) {
         return prev.map((item) =>
           item.name === name
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       } else {
-        return [...prev, { name, price: priceNumber, image, quantity: 1 }];
+        return [...prev, { name, price: priceNumber, image, quantity }];
       }
     });
     setIsOpen(true);
@@ -136,6 +146,16 @@ const Marketplace: React.FC = () => {
   };
 
   const filterByCategory = (id: number | null) => setSelectedCategory(id);
+
+  const openDetails = (product: Producto) => {
+    setSelectedProduct(product);
+    setDetailsOpen(true);
+  };
+
+  const closeDetails = () => {
+    setSelectedProduct(null);
+    setDetailsOpen(false);
+  };
 
   const filteredProducts = products.filter(
     (product) =>
@@ -209,34 +229,46 @@ const Marketplace: React.FC = () => {
       </section>
 
       <section className="products">
-        <h2>Productos Destacados</h2>
-        <div className="product-grid">
-          {filteredProducts.map((product) => (
-            <div key={product.id_productos} className="product-card">
-              <img
-                src={`http://localhost:8000/images/${product.imagen}`}
-                alt={product.nombre}
-              />
-              <div className="product-info">
-                <h3>{product.nombre}</h3>
-                <p className="product-desc">{product.descripcion}</p>
-                <div className="rating">⭐⭐⭐⭐☆</div>
-                <div className="price">
-                  ${parseFloat(product.precio as any).toFixed(2)} MXN
-                </div>
-                <button
-                  className="buy-btn"
-                  onClick={() =>
-                    addToCart(product.nombre, product.precio, product.imagen)
-                  }
-                >
-                  Agregar al carrito
-                </button>
-              </div>
-            </div>
-          ))}
+  <h2>Productos Destacados</h2>
+  <div className="product-grid">
+    {filteredProducts.map((product) => (
+      <div
+        key={product.id_productos}
+        className="product-card"
+        onClick={() => openDetails(product)} // click en toda la tarjeta abre detalles
+        style={{ cursor: "pointer" }} // opcional: cambia cursor a mano
+      >
+        <img
+          src={
+            product.imagen
+              ? `http://localhost:8000/storage/images/${product.imagen}`
+              : "https://via.placeholder.com/150?text=Sin+Imagen"
+          }
+          alt={product.nombre}
+        />
+        <div className="product-info">
+          <h3>{product.nombre}</h3>
+          <p className="brand">AgroTech</p>
+          <div className="rating">⭐⭐⭐⭐☆</div>
+          <div className="price">${Number(product.precio).toFixed(2)} MXN</div>
+          <div className="shipping">
+            Envío: ${Number(product.precio) > 2000 ? 0 : 150}
+          </div>
+          <button
+            className="buy-btn"
+            onClick={(e) => {
+              e.stopPropagation(); // evita que al agregar al carrito se abra modal
+              addToCart(product.nombre, product.precio, product.imagen);
+            }}
+          >
+            Agregar al carrito
+          </button>
+          {/* El botón “Ver detalles” se elimina */}
         </div>
-      </section>
+      </div>
+    ))}
+  </div>
+</section>
 
       <section className="ad-section">
         <h2>📢 Publicita tus Productos Aquí</h2>
@@ -250,16 +282,18 @@ const Marketplace: React.FC = () => {
       <div className={`cart ${isOpen ? "active" : ""}`}>
         <div className="cart-header">
           <h2>🛒 Tu Carrito</h2>
-          <button className="cart-close" onClick={toggleCart}>
-            ✕
-          </button>
+          <button className="cart-close" onClick={toggleCart}>✕</button>
         </div>
         <div className="cart-body">
           <ul>
             {cart.map((item, index) => (
               <li key={index} className="cart-item">
                 <img
-                  src={`http://localhost:8000/images/${item.image}`}
+                  src={
+                    item.image
+                      ? `http://localhost:8000/storage/images/${item.image}`
+                      : "https://via.placeholder.com/50?text=Sin+Imagen"
+                  }
                   alt={item.name}
                 />
                 <div className="cart-item-info">
@@ -272,9 +306,7 @@ const Marketplace: React.FC = () => {
                     <span>{item.quantity}</span>
                     <button onClick={() => changeQty(index, 1)}>+</button>
                   </div>
-                  <button className="remove-btn" onClick={() => removeItem(index)}>
-                    Eliminar
-                  </button>
+                  <button className="remove-btn" onClick={() => removeItem(index)}>Eliminar</button>
                 </div>
               </li>
             ))}
@@ -301,6 +333,15 @@ const Marketplace: React.FC = () => {
           <button className="checkout-btn">Finalizar Compra</button>
         </div>
       </div>
+
+     {/* Modal de detalles */}
+      {detailsOpen && selectedProduct && (
+        <ProductDetailsModal
+          product={selectedProduct}
+          onClose={closeDetails}
+          addToCart={addToCart}
+        />
+      )}
     </div>
   );
 };

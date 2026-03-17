@@ -217,12 +217,18 @@ const AdminProductos = () => {
               </div>
             </div>
 
-            {imagen && (
-              <div className="preview-img">
-                <p>Vista previa</p>
-                <img src={imagen} alt="preview" />
-              </div>
-            )}
+            {/* Vista previa de imagen */}
+            <div className="preview-img">
+              <p>Vista previa</p>
+              <img
+                src={
+                  imagen
+                    ? `http://localhost:8000/storage/images/${imagen}`
+                    : "https://via.placeholder.com/150?text=Sin+Imagen"
+                }
+                alt="preview"
+              />
+            </div>
 
             <button className="btn-agregar" onClick={agregarProducto}>➕ Agregar Producto</button>
           </div>
@@ -254,7 +260,16 @@ const AdminProductos = () => {
                   <td>{p.usuario?.nombre}</td>
                   <td>{p.categoria?.nombre}</td>
                   <td>{p.estado}</td>
-                  <td>{p.imagen && <img src={p.imagen} style={{ width: "50px" }} />}</td>
+                  <td>
+                    <img
+                      src={
+                        p.imagen
+                          ? `http://localhost:8000/storage/images/${p.imagen}`
+                          : "https://via.placeholder.com/50?text=No+Img"
+                      }
+                      style={{ width: "50px" }}
+                    />
+                  </td>
                   <td><button onClick={() => eliminarProducto(p.id_productos)}>Eliminar</button></td>
                 </tr>
               ))}
