@@ -33,6 +33,16 @@ type Categoria = {
   estado: string;
 };
 
+const getImageUrl = (img: string) => {
+  if (!img) return "https://via.placeholder.com/150?text=Sin+Imagen";
+
+  // Si ya es URL
+  if (img.startsWith("http")) return img;
+
+  // Si es imagen de Laravel
+  return `http://127.0.0.1:8000/products/${img}`;
+};
+
 const Marketplace: React.FC = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Producto[]>([]);
@@ -164,7 +174,7 @@ const Marketplace: React.FC = () => {
   );
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shipping = subtotal > 2000 ? 0 : subtotal === 0 ? 0 : 150;
+  const shipping = subtotal > 300 ? 0 : subtotal === 0 ? 0 : 150;
   const total = subtotal + shipping - discount;
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -239,11 +249,7 @@ const Marketplace: React.FC = () => {
         style={{ cursor: "pointer" }} // opcional: cambia cursor a mano
       >
         <img
-          src={
-            product.imagen
-              ? `http://localhost:8000/storage/images/${product.imagen}`
-              : "https://via.placeholder.com/150?text=Sin+Imagen"
-          }
+          src={getImageUrl(product.imagen)}
           alt={product.nombre}
         />
         <div className="product-info">
@@ -289,11 +295,7 @@ const Marketplace: React.FC = () => {
             {cart.map((item, index) => (
               <li key={index} className="cart-item">
                 <img
-                  src={
-                    item.image
-                      ? `http://localhost:8000/storage/images/${item.image}`
-                      : "https://via.placeholder.com/50?text=Sin+Imagen"
-                  }
+                  src={getImageUrl(item.image)}
                   alt={item.name}
                 />
                 <div className="cart-item-info">

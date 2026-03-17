@@ -206,7 +206,9 @@ nav a {
 .product-card img {
   width: 100%;
   height: 200px;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
+  background: #ffffff;
 }
 
 .product-info {
@@ -217,7 +219,8 @@ nav a {
   font-size: 1.1rem;
   font-weight: 600;
   color: #0f172a;
-  background: linear-gradient(90deg, #34d399, #10b981);
+  background-color: black;
+  /*background: linear-gradient(90deg, #cadad4, #10b981);*/
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   padding: 5px 10px;
@@ -310,6 +313,11 @@ footer {
 
 .cart.active {
   right: 0;
+}
+.cart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .cart-header, .cart-footer {
@@ -504,6 +512,25 @@ footer {
   margin-top: 10px;
 }
 
+.premium-content {
+  display: flex;
+  height: 100%;
+  min-height: 0; /* 🔥 IMPORTANTÍSIMO */
+}
+
+.image-section {
+  width: 50%;
+  min-width: 0; /* 🔥 evita que empuje */
+}
+
+.info-section {
+  width: 50%;
+  padding: 25px;
+  overflow-y: auto;
+  min-width: 0; /* 🔥 CLAVE */
+  max-height: 85vh; /* 🔥 controla altura */
+} 
+
 /* ======== IMAGENES ======== */
 .image-section {
   flex: 1;
@@ -652,6 +679,29 @@ footer {
   font-size: 15px;
   color: #555;
 }
+
+.field {
+  margin: 10px 0;
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  color: #777;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.brand {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.description {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
 
 /* ======== RESPONSIVE ======== */
 @media (max-width: 768px) {

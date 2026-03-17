@@ -9,13 +9,21 @@ use App\Models\Producto;
 class ProductoController extends Controller
 {
     /**
-     * Listar todos los productos con usuario y categoría
+     * Listar todos los productos
      */
     public function index()
     {
-        return response()->json(
-            Producto::with(['usuario','categoria'])->get()
-        );
+        $productos = Producto::with(['usuario', 'categoria'])->get();
+
+        // 🔥 Agregar URL de imagen a cada producto
+        $productos->transform(function ($producto) {
+            $producto->imagen_url = $producto->imagen
+                ? url('products/' . $producto->imagen)
+                : "https://via.placeholder.com/250?text=Sin+Imagen";
+            return $producto;
+        });
+
+        return response()->json($productos);
     }
 
     /**
@@ -24,29 +32,37 @@ class ProductoController extends Controller
     public function store(Request $request)
     {
         try {
-            // Convertir valores vacíos a null o enteros
-            $request->merge([
-                'id_usuario' => $request->id_usuario !== "" ? (int)$request->id_usuario : null,
-                'id_categoria' => $request->id_categoria !== "" ? (int)$request->id_categoria : null,
-                'precio' => $request->precio !== "" ? (float)$request->precio : null,
-                'stock' => $request->stock !== "" ? (int)$request->stock : null,
-            ]);
-
             $data = $request->validate([
                 'nombre' => 'required|string|max:255',
                 'descripcion' => 'nullable|string',
                 'precio' => 'required|numeric',
                 'moneda' => 'required|string|max:10',
                 'stock' => 'required|integer',
-                'imagen' => 'nullable|string',
+                'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
                 'id_usuario' => 'required|integer',
                 'id_categoria' => 'required|integer',
                 'estado' => 'nullable|string'
             ]);
 
+            // 🔥 GUARDAR IMAGEN EN public/products
+            if ($request->hasFile('imagen')) {
+                $file = $request->file('imagen');
+
+                $filename = time() . "_" . $file->getClientOriginalName();
+
+                $file->move(public_path('products'), $filename);
+
+                $data['imagen'] = $filename;
+            }
+
             $data['fecha_publicacion'] = now();
 
             $producto = Producto::create($data);
+
+            // 🔥 agregar URL de imagen
+            $producto->imagen_url = $producto->imagen
+                ? url('products/' . $producto->imagen)
+                : null;
 
             return response()->json([
                 'message' => 'Producto creado correctamente',
@@ -54,13 +70,11 @@ class ProductoController extends Controller
             ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Devuelve errores de validación como JSON
             return response()->json([
                 'error' => 'Error de validación',
                 'messages' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            // Otros errores
             return response()->json([
                 'error' => $e->getMessage()
             ], 400);
@@ -72,11 +86,15 @@ class ProductoController extends Controller
      */
     public function show($id)
     {
-        $producto = Producto::with(['usuario','categoria'])->find($id);
+        $producto = Producto::with(['usuario', 'categoria'])->find($id);
 
         if (!$producto) {
             return response()->json(['error' => 'Producto no encontrado'], 404);
         }
+
+        $producto->imagen_url = $producto->imagen
+            ? url('products/' . $producto->imagen)
+            : null;
 
         return response()->json($producto);
     }
@@ -93,24 +111,38 @@ class ProductoController extends Controller
         }
 
         try {
-            $request->merge([
-                'id_categoria' => $request->id_categoria !== "" ? (int)$request->id_categoria : null,
-                'precio' => $request->precio !== "" ? (float)$request->precio : null,
-                'stock' => $request->stock !== "" ? (int)$request->stock : null,
-            ]);
-
             $data = $request->validate([
                 'nombre' => 'sometimes|string|max:255',
                 'descripcion' => 'nullable|string',
                 'precio' => 'sometimes|numeric',
                 'moneda' => 'sometimes|string|max:10',
                 'stock' => 'sometimes|integer',
-                'imagen' => 'nullable|string',
+                'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
                 'id_categoria' => 'sometimes|integer',
                 'estado' => 'nullable|string'
             ]);
 
+            // 🔥 REEMPLAZAR IMAGEN
+            if ($request->hasFile('imagen')) {
+
+                // borrar anterior
+                if ($producto->imagen && file_exists(public_path('products/' . $producto->imagen))) {
+                    unlink(public_path('products/' . $producto->imagen));
+                }
+
+                $file = $request->file('imagen');
+                $filename = time() . "_" . $file->getClientOriginalName();
+
+                $file->move(public_path('products'), $filename);
+
+                $data['imagen'] = $filename;
+            }
+
             $producto->update($data);
+
+            $producto->imagen_url = $producto->imagen
+                ? url('products/' . $producto->imagen)
+                : null;
 
             return response()->json([
                 'message' => 'Producto actualizado correctamente',
@@ -138,6 +170,11 @@ class ProductoController extends Controller
 
         if (!$producto) {
             return response()->json(['error' => 'Producto no encontrado'], 404);
+        }
+
+        // 🔥 borrar imagen física
+        if ($producto->imagen && file_exists(public_path('products/' . $producto->imagen))) {
+            unlink(public_path('products/' . $producto->imagen));
         }
 
         $producto->delete();

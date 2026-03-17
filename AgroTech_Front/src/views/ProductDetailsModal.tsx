@@ -17,47 +17,111 @@ type Producto = {
 type Props = {
   product: Producto;
   onClose: () => void;
-  addToCart: (name: string, price: string | number, image: string, quantity?: number) => void;
+  addToCart: (
+    name: string,
+    price: string | number,
+    image: string,
+    quantity?: number
+  ) => void;
 };
 
-const ProductDetailsModal: React.FC<Props> = ({ product, onClose, addToCart }) => {
+const getImageUrl = (img: string) => {
+  if (!img) return "https://via.placeholder.com/250?text=Sin+Imagen";
+  if (img.startsWith("http")) return img;
+  return `http://127.0.0.1:8000/products/${img}`;
+};
+
+const ProductDetailsModal: React.FC<Props> = ({
+  product,
+  onClose,
+  addToCart,
+}) => {
   const [quantity, setQuantity] = useState(1);
 
   return (
     <>
       <div className="details-overlay" onClick={onClose}></div>
+
       <div className="premium-modal">
-        <button className="close-btn" onClick={onClose}>✕</button>
+        <button className="close-btn" onClick={onClose}>
+          ✕
+        </button>
+
         <div className="premium-content">
+          {/* IMAGEN */}
           <div className="image-section">
             <img
               className="main-image"
-              src={
-                product.imagen
-                  ? `http://localhost:8000/storage/images/${product.imagen}`
-                  : "https://via.placeholder.com/250?text=Sin+Imagen"
-              }
+              src={getImageUrl(product.imagen)}
               alt={product.nombre}
             />
           </div>
+
           <div className="info-section">
             <h1>{product.nombre}</h1>
-            <p className="brand">AgroTech</p>
-            <div className="price">${parseFloat(product.precio as any).toFixed(2)} MXN</div>
-            <p className="description">{product.descripcion}</p>
-            <div>Stock disponible: {product.stock}</div>
-            <div>Fecha de llegada: {product.fecha_publicacion}</div>
 
-            <div className="quantity-selector">
-              <button onClick={() => setQuantity(Math.max(quantity - 1, 1))}>−</button>
-              <span>{quantity}</span>
-              <button onClick={() => setQuantity(quantity + 1)}>+</button>
+            {/* MARCA */}
+            <div className="field">
+              <span className="label">Marca</span>
+              <p className="value">AgroTech</p>
             </div>
 
+            {/* PRECIO */}
+            <div className="field">
+              <span className="label">Precio</span>
+              <p className="price">
+                ${Number(product.precio).toFixed(2)} {product.moneda}
+              </p>
+            </div>
+
+            {/* DESCRIPCIÓN */}
+            <div className="field">
+              <span className="label">Descripción</span>
+              <p className="value">{product.descripcion}</p>
+            </div>
+
+            {/* STOCK */}
+            <div className="field">
+              <span className="label">Stock disponible</span>
+              <p className="value">{product.stock}</p>
+            </div>
+
+            {/* FECHA */}
+            <div className="field">
+              <span className="label">Fecha de publicación</span>
+              <p className="value">{product.fecha_publicacion}</p>
+            </div>
+
+            {/* ESTADO */}
+            <div className="field">
+              <span className="label">Estado</span>
+              <p className="value">{product.estado}</p>
+            </div>
+
+            {/* CANTIDAD */}
+            <div className="field">
+              <span className="label">Cantidad</span>
+              <div className="quantity-selector">
+                <button onClick={() => setQuantity(Math.max(quantity - 1, 1))}>
+                  −
+                </button>
+
+                <span>{quantity}</span>
+
+                <button onClick={() => setQuantity(quantity + 1)}>+</button>
+              </div>
+            </div>
+
+            {/* BOTÓN */}
             <button
               className="add-cart-btn"
               onClick={() => {
-                addToCart(product.nombre, product.precio, product.imagen, quantity);
+                addToCart(
+                  product.nombre,
+                  product.precio,
+                  product.imagen,
+                  quantity
+                );
                 onClose();
               }}
             >
