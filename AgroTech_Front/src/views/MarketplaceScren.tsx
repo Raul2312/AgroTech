@@ -15,7 +15,7 @@ type Producto = {
   id_productos: number;
   nombre: string;
   descripcion: string;
-  precio: number;
+  precio: string; // Laravel devuelve decimal como string
   moneda: string;
   stock: number;
   imagen: string;
@@ -33,13 +33,10 @@ type Categoria = {
 };
 
 const Marketplace: React.FC = () => {
-
   const navigate = useNavigate();
-
   const [products, setProducts] = useState<Producto[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-
   const [cart, setCart] = useState<CartItem[]>([]);
   const [discount, setDiscount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -74,7 +71,6 @@ const Marketplace: React.FC = () => {
     const session =
       localStorage.getItem("agroSession") ||
       sessionStorage.getItem("agroSession");
-
     return session ? true : false;
   };
 
@@ -86,53 +82,44 @@ const Marketplace: React.FC = () => {
     navigate("/areacliente");
   };
 
-  const toggleCart = () => {
-    setIsOpen(!isOpen);
-  };
+  const toggleCart = () => setIsOpen(!isOpen);
+  const toggleMenu = () => setMenuOpen(!menuOpen);
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
-
-  const addToCart = (name: string, price: number, image: string) => {
-
+  const addToCart = (name: string, price: string | number, image: string) => {
     if (!checkSession()) {
       navigate("/login");
       return;
     }
-
-    setCart(prev => {
-      const existing = prev.find(item => item.name === name);
-
+    const priceNumber = parseFloat(price as any); // Convertimos a número
+    setCart((prev) => {
+      const existing = prev.find((item) => item.name === name);
       if (existing) {
-        return prev.map(item =>
+        return prev.map((item) =>
           item.name === name
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       } else {
-        return [...prev, { name, price, image, quantity: 1 }];
+        return [...prev, { name, price: priceNumber, image, quantity: 1 }];
       }
     });
-
     setIsOpen(true);
   };
 
   const changeQty = (index: number, change: number) => {
-    setCart(prev => {
-      const updated = [...prev];
-      updated[index].quantity += change;
-
-      if (updated[index].quantity <= 0) {
-        updated.splice(index, 1);
-      }
-
-      return updated;
-    });
+    setCart((prev) =>
+      prev
+        .map((item, i) =>
+          i === index
+            ? { ...item, quantity: Math.max(item.quantity + change, 0) }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
   };
 
   const removeItem = (index: number) => {
-    setCart(prev => {
+    setCart((prev) => {
       const updated = [...prev];
       updated.splice(index, 1);
       return updated;
@@ -148,51 +135,29 @@ const Marketplace: React.FC = () => {
     }
   };
 
-  const filterByCategory = (id: number | null) => {
-    setSelectedCategory(id);
-  };
+  const filterByCategory = (id: number | null) => setSelectedCategory(id);
 
-  const filteredProducts = products.filter(product => {
-
-    const matchSearch =
-      product.nombre.toLowerCase().includes(search.toLowerCase());
-
-    const matchCategory =
-      selectedCategory === null ||
-      product.id_categoria === selectedCategory;
-
-    return matchSearch && matchCategory;
-
-  });
-
-  const subtotal = cart.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
+  const filteredProducts = products.filter(
+    (product) =>
+      product.nombre.toLowerCase().includes(search.toLowerCase()) &&
+      (selectedCategory === null || product.id_categoria === selectedCategory)
   );
 
+  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const shipping = subtotal > 2000 ? 0 : subtotal === 0 ? 0 : 150;
   const total = subtotal + shipping - discount;
-
-  const cartCount = cart.reduce(
-    (acc, item) => acc + item.quantity,
-    0
-  );
+  const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
     <div>
-
       <header>
-
         <div className="logo">
           <img src={logo} alt="AgroTech Logo" />
         </div>
-
         <h1>AgroTech Marketplace</h1>
-
         <div className="menu-toggle" onClick={toggleMenu}>
           ☰
         </div>
-
         <nav className={menuOpen ? "active" : ""}>
           <a href="/indexScreen">Inicio</a>
           <a href="#">Categorías</a>
@@ -201,22 +166,17 @@ const Marketplace: React.FC = () => {
           <a onClick={goPanel}>Panel</a>
           <a href="/Login">Login</a>
         </nav>
-
         <div className="cart-icon" onClick={toggleCart}>
           🛒 <span>{cartCount}</span>
         </div>
-
       </header>
 
       <section className="hero">
         <div className="hero-content">
           <h1>Productos Profesionales para Ganadería</h1>
-
           <div className="search-container">
             <div className="search-wrapper">
-
               <div className="search-icon">🔍</div>
-
               <input
                 type="text"
                 className="search-input"
@@ -224,31 +184,19 @@ const Marketplace: React.FC = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-
-              <button className="search-button">
-                Buscar
-              </button>
-
+              <button className="search-button">Buscar</button>
             </div>
           </div>
-
         </div>
       </section>
 
       <section className="categories">
         <h2>Categorías</h2>
-
         <div className="category-grid">
-
-          <div
-            className="category-card"
-            onClick={() => filterByCategory(null)}
-          >
+          <div className="category-card" onClick={() => filterByCategory(null)}>
             🌎 Todas
           </div>
-
           {categories.map((cat) => (
-
             <div
               key={cat.id}
               className="category-card"
@@ -256,33 +204,26 @@ const Marketplace: React.FC = () => {
             >
               {cat.nombre}
             </div>
-
           ))}
-
         </div>
-
       </section>
 
       <section className="products">
-
         <h2>Productos Destacados</h2>
-
         <div className="product-grid">
-
           {filteredProducts.map((product) => (
-
             <div key={product.id_productos} className="product-card">
-
-              <img src={`http://localhost:8000/images/${product.imagen}`} />
-
+              <img
+                src={`http://localhost:8000/images/${product.imagen}`}
+                alt={product.nombre}
+              />
               <div className="product-info">
-
                 <h3>{product.nombre}</h3>
-
+                <p className="product-desc">{product.descripcion}</p>
+                <div className="rating">⭐⭐⭐⭐☆</div>
                 <div className="price">
-                  ${product.precio} MXN
+                  ${parseFloat(product.precio as any).toFixed(2)} MXN
                 </div>
-
                 <button
                   className="buy-btn"
                   onClick={() =>
@@ -291,15 +232,10 @@ const Marketplace: React.FC = () => {
                 >
                   Agregar al carrito
                 </button>
-
               </div>
-
             </div>
-
           ))}
-
         </div>
-
       </section>
 
       <section className="ad-section">
@@ -307,103 +243,64 @@ const Marketplace: React.FC = () => {
         <p>Llega a miles de productores en todo México.</p>
       </section>
 
-      <footer>
-        © 2026 AgroTech - Marketplace Profesional
-      </footer>
+      <footer>© 2026 AgroTech - Marketplace Profesional</footer>
 
-      {isOpen && (
-        <div className="cart-overlay active" onClick={toggleCart}></div>
-      )}
+      {isOpen && <div className="cart-overlay active" onClick={toggleCart}></div>}
 
       <div className={`cart ${isOpen ? "active" : ""}`}>
-
         <div className="cart-header">
           <h2>🛒 Tu Carrito</h2>
-          <button className="cart-close" onClick={toggleCart}>✕</button>
+          <button className="cart-close" onClick={toggleCart}>
+            ✕
+          </button>
         </div>
-
         <div className="cart-body">
-
           <ul>
-
             {cart.map((item, index) => (
-
               <li key={index} className="cart-item">
-
-                <img src={item.image} />
-
+                <img
+                  src={`http://localhost:8000/images/${item.image}`}
+                  alt={item.name}
+                />
                 <div className="cart-item-info">
-
                   <div className="cart-item-title">{item.name}</div>
-
                   <div className="cart-item-price">
-                    ${item.price} MXN
+                    ${parseFloat(item.price as any).toFixed(2)} MXN
                   </div>
-
                   <div className="quantity-controls">
-
                     <button onClick={() => changeQty(index, -1)}>−</button>
-
                     <span>{item.quantity}</span>
-
                     <button onClick={() => changeQty(index, 1)}>+</button>
-
                   </div>
-
-                  <button
-                    className="remove-btn"
-                    onClick={() => removeItem(index)}
-                  >
+                  <button className="remove-btn" onClick={() => removeItem(index)}>
                     Eliminar
                   </button>
-
                 </div>
-
               </li>
-
             ))}
-
           </ul>
-
         </div>
-
         <div className="cart-footer">
-
           <div className="coupon-section">
-
             <input
               type="text"
               placeholder="Código de descuento"
               value={couponInput}
               onChange={(e) => setCouponInput(e.target.value)}
             />
-
             <button onClick={applyCoupon}>Aplicar</button>
-
           </div>
-
           <div className="cart-summary">
-
-            <div>Subtotal: ${subtotal}</div>
-
-            <div>Envío: ${shipping}</div>
-
-            <div>Descuento: -${discount}</div>
-
+            <div>Subtotal: ${subtotal.toFixed(2)}</div>
+            <div>Envío: ${shipping.toFixed(2)}</div>
+            <div>Descuento: -${discount.toFixed(2)}</div>
             <div className="total-row">
-              <strong>Total: ${total} MXN</strong>
+              <strong>Total: ${total.toFixed(2)} MXN</strong>
             </div>
-
           </div>
-
-          <button className="checkout-btn">
-            Finalizar Compra
-          </button>
-
+          <button className="checkout-btn">Finalizar Compra</button>
         </div>
-
       </div>
-
     </div>
   );
 };

@@ -472,6 +472,26 @@ box-shadow:0 5px 15px rgba(0,0,0,0.2);
 animation:fadeSearch 1s ease;
 }
 
+.product-info h3 {
+  font-size: 1.1rem; /* un poco más grande */
+  font-weight: 600;
+  color: #0f172a; /* color más profesional */
+  background: linear-gradient(90deg, #34d399, #10b981); /* degradado verde */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: 5px 10px;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.product-info h3:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
 @keyframes fadeSearch{
 from{
 opacity:0;

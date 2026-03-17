@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+use App\Models\Categoria;
+use App\Models\Comentario;
 
 class Producto extends Model
 {
-     protected $table = 'productos';
+    protected $table = 'productos';
     protected $primaryKey = 'id_productos';
     public $timestamps = false;
 
@@ -25,7 +28,7 @@ class Producto extends Model
 
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'id_usuario');
+        return $this->belongsTo(User::class, 'id_usuario');
     }
 
     public function categoria()

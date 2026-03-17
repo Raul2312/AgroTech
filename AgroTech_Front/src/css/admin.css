@@ -266,6 +266,95 @@ background:#1b5e20;
 background:#f9a825;
 }
 
+.titulo-form{
+margin-bottom:15px;
+font-weight:600;
+}
+
+.producto-card{
+background:#0f2b33;
+padding:25px;
+border-radius:14px;
+box-shadow:0 10px 30px rgba(0,0,0,0.4);
+display:flex;
+flex-direction:column;
+gap:20px;
+}
+
+.form-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:18px;
+}
+
+.input-group{
+display:flex;
+flex-direction:column;
+gap:6px;
+}
+
+.input-group label{
+font-size:13px;
+color:#9fb5bc;
+}
+
+.input-group input,
+.input-group select,
+.input-group textarea{
+padding:10px;
+border-radius:8px;
+border:none;
+background:#162a33;
+color:white;
+outline:none;
+transition:0.2s;
+}
+
+.input-group input:focus,
+.input-group select:focus,
+.input-group textarea:focus{
+background:#1e3a44;
+box-shadow:0 0 0 2px #2e7d32;
+}
+
+.input-group textarea{
+resize:none;
+height:80px;
+}
+
+.input-group.full{
+grid-column:span 2;
+}
+
+.preview-img{
+margin-top:10px;
+text-align:center;
+}
+
+.preview-img img{
+width:120px;
+height:120px;
+object-fit:cover;
+border-radius:10px;
+border:2px solid #2e7d32;
+}
+
+.btn-agregar{
+margin-top:10px;
+padding:12px;
+background:linear-gradient(90deg,#2e7d32,#4CAF50);
+border:none;
+border-radius:10px;
+font-weight:600;
+cursor:pointer;
+transition:0.3s;
+}
+
+.btn-agregar:hover{
+transform:translateY(-2px);
+box-shadow:0 5px 15px rgba(0,0,0,0.5);
+}
+
 /* RESPONSIVE */
 
 @media(max-width:900px){
