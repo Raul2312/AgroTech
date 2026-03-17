@@ -24,7 +24,8 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
 Route::apiResource('productos', ProductoController::class);
 Route::apiResource('categorias', CategoriaController::class);
-Route::get('/usuarios',[UserController::class,'index']);
+Route::apiResource('usuarios', UserController::class);
+
 
 Route::middleware(['jwt.auth'])->group(function () {
 

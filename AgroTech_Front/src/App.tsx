@@ -9,6 +9,8 @@ import AdminDashboard from './views/AdminScreen'
 import ClientDashboard from './views/ClientDashboard'
 import ClientProfile from './views/ClientProfile'
 import AdminProductos from "./views/AdminProductos";
+import AdminUsuarios from './views/AdminUser'
+
 
 function App() {
   return(
@@ -23,6 +25,7 @@ function App() {
           <Route path='/areacliente' element={<ClientDashboard />} />
           <Route path='/perfil' element={<ClientProfile />} />
           <Route path="/productos" element={<AdminProductos />} />
+          <Route path="/usuarios" element={<AdminUsuarios />} />
            
           
   

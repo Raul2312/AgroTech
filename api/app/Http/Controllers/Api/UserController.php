@@ -15,12 +15,19 @@ class UserController extends Controller
         return User::all();
     }
 
-    public function store(Request $request)
-    {
-        $data = $request->all();
-        $registro = User::create($data);
-        return response()->json($registro, 201);
+   public function store(Request $request)
+{
+    $data = $request->all();
+
+    // 🔥 ENCRIPTAR PASSWORD
+    if (isset($data['password'])) {
+        $data['password'] = Hash::make($data['password']);
     }
+
+    $registro = User::create($data);
+
+    return response()->json($registro, 201);
+}
 
     public function show($id)
     {
@@ -47,7 +54,9 @@ class UserController extends Controller
         'nombre' => 'required',
         'apellido' => 'required',
         'email' => 'required|email|unique:usuarios,email',
-        'password' => 'required|min:6'
+        'password' => 'required|min:6',
+        
+        
     ]);
 
     $user = User::create($request->all());

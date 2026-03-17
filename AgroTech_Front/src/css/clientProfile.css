@@ -87,10 +87,12 @@ margin-left:80px;
 /* HEADER */
 
 .header{
+position: relative;
 display:flex;
 justify-content:space-between;
 align-items:center;
 margin-bottom:30px;
+z-index: 0;
 }
 
 .menu-btn{
