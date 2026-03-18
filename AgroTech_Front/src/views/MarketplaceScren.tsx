@@ -194,7 +194,7 @@ const Marketplace: React.FC = () => {
           <a href="#">Ofertas</a>
           <a href="#">Recomendaciones</a>
           <a onClick={goPanel}>Panel</a>
-          <a href="/Login">Login</a>
+          {!(localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession")) && <a href="/Login">Login</a>}
         </nav>
         <div className="cart-icon" onClick={toggleCart}>
           🛒 <span>{cartCount}</span>
