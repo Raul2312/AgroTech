@@ -24,13 +24,16 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
 Route::apiResource('productos', ProductoController::class);
 Route::apiResource('categorias', CategoriaController::class);
-Route::apiResource('usuarios', UserController::class);
+Route::apiResource('/usuarios', UserController::class);
+
 
 
 Route::middleware(['jwt.auth'])->group(function () {
 
      Route::apiResource('ranchos', RanchoController::class);
     Route::apiResource('ganados', GanadoController::class);
+    Route::put('/usuarios/{id}', [UserController::class, 'update']);
+
     
     Route::apiResource('empresas', EmpresaController::class);
     Route::apiResource('lotes', LoteController::class);
