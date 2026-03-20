@@ -16,7 +16,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useCart } from "../../context/CartContext";
 
-const API_URL = "http://192.168.1.6:8000/api";
+const API_URL = "http://192.168.1.10:8000/api";
 
 export type ProductType = {
   id_productos: number;
