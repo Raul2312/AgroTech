@@ -1,29 +1,63 @@
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCart } from "../../context/CartContext";
 import { useRouter, Stack } from "expo-router";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useState } from "react";
 
 export default function carrito() {
 
 const router = useRouter();
 const { cart, increase, decrease, removeFromCart } = useCart();
 
+/* 🔥 CUPONES */
+const [coupon, setCoupon] = useState("");
+const [discount, setDiscount] = useState(0);
+
+/* 💰 CALCULOS */
 const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 const envio = subtotal > 0 ? 120 : 0;
-const total = subtotal + envio;
+const total = subtotal + envio - discount;
+
+/* 🎯 APLICAR CUPON */
+const applyCoupon = () => {
+  Keyboard.dismiss();
+
+  if (coupon === "AGRO10") {
+    setDiscount(subtotal * 0.1);
+  } else if (coupon === "AGRO50") {
+    setDiscount(50);
+  } else {
+    setDiscount(0);
+    alert("Cupón inválido");
+  }
+};
 
 return (
-
 <>
 <Stack.Screen options={{ headerShown: false }} />
 
+<KeyboardAvoidingView
+  style={{ flex: 1 }}
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+>
+
 <View style={styles.container}>
 
-<LinearGradient
-colors={["#0f172a","#14532d"]}
-style={styles.header}
->
+{/* HEADER */}
+<LinearGradient colors={["#0f172a","#14532d"]} style={styles.header}>
 
 <TouchableOpacity onPress={() => router.back()}>
 <Ionicons name="arrow-back" size={26} color="#fff" />
@@ -31,17 +65,22 @@ style={styles.header}
 
 <Text style={styles.headerTitle}>Carrito</Text>
 
-<View style={{width:26}} />
+<Ionicons name="cart" size={24} color="#fff" />
 
 </LinearGradient>
+
+{/* 🔥 AREA SCROLL + DISMISS */}
+<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+<View style={{ flex: 1 }}>
 
 <FlatList
 data={cart}
 keyExtractor={(item) => item.id.toString()}
+keyboardShouldPersistTaps="always"
 ListEmptyComponent={
-<Text style={styles.empty}>Tu carrito está vacío</Text>
+<Text style={styles.empty}>🛒 Tu carrito está vacío</Text>
 }
-contentContainerStyle={{ paddingBottom: 220 }}
+contentContainerStyle={{ paddingBottom: 300 }}
 renderItem={({ item }) => (
 
 <View style={styles.card}>
@@ -50,7 +89,7 @@ renderItem={({ item }) => (
 
 <View style={styles.info}>
 
-<Text numberOfLines={2} style={styles.name}>
+<Text numberOfLines={4} style={styles.name}>
 {item.name}
 </Text>
 
@@ -60,31 +99,22 @@ ${item.price} MXN
 
 <View style={styles.qtyRow}>
 
-<TouchableOpacity
-style={styles.qtyBtn}
-onPress={() => decrease(item.id)}
->
-<Ionicons name="remove" size={18} />
+<TouchableOpacity style={styles.qtyBtn} onPress={() => decrease(item.id)}>
+<Ionicons name="remove" size={18} color="#334155" />
 </TouchableOpacity>
 
 <Text style={styles.qty}>{item.quantity}</Text>
 
-<TouchableOpacity
-style={styles.qtyBtn}
-onPress={() => increase(item.id)}
->
-<Ionicons name="add" size={18} />
+<TouchableOpacity style={styles.qtyBtn} onPress={() => increase(item.id)}>
+<Ionicons name="add" size={18} color="#334155" />
 </TouchableOpacity>
 
 </View>
 
 </View>
 
-<TouchableOpacity
-style={styles.deleteBtn}
-onPress={() => removeFromCart(item.id)}
->
-<MaterialIcons name="delete-outline" size={26} color="#ef4444" />
+<TouchableOpacity style={styles.deleteBtn} onPress={() => removeFromCart(item.id)}>
+<MaterialIcons name="delete-outline" size={22} color="#ef4444" />
 </TouchableOpacity>
 
 </View>
@@ -92,7 +122,30 @@ onPress={() => removeFromCart(item.id)}
 )}
 />
 
+</View>
+</TouchableWithoutFeedback>
+
+{/* FOOTER */}
 <View style={styles.footer}>
+
+<View style={styles.couponBox}>
+
+<Ionicons name="pricetag-outline" size={18} color="#16a34a" />
+
+<TextInput
+placeholder="Código de cupón"
+value={coupon}
+onChangeText={setCoupon}
+style={styles.couponInput}
+returnKeyType="done"
+onSubmitEditing={applyCoupon}
+/>
+
+<TouchableOpacity style={styles.couponBtn} onPress={applyCoupon}>
+<Text style={styles.couponBtnText}>Aplicar</Text>
+</TouchableOpacity>
+
+</View>
 
 <View style={styles.summary}>
 
@@ -106,27 +159,31 @@ onPress={() => removeFromCart(item.id)}
 <Text style={styles.value}>${envio}</Text>
 </View>
 
+{discount > 0 && (
+<View style={styles.row}>
+<Text style={{ color: "#16a34a" }}>Descuento</Text>
+<Text style={{ color: "#16a34a" }}>- ${discount.toFixed(2)}</Text>
+</View>
+)}
+
 <View style={styles.divider} />
 
 <View style={styles.row}>
 <Text style={styles.totalLabel}>Total</Text>
-<Text style={styles.total}>${total} MXN</Text>
+<Text style={styles.total}>${total.toFixed(2)} MXN</Text>
 </View>
 
 </View>
 
 <TouchableOpacity style={styles.checkoutBtn}>
-
 <Ionicons name="card-outline" size={22} color="#fff" style={{marginRight:8}} />
-
 <Text style={styles.checkoutText}>Proceder al pago</Text>
-
 </TouchableOpacity>
 
 </View>
 
 </View>
-
+</KeyboardAvoidingView>
 </>
 );
 }
@@ -142,9 +199,9 @@ header:{
 flexDirection:"row",
 alignItems:"center",
 justifyContent:"space-between",
-paddingTop:45,
+paddingTop:50,
 paddingHorizontal:20,
-paddingBottom:14
+paddingBottom:15
 },
 
 headerTitle:{
@@ -159,38 +216,35 @@ backgroundColor:"#fff",
 marginHorizontal:15,
 marginTop:14,
 padding:12,
-borderRadius:14,
+borderRadius:18,
 alignItems:"center",
-
-shadowColor:"#000",
-shadowOpacity:0.08,
-shadowOffset:{width:0,height:3},
-shadowRadius:4,
-elevation:3
+elevation:5
 },
 
 image:{
-width:70,
-height:70,
-borderRadius:10,
+width:75,
+height:75,
+borderRadius:12,
 marginRight:12
 },
 
 info:{
-flex:1
+flex:1,
+marginRight:10
 },
 
 name:{
 fontWeight:"600",
 fontSize:15,
 marginBottom:4,
-color:"#1e293b"
+color:"#0f172a"
 },
 
 price:{
 color:"#16a34a",
 fontWeight:"bold",
-marginBottom:8
+marginBottom:8,
+fontSize:15
 },
 
 qtyRow:{
@@ -200,9 +254,9 @@ alignItems:"center"
 
 qtyBtn:{
 backgroundColor:"#e2e8f0",
-width:32,
-height:32,
-borderRadius:8,
+width:34,
+height:34,
+borderRadius:10,
 alignItems:"center",
 justifyContent:"center"
 },
@@ -214,7 +268,9 @@ fontSize:16
 },
 
 deleteBtn:{
-padding:6
+backgroundColor:"#fee2e2",
+padding:8,
+borderRadius:10
 },
 
 footer:{
@@ -224,14 +280,37 @@ left:0,
 right:0,
 backgroundColor:"#fff",
 padding:20,
-borderTopLeftRadius:20,
-borderTopRightRadius:20,
+borderTopLeftRadius:25,
+borderTopRightRadius:25,
+elevation:12
+},
 
-shadowColor:"#000",
-shadowOpacity:0.08,
-shadowOffset:{width:0,height:-3},
-shadowRadius:6,
-elevation:10
+couponBox:{
+flexDirection:"row",
+alignItems:"center",
+backgroundColor:"#f0fdf4",
+borderRadius:12,
+paddingHorizontal:10,
+paddingVertical:8,
+marginBottom:10
+},
+
+couponInput:{
+flex:1,
+marginHorizontal:8,
+fontSize:14
+},
+
+couponBtn:{
+backgroundColor:"#16a34a",
+paddingHorizontal:12,
+paddingVertical:6,
+borderRadius:8
+},
+
+couponBtnText:{
+color:"#fff",
+fontWeight:"bold"
 },
 
 summary:{
@@ -264,7 +343,7 @@ fontWeight:"bold"
 },
 
 total:{
-fontSize:22,
+fontSize:24,
 fontWeight:"bold",
 color:"#16a34a"
 },
@@ -272,10 +351,11 @@ color:"#16a34a"
 checkoutBtn:{
 backgroundColor:"#16a34a",
 padding:16,
-borderRadius:12,
+borderRadius:14,
 flexDirection:"row",
 alignItems:"center",
-justifyContent:"center"
+justifyContent:"center",
+elevation:6
 },
 
 checkoutText:{

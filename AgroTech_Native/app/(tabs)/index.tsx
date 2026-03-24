@@ -10,13 +10,13 @@ import {
   TouchableOpacity,
   Animated,
   Easing,
-  ScrollView,
+  RefreshControl,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useCart } from "../../context/CartContext";
 
-const API_URL = "http://192.168.1.10:8000/api";
+const API_URL = "http://10.250.242.123:8000/api";
 
 export type ProductType = {
   id_productos: number;
@@ -45,12 +45,11 @@ export default function Marketplace() {
   const [products, setProducts] = useState<ProductType[]>([]);
   const [categories, setCategories] = useState<string[]>(["Todos"]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Todos");
   const [favorites, setFavorites] = useState<number[]>([]);
-  const scrollY = useRef(new Animated.Value(0)).current;
 
-  // Animación para OFERTA
   const offerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -72,28 +71,34 @@ export default function Marketplace() {
     ).start();
   }, []);
 
+  const fetchProductsAndCategories = async () => {
+    try {
+      const resProducts = await fetch(`${API_URL}/productos`);
+      const jsonProducts = await resProducts.json();
+      const dataProducts = jsonProducts.data ?? jsonProducts;
+      setProducts(dataProducts);
+
+      const resCategories = await fetch(`${API_URL}/categorias`);
+      const jsonCategories = await resCategories.json();
+      const dataCategories = jsonCategories.data ?? jsonCategories;
+      const categoryNames = ["Todos", ...dataCategories.map((c: any) => c.nombre)];
+      setCategories(categoryNames);
+    } catch (error) {
+      console.log("ERROR API:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProductsAndCategories = async () => {
-      try {
-        const resProducts = await fetch(`${API_URL}/productos`);
-        const jsonProducts = await resProducts.json();
-        const dataProducts = jsonProducts.data ?? jsonProducts;
-        setProducts(dataProducts);
-
-        const resCategories = await fetch(`${API_URL}/categorias`);
-        const jsonCategories = await resCategories.json();
-        const dataCategories = jsonCategories.data ?? jsonCategories;
-        const categoryNames = ["Todos", ...dataCategories.map((c: any) => c.nombre)];
-        setCategories(categoryNames);
-      } catch (error) {
-        console.log("ERROR API:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProductsAndCategories();
   }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchProductsAndCategories();
+  };
 
   const filtered = products.filter(
     (p) =>
@@ -124,24 +129,14 @@ export default function Marketplace() {
   const renderStars = (rating: number) => {
     return (
       <View style={{ flexDirection: "row", marginTop: 2 }}>
-        {Array.from({ length: 5 }, (_, i) => {
-          const scale = new Animated.Value(0);
-          Animated.timing(scale, {
-            toValue: 1,
-            duration: 400,
-            useNativeDriver: true,
-            delay: i * 150,
-          }).start();
-          return (
-            <Animated.View key={i} style={{ transform: [{ scale }] }}>
-              <Ionicons
-                name={i < Math.round(rating) ? "star" : "star-outline"}
-                size={14}
-                color="#f59e0b"
-              />
-            </Animated.View>
-          );
-        })}
+        {Array.from({ length: 5 }, (_, i) => (
+          <Ionicons
+            key={i}
+            name={i < Math.round(rating) ? "star" : "star-outline"}
+            size={14}
+            color="#f59e0b"
+          />
+        ))}
       </View>
     );
   };
@@ -161,14 +156,10 @@ export default function Marketplace() {
     Servicios: "⚙️",
   };
 
-  const offerBg = offerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["#f87171", "#fbbf24"], // rojo → amarillo glow
-  });
-
   return (
     <View style={styles.container}>
-      {/* Header */}
+      
+      {/* HEADER */}
       <LinearGradient colors={["#0f172a", "#14532d"]} style={styles.header}>
         <View style={styles.logoRow}>
           <Image
@@ -179,15 +170,10 @@ export default function Marketplace() {
         </View>
       </LinearGradient>
 
-      {/* Buscador */}
+      {/* BUSCADOR */}
       <View style={styles.searchBox}>
         <View style={styles.searchWrapper}>
-          <Ionicons
-            name="search"
-            size={18}
-            color="#16a34a"
-            style={{ marginRight: 10 }}
-          />
+          <Ionicons name="search" size={18} color="#16a34a" style={{ marginRight: 10 }} />
           <TextInput
             placeholder="Buscar productos..."
             placeholderTextColor="#64748b"
@@ -198,7 +184,7 @@ export default function Marketplace() {
         </View>
       </View>
 
-      {/* Categorías */}
+      {/* CATEGORÍAS */}
       <View style={styles.categoriesBar}>
         <FlatList
           horizontal
@@ -229,149 +215,246 @@ export default function Marketplace() {
         />
       </View>
 
-      {/* Productos */}
-      <Animated.FlatList
+      {/* PRODUCTOS */}
+      <FlatList
         data={filtered}
         numColumns={2}
         keyExtractor={(item) => item.id_productos.toString()}
         contentContainerStyle={{ paddingBottom: 120 }}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.cardWrapper}
-            onPress={() =>
-              router.push({
-                pathname: "/producto/[id]",
-                params: {
-                  id: item.id_productos,
-                  producto: JSON.stringify(item),
-                },
-              })
-            }
-          >
-            <View style={styles.card}>
-              {/* Oferta animada */}
-              {Number(item.precio) < 50 && (
-                <Animated.View style={[styles.offerTag, { backgroundColor: offerBg }]}>
-                  <Text style={styles.offerText}>OFERTA</Text>
-                </Animated.View>
-              )}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#16a34a"]} />
+        }
+        renderItem={({ item }) => {
+          const rating = item.rating ?? (Math.random() * 2 + 3);
 
-              {/* Imagen */}
-              <Image
-                source={{ uri: item.imagen_url }}
-                style={styles.productImg}
-                resizeMode="cover"
-              />
+          return (
+            <TouchableOpacity
+              activeOpacity={0.9}
+              style={styles.cardWrapper}
+              onPress={() =>
+                router.push({
+                  pathname: "/producto/[id]",
+                  params: {
+                    id: item.id_productos,
+                    producto: JSON.stringify(item),
+                  },
+                })
+              }
+            >
+              <View style={styles.card}>
 
-              {/* Favorito */}
-              <TouchableOpacity
-                style={styles.favorite}
-                onPress={() => toggleFavorite(item.id_productos)}
-              >
-                <Ionicons
-                  name={favorites.includes(item.id_productos) ? "heart" : "heart-outline"}
-                  size={22}
-                  color={favorites.includes(item.id_productos) ? "#ef4444" : "#333"}
-                />
-              </TouchableOpacity>
+                <View style={styles.imageContainer}>
+                  <Image source={{ uri: item.imagen_url }} style={styles.productImg} />
 
-              {/* Nombre y precio */}
-              <View style={styles.cardContent}>
-                <Text style={styles.productName}>{item.nombre}</Text>
+                  <LinearGradient
+                    colors={["transparent", "rgba(0,0,0,0.6)"]}
+                    style={styles.imageOverlay}
+                  />
 
-                {/* Estrellitas */}
-                {item.rating && renderStars(item.rating)}
+                  <TouchableOpacity
+                    style={styles.favorite}
+                    onPress={() => toggleFavorite(item.id_productos)}
+                  >
+                    <Ionicons
+                      name={favorites.includes(item.id_productos) ? "heart" : "heart-outline"}
+                      size={20}
+                      color={favorites.includes(item.id_productos) ? "#ef4444" : "#fff"}
+                    />
+                  </TouchableOpacity>
 
-                {/* Precio anterior y actual */}
-                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
-                  {item.precio_anterior && (
-                    <Text style={styles.oldPrice}>
-                      ${Number(item.precio_anterior).toFixed(2)}
-                    </Text>
+                  {Number(item.precio) < 50 && (
+                    <View style={styles.offerTag}>
+                      <Text style={styles.offerText}>🔥 Oferta</Text>
+                    </View>
                   )}
-                  <Text style={styles.price}>
-                    ${Number(item.precio).toFixed(2)} {item.moneda}
-                  </Text>
                 </View>
-              </View>
 
-              {/* Botón agregar */}
-              <TouchableOpacity
-                style={styles.btn}
-                onPress={() => handleAddToCart(item)}
-              >
-                <Ionicons name="cart-outline" size={18} color="white" />
-                <Text style={styles.btnText}> Agregar</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        )}
+                <View style={styles.cardContent}>
+                  <Text numberOfLines={4} style={styles.productName}>
+                    {item.nombre}
+                  </Text>
+
+                  <View style={styles.ratingRow}>
+                    {renderStars(rating)}
+                    <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
+                  </View>
+
+                  <View style={styles.locationRow}>
+                    <Ionicons name="location-outline" size={12} color="#94a3b8" />
+                    <Text style={styles.locationText}>Chihuahua, MX</Text>
+                  </View>
+
+                  <View style={styles.priceRow}>
+                    {item.precio_anterior && (
+                      <Text style={styles.oldPrice}>
+                        ${Number(item.precio_anterior).toFixed(2)}
+                      </Text>
+                    )}
+                    <Text style={styles.price}>
+                      ${Number(item.precio).toFixed(2)}
+                    </Text>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.cartBtn}
+                  onPress={() => handleAddToCart(item)}
+                >
+                  <Ionicons name="add" size={22} color="white" />
+                </TouchableOpacity>
+
+              </View>
+            </TouchableOpacity>
+          );
+        }}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f3f4f6" },
+  container: { flex: 1, backgroundColor: "#f1f5f9" },
   loading: { flex: 1, justifyContent: "center", alignItems: "center" },
-  header: { flexDirection: "row", alignItems: "center", paddingTop: 55, paddingHorizontal: 20, paddingBottom: 15 },
+
+  header: {
+    paddingTop: 55,
+    paddingHorizontal: 20,
+    paddingBottom: 15,
+  },
+
   logoRow: { flexDirection: "row", alignItems: "center" },
   logo: { width: 35, height: 35, marginRight: 10 },
-  logoText: { color: "white", fontSize: 18, fontWeight: "bold" },
+  logoText: { color: "white", fontSize: 18, fontWeight: "bold"  },
+
   searchBox: { padding: 15 },
-  searchWrapper: { flexDirection: "row", alignItems: "center", backgroundColor: "white", paddingHorizontal: 15, paddingVertical: 10, borderRadius: 15, elevation: 4 },
+  searchWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 15,
+    elevation: 4,
+  },
   search: { flex: 1, fontSize: 16, color: "#1e293b" },
-  categoriesBar: { backgroundColor: "#f3f4f6", paddingVertical: 10, paddingLeft: 10 },
-  categoryPill: { backgroundColor: "white", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginRight: 10 },
+
+  categoriesBar: { paddingVertical: 10, paddingLeft: 10 },
+  categoryPill: {
+    backgroundColor: "white",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 10,
+  },
   categoryActive: { backgroundColor: "#16a34a" },
   categoryText: { fontWeight: "600", color: "#1e293b" },
   categoryTextActive: { color: "white" },
-  cardWrapper: { flex: 1, padding: 5 },
+
+  cardWrapper: { flex: 1, padding: 8 },
+
   card: {
     backgroundColor: "#fff",
-    borderRadius: 14,
+    borderRadius: 18,
     overflow: "hidden",
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    position: "relative",
-    // altura automática según contenido
+    elevation: 8,
   },
+
+  imageContainer: { position: "relative" },
+  productImg: { width: "100%", height: 150 },
+
+  imageOverlay: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    height: 60,
+  },
+
+  favorite: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    padding: 6,
+    borderRadius: 50,
+  },
+
   offerTag: {
     position: "absolute",
     top: 10,
     left: 10,
+    backgroundColor: "#ef4444",
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
-    zIndex: 10,
+    borderRadius: 8,
   },
-  offerText: { color: "#fff", fontWeight: "bold", fontSize: 10 },
-  productImg: { width: "100%", height: 140, borderRadius: 14 },
-  cardContent: { padding: 10 },
-  productName: {
+
+  offerText: {
+    color: "#fff",
+    fontSize: 10,
     fontWeight: "bold",
-    fontSize: 14,
-    color: "#111",
-    marginBottom: 2,
-    flexWrap: "wrap",
-    lineHeight: 18,
   },
-  price: { fontSize: 16, color: "#16a34a", fontWeight: "bold", marginLeft: 6 },
-  oldPrice: { fontSize: 14, color: "#64748b", textDecorationLine: "line-through" },
-  btn: {
-    backgroundColor: "#16a34a",
-    marginHorizontal: 10,
-    marginBottom: 10,
-    paddingVertical: 10,
-    borderRadius: 10,
+
+  cardContent: { padding: 10 },
+
+  productName: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#0f172a",
+  },
+
+  ratingRow: {
     flexDirection: "row",
+    alignItems: "center",
+    marginTop: 3,
+  },
+
+  ratingText: {
+    fontSize: 12,
+    marginLeft: 5,
+    color: "#475569",
+  },
+
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
+  },
+
+  locationText: {
+    fontSize: 11,
+    color: "#94a3b8",
+    marginLeft: 4,
+  },
+
+  priceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 5,
+  },
+
+  price: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#16a34a",
+  },
+
+  oldPrice: {
+    fontSize: 13,
+    color: "#94a3b8",
+    textDecorationLine: "line-through",
+    marginRight: 6,
+  },
+
+  cartBtn: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    backgroundColor: "#16a34a",
+    width: 38,
+    height: 38,
+    borderRadius: 50,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 3,
+    elevation: 5,
   },
-  btnText: { color: "#fff", fontWeight: "600", marginLeft: 6 },
-  favorite: { position: "absolute", top: 10, right: 10, zIndex: 10 },
 });
