@@ -75,7 +75,7 @@ return(
 <ul className="menu">
 
 <li className="active">
-<Link to="/admin">📊 {!collapsed && "Dashboard"}</Link>
+<Link to="/dashboard">📊 {!collapsed && "Dashboard"}</Link>
 </li>
 
 <li>

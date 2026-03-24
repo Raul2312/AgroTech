@@ -1,575 +1,255 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap");
-
-.trazabilidad-page{
+.dashboard{
+padding:120px 50px 40px;
 background:#f4f7fa;
-color:#1e293b;
-font-family:'Poppins',sans-serif;
+min-height:100vh;
 }
 
-img{
-max-width:100%;
-height:auto;
+/* ================= HEADER TEXT ================= */
+.top h2{
+font-size:28px;
+font-weight:700;
+color:#0f172a;
+}
+
+.top p{
+color:#64748b;
+margin-top:5px;
+}
+
+/* ================= ALERT ================= */
+.alert{
+background:linear-gradient(135deg,#fef9c3,#fde68a);
+padding:16px 20px;
+border-radius:14px;
+margin:25px 0;
+font-weight:500;
+box-shadow:0 10px 25px rgba(0,0,0,0.05);
+}
+
+/* ================= METRICS ================= */
+.metrics{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:20px;
+margin-bottom:30px;
+}
+
+.metric{
+background:white;
+padding:25px;
+border-radius:18px;
+box-shadow:0 15px 35px rgba(0,0,0,0.06);
+text-align:center;
+transition:0.3s;
+}
+
+.metric:hover{
+transform:translateY(-6px);
+box-shadow:0 20px 45px rgba(0,0,0,0.12);
+}
+
+.metric{
+font-size:26px;
+font-weight:700;
+color:#14532d;
+}
+
+.metric span{
 display:block;
+margin-top:6px;
+font-size:14px;
+color:#64748b;
 }
 
-/* HEADER */
+/* ================= GRID ================= */
+.grid{
+display:grid;
+grid-template-columns:2fr 1fr;
+gap:25px;
+margin-bottom:30px;
+}
 
-.trazabilidad-page header{
-position:fixed;
-width:100%;
-top:0;
+/* ================= MAP ================= */
+.map{
+background:white;
+padding:20px;
+border-radius:20px;
+box-shadow:0 20px 40px rgba(0,0,0,0.07);
+}
+
+.map-header{
 display:flex;
 justify-content:space-between;
 align-items:center;
-padding:15px 60px;
-background:linear-gradient(135deg,#0f172a,#14532d);
-z-index:1000;
-}
-
-.trazabilidad-page .logo{
-display:flex;
-align-items:center;
-gap:10px;
-}
-
-.trazabilidad-page .logo img{
-width:65px;
-}
-
-.trazabilidad-page .logo h1{
-color:white;
-}
-
-.trazabilidad-page nav a{
-color:white;
-text-decoration:none;
-margin-left:30px;
-transition:0.3s;
-}
-
-.trazabilidad-page nav a:hover{
-color:#22c55e;
-}
-
-/* HERO */
-
-.trazabilidad-page .hero-trazabilidad{
-height:70vh;
-background:url("../assets/img/ganado1.jpg") center/cover no-repeat;
-display:flex;
-justify-content:center;
-align-items:center;
-text-align:center;
-color:white;
-position:relative;
-margin-top:80px;
-}
-
-.trazabilidad-page .overlay{
-position:absolute;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.5);
-}
-
-.trazabilidad-page .hero-content{
-position:relative;
-z-index:2;
-max-width:700px;
-}
-
-.trazabilidad-page .hero-content h2{
-font-size:3rem;
-margin-bottom:20px;
-}
-
-
-/* INTRO */
-
-.trazabilidad-page .intro{
-padding:100px 80px;
-text-align:center;
-max-width:900px;
-margin:auto;
-}
-
-/* INFO */
-
-.trazabilidad-page .info-section{
-display:flex;
-align-items:center;
-gap:60px;
-padding:100px 80px;
-}
-
-.trazabilidad-page .info-img img{
-width:100%;
-border-radius:20px;
-box-shadow:0 10px 30px rgba(0,0,0,0.2);
-}
-
-/* PASOS */
-
-.trazabilidad-page .funciona{
-padding:100px 80px;
-background:#f1f5f9;
-text-align:center;
-}
-
-.trazabilidad-page .pasos{
-display:flex;
-justify-content:center;
-gap:40px;
-flex-wrap:wrap;
-margin-top:40px;
-}
-
-.trazabilidad-page .paso{
-background:white;
-padding:30px;
-border-radius:15px;
-box-shadow:0 10px 25px rgba(0,0,0,0.1);
-width:250px;
-transition:0.3s;
-}
-
-.trazabilidad-page .paso:hover{
-transform:translateY(-8px);
-}
-
-.trazabilidad-page .paso i{
-font-size:35px;
-color:#22c55e;
-margin-bottom:10px;
-}
-
-/* BENEFICIOS */
-
-.trazabilidad-page .beneficios{
-padding:100px 80px;
-text-align:center;
-}
-
-.trazabilidad-page .beneficios-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-gap:30px;
-margin-top:40px;
-}
-
-.trazabilidad-page .beneficio{
-background:white;
-padding:30px;
-border-radius:15px;
-box-shadow:0 10px 25px rgba(0,0,0,0.1);
-transition:0.3s;
-}
-
-.trazabilidad-page .beneficio:hover{
-transform:translateY(-8px);
-}
-
-/* TIMELINE */
-
-.trazabilidad-page .timeline-section{
-padding:100px 80px;
-background:#f1f5f9;
-}
-
-.trazabilidad-page .timeline{
-position:relative;
-margin-top:50px;
-padding-left:40px;
-border-left:3px solid #22c55e;
-}
-
-.trazabilidad-page .timeline-item{
-margin-bottom:40px;
-position:relative;
-}
-
-.trazabilidad-page .timeline-dot{
-position:absolute;
-left:-11px;
-top:5px;
-width:20px;
-height:20px;
-background:#22c55e;
-border-radius:50%;
-}
-
-.trazabilidad-page .timeline-content{
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 10px 25px rgba(0,0,0,0.1);
-}
-
-/* GALERIA */
-
-.trazabilidad-page .gallery{
-padding:100px 80px;
-text-align:center;
-}
-
-.trazabilidad-page .gallery-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-gap:30px;
-margin-top:40px;
-}
-
-.trazabilidad-page .gallery-grid img{
-width:100%;
-border-radius:20px;
-transition:0.3s;
-}
-
-.trazabilidad-page .gallery-grid img:hover{
-transform:scale(1.05);
-}
-
-/* CTA */
-
-.trazabilidad-page .cta{
-padding:120px 80px;
-text-align:center;
-background:linear-gradient(135deg,#14532d,#22c55e);
-color:white;
-}
-
-.trazabilidad-page .btn{
-margin-top:30px;
-display:inline-block;
-padding:15px 40px;
-background:white;
-color:#14532d;
-border-radius:50px;
-text-decoration:none;
-font-weight:600;
-}
-
-/* FOOTER */
-
-.trazabilidad-page footer{
-background:#0f172a;
-color:white;
-text-align:center;
-padding:60px 20px;
-}
-/* SUBTITULOS */
-
-.trazabilidad-page .funciona-sub,
-.trazabilidad-page .beneficios-sub{
-max-width:700px;
-margin:auto;
-margin-top:15px;
-color:#64748b;
-}
-
-/* PASOS MEJORADOS */
-
-.trazabilidad-page .pasos{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-gap:40px;
-margin-top:50px;
-}
-
-.trazabilidad-page .paso{
-background:white;
-padding:40px 30px;
-border-radius:20px;
-box-shadow:0 15px 35px rgba(0,0,0,0.08);
-text-align:center;
-transition:0.35s;
-position:relative;
-overflow:hidden;
-}
-
-.trazabilidad-page .paso:hover{
-transform:translateY(-10px);
-box-shadow:0 20px 45px rgba(0,0,0,0.15);
-}
-
-.trazabilidad-page .paso-icon{
-width:70px;
-height:70px;
-background:linear-gradient(135deg,#22c55e,#16a34a);
-border-radius:50%;
-display:flex;
-align-items:center;
-justify-content:center;
-margin:auto;
-margin-bottom:20px;
-}
-
-.trazabilidad-page .paso-icon i{
-color:white;
-font-size:28px;
-}
-
-/* BENEFICIOS PRO */
-
-.trazabilidad-page .beneficios-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-gap:40px;
-margin-top:50px;
-}
-
-.trazabilidad-page .beneficio{
-background:white;
-padding:35px;
-border-radius:20px;
-box-shadow:0 15px 35px rgba(0,0,0,0.08);
-text-align:center;
-transition:0.35s;
-}
-
-.trazabilidad-page .beneficio:hover{
-transform:translateY(-10px);
-box-shadow:0 20px 45px rgba(0,0,0,0.15);
-}
-
-.trazabilidad-page .beneficio i{
-font-size:35px;
-color:#22c55e;
 margin-bottom:15px;
 }
 
-.trazabilidad-page .beneficio h3{
-margin-bottom:10px;
+.map-header h3{
+font-size:18px;
+font-weight:600;
 }
 
-/* TITULOS */
-
-.section-title{
-font-size:38px;
-font-weight:700;
-margin-bottom:10px;
+.map-header button{
+background:#ecfdf5;
+border:none;
+padding:8px 14px;
+border-radius:10px;
+color:#14532d;
+cursor:pointer;
+font-weight:500;
 }
 
-.section-sub{
-max-width:700px;
-margin:auto;
+.map-box{
+height:260px;
+border-radius:15px;
+background:linear-gradient(135deg,#d1fae5,#bbf7d0);
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:600;
+color:#14532d;
+}
+
+/* ================= ALERTS ================= */
+.alerts{
+background:white;
+padding:20px;
+border-radius:20px;
+box-shadow:0 20px 40px rgba(0,0,0,0.07);
+}
+
+.alerts h3{
+margin-bottom:15px;
+}
+
+.alert-item{
+display:flex;
+align-items:center;
+gap:12px;
+padding:10px;
+border-radius:12px;
+transition:0.3s;
+}
+
+.alert-item:hover{
+background:#f1f5f9;
+}
+
+.alert-item img{
+width:45px;
+height:45px;
+border-radius:50%;
+object-fit:cover;
+}
+
+.alert-item strong{
+color:#0f172a;
+}
+
+.alert-item p{
+font-size:13px;
 color:#64748b;
-margin-bottom:60px;
 }
 
-/* TIMELINE */
-
-.timeline{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-gap:40px;
-}
-
-.timeline-card{
+/* ================= GANADO ================= */
+.ganado{
 background:white;
-padding:40px;
+padding:20px;
 border-radius:20px;
-box-shadow:0 20px 40px rgba(0,0,0,0.08);
-position:relative;
-transition:0.4s;
+box-shadow:0 20px 40px rgba(0,0,0,0.07);
 }
 
-.timeline-card:hover{
-transform:translateY(-12px);
-box-shadow:0 30px 60px rgba(0,0,0,0.15);
-}
-
-.step-number{
-position:absolute;
-top:20px;
-right:25px;
-font-size:40px;
-font-weight:700;
-color:#e5e7eb;
-}
-
-.timeline-icon{
-width:65px;
-height:65px;
-border-radius:16px;
-background:linear-gradient(135deg,#22c55e,#16a34a);
-display:flex;
-align-items:center;
-justify-content:center;
-margin-bottom:20px;
-}
-
-.timeline-icon i{
-color:white;
-font-size:26px;
-}
-
-/* BENEFICIOS */
-
-.beneficios-grid{
+.cards{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-gap:40px;
+grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+gap:20px;
 }
 
-.beneficio-card{
+.card{
 background:white;
-padding:35px;
-border-radius:20px;
-box-shadow:0 20px 40px rgba(0,0,0,0.08);
-transition:0.35s;
+border-radius:18px;
+overflow:hidden;
+box-shadow:0 15px 35px rgba(0,0,0,0.06);
+transition:0.3s;
 }
 
-.beneficio-card:hover{
-transform:translateY(-10px);
-box-shadow:0 25px 55px rgba(0,0,0,0.15);
+.card:hover{
+transform:translateY(-8px);
+box-shadow:0 25px 50px rgba(0,0,0,0.15);
 }
 
-.beneficio-icon{
-width:60px;
-height:60px;
-border-radius:14px;
-background:linear-gradient(135deg,#22c55e,#16a34a);
-display:flex;
-align-items:center;
-justify-content:center;
-margin-bottom:18px;
-}
-
-.beneficio-icon i{
-color:white;
-font-size:24px;
-}
-
-/* ================= RESPONSIVE ================= */
-
-/* TABLETS */
-
-@media (max-width:1024px){
-
-.trazabilidad-page .intro{
-padding:80px 40px;
-}
-
-.trazabilidad-page .info-section{
-padding:80px 40px;
-gap:40px;
-}
-
-.trazabilidad-page .funciona{
-padding:80px 40px;
-}
-
-.trazabilidad-page .beneficios{
-padding:80px 40px;
-}
-
-.trazabilidad-page .timeline-section{
-padding:80px 40px;
-}
-
-.trazabilidad-page .gallery{
-padding:80px 40px;
-}
-
-.trazabilidad-page .cta{
-padding:100px 40px;
-}
-
-}
-
-/* CELULAR */
-
-@media (max-width:768px){
-
-/* HERO */
-
-.trazabilidad-page .hero-trazabilidad{
-height:auto;
-padding:140px 20px 80px 20px;
-}
-
-.trazabilidad-page .hero-content h2{
-font-size:2rem;
-}
-
-/* INTRO */
-
-.trazabilidad-page .intro{
-padding:60px 20px;
-}
-
-/* INFO (TEXTO ARRIBA FOTO ABAJO) */
-
-.trazabilidad-page .info-section{
-flex-direction:column;
-padding:60px 20px;
-gap:30px;
-text-align:center;
-}
-
-.trazabilidad-page .info-text{
-order:1;
-}
-
-.trazabilidad-page .info-img{
-order:2;
-}
-
-.trazabilidad-page .info-img img{
+.card img{
+height:150px;
 width:100%;
+object-fit:cover;
 }
 
-/* FUNCIONA */
-
-.trazabilidad-page .funciona{
-padding:60px 20px;
+.card h4{
+margin:10px;
 }
 
-/* BENEFICIOS */
-
-.trazabilidad-page .beneficios{
-padding:60px 20px;
-}
-
-/* TIMELINE */
-
-.trazabilidad-page .timeline-section{
-padding:60px 20px;
-}
-
-/* GALERIA */
-
-.trazabilidad-page .gallery{
-padding:60px 20px;
-}
-
-.trazabilidad-page .gallery-grid{
-grid-template-columns:1fr;
-}
-
-/* CTA */
-
-.trazabilidad-page .cta{
-padding:80px 20px;
-}
-
-}
-
-/* CELULARES PEQUEÑOS */
-
-@media (max-width:480px){
-
-.section-title{
-font-size:28px;
-}
-
-.trazabilidad-page .hero-content h2{
-font-size:1.6rem;
-}
-
-.section-sub{
+.card p{
+margin:0 10px;
+color:#64748b;
 font-size:14px;
 }
 
+.card button{
+margin:12px;
+background:linear-gradient(135deg,#14532d,#22c55e);
+color:white;
+border:none;
+padding:10px;
+border-radius:12px;
+cursor:pointer;
+font-weight:500;
+}
+
+/* ================= ACTIVITY ================= */
+.activity{
+background:white;
+padding:20px;
+border-radius:20px;
+box-shadow:0 20px 40px rgba(0,0,0,0.07);
+}
+
+.activity h3{
+margin-bottom:15px;
+}
+
+.activity ul{
+list-style:none;
+padding:0;
+margin-bottom:20px;
+}
+
+.activity li{
+padding:10px;
+border-radius:10px;
+margin-bottom:8px;
+background:#f8fafc;
+font-size:14px;
+}
+
+.btn-main{
+width:100%;
+background:linear-gradient(135deg,#14532d,#22c55e);
+color:white;
+border:none;
+padding:12px;
+border-radius:14px;
+cursor:pointer;
+font-weight:600;
+transition:0.3s;
+}
+
+.btn-main:hover{
+transform:scale(1.03);
+}
+
+/* ================= RESPONSIVE ================= */
+@media(max-width:900px){
+.grid{
+grid-template-columns:1fr;
+}
 }
