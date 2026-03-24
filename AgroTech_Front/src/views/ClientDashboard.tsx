@@ -55,6 +55,10 @@ return(
 <Link to="/perfil">👤 {!collapsed && "Mi perfil"}</Link>
 </li>
 
+<li>
+<Link to="/rancho">👤 {!collapsed && "Rancho"}</Link>
+</li>
+
 <li className="logout">
 <button onClick={logout}>
 ❌ {!collapsed && "Cerrar sesión"}

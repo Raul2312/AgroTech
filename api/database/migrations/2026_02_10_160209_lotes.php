@@ -23,7 +23,7 @@ return new class extends Migration
     $table->integer('proposito');
     $table->string('descripcion', 500);
 
-    $table->foreign('id_rancho')->references('id_rancho')->on('rancho');
+    $table->foreign('id_rancho')->references('id_rancho')->on('ranchos');
 });
 
     }

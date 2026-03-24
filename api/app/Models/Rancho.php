@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Rancho extends Model
 {
-     protected $table = 'rancho';
+    protected $table = 'ranchos'; // 🔥 IMPORTANTE
+
     protected $primaryKey = 'id_rancho';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -23,6 +25,7 @@ class Rancho extends Model
         'tipo_rancho',
         'estatus'
     ];
+
 
     public function usuario()
     {

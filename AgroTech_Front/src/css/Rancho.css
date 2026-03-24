@@ -1,0 +1,130 @@
+/* LAYOUT */
+.layout{
+  display: flex;
+  min-height: 100vh;
+  background: #0f172a;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width: 240px;
+  background: #0b2239;
+  color: white;
+  padding: 20px;
+  transition: 0.3s;
+}
+
+.sidebar.collapsed{
+  width: 80px;
+}
+
+.logo-container{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 30px;
+  cursor: pointer;
+}
+
+.logo-img{
+  width: 40px;
+}
+
+.logo-text{
+  font-weight: bold;
+  font-size: 18px;
+}
+
+/* MENU */
+.menu{
+  list-style: none;
+  padding: 0;
+}
+
+.menu li{
+  margin: 15px 0;
+}
+
+.menu a{
+  text-decoration: none;
+  color: white;
+  display: block;
+  padding: 10px;
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+.menu a:hover{
+  background: #1e293b;
+}
+
+.menu .active a{
+  background: #22c55e;
+}
+
+.logout button{
+  width: 100%;
+  padding: 10px;
+  background: #dc2626;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+}
+
+/* MAIN */
+.main{
+  flex: 1;
+  padding: 40px;
+}
+
+/* PANEL */
+.panel{
+  background: linear-gradient(135deg,#0f172a,#14532d);
+  padding: 30px;
+  border-radius: 20px;
+}
+
+/* FORM */
+.form-grid{
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 20px;
+}
+
+.form-grid input,
+.form-grid select{
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #1e293b;
+  color: white;
+}
+
+/* PREVIEW */
+.preview{
+  margin-top: 20px;
+  padding: 20px;
+  background: #1e293b;
+  border-radius: 15px;
+}
+
+/* BOTÓN */
+.btn-save{
+  margin-top: 20px;
+  width: 100%;
+  padding: 15px;
+  background: #22c55e;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .form-grid{
+    grid-template-columns: 1fr;
+  }
+}

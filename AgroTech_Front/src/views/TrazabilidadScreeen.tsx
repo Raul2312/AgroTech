@@ -1,5 +1,6 @@
 import "../css/trazabilidad.css";
 import Header from "../Layouts/Header";
+import MapComponent from "./MapComponent";
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -79,7 +80,7 @@ const TrazabilidadScreen = () => {
             </div>
 
             <div className="map-box">
-              🗺️ Aquí puedes integrar Leaflet / Google Maps
+              <MapComponent />
             </div>
           </div>
 

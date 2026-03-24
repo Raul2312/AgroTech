@@ -8,10 +8,14 @@ use App\Models\Rancho;
 
 class RanchoController extends Controller
 {
-    public function index()
-    {
-        return Rancho::all();
+    public function index(Request $request)
+{
+    if ($request->has('id_usuario')) {
+        return Rancho::where('id_usuario', $request->id_usuario)->get();
     }
+
+    return Rancho::all();
+}
 
     public function store(Request $request)
     {

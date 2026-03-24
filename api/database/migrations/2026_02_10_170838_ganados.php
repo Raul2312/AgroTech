@@ -22,7 +22,7 @@ return new class extends Migration
     $table->string('estado_salud');
 
     $table->foreignId('id_rancho')
-          ->constrained('rancho', 'id_rancho')
+          ->constrained('ranchos', 'id_rancho')
           ->onDelete('cascade');
 
     $table->timestamps();

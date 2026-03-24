@@ -10,6 +10,7 @@ import ClientDashboard from './views/ClientDashboard'
 import ClientProfile from './views/ClientProfile'
 import AdminProductos from "./views/AdminProductos";
 import AdminUsuarios from './views/AdminUser'
+import ClientRancho from './views/ClientRancho'
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
           <Route path='/perfil' element={<ClientProfile />} />
           <Route path="/productos" element={<AdminProductos />} />
           <Route path="/usuarios" element={<AdminUsuarios />} />
+          <Route path="/rancho" element={<ClientRancho />} />
            
           
   
