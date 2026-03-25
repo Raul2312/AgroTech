@@ -4,6 +4,7 @@ import MapComponent from "./MapComponent";
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import ganado1 from "../assets/img/ganado1.jpg";
 import ganado2 from "../assets/img/ganado2.webp";
@@ -13,6 +14,11 @@ const TrazabilidadScreen = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("USUARIO");
 
+  const [user, setUser] = useState<any>(null);
+  const [ranchos, setRanchos] = useState<any[]>([]);
+  const [ranchoActivo, setRanchoActivo] = useState<any>(null);
+
+  // 🔥 VALIDAR SESIÓN
   useEffect(() => {
     const session =
       localStorage.getItem("agroSession") ||
@@ -22,17 +28,16 @@ const TrazabilidadScreen = () => {
       navigate("/login");
     } else {
       try {
-        const user = JSON.parse(session);
+        const userData = JSON.parse(session);
+        setUser(userData);
 
-        // 🔥 DETECCIÓN FLEXIBLE DEL NOMBRE
         const nombre =
-          user?.nombre ||
-          user?.name ||
-          user?.user?.nombre ||
-          user?.user?.name ||
+          userData?.nombre ||
+          userData?.name ||
+          userData?.user?.nombre ||
+          userData?.user?.name ||
           "USUARIO";
 
-        // 🔥 CONVERTIR A MAYÚSCULAS
         setUserName(nombre.toUpperCase());
 
       } catch (error) {
@@ -41,6 +46,38 @@ const TrazabilidadScreen = () => {
       }
     }
   }, [navigate]);
+
+  // 🔥 CARGAR RANCHOS
+  const fetchRanchos = async () => {
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_API + "rancho?id_usuario=" + user?.user?.id_usuario
+      );
+
+      setRanchos(res.data);
+
+      if (res.data.length > 0) {
+        setRanchoActivo(res.data[0]);
+      }
+
+    } catch (error) {
+      console.error("Error cargando ranchos:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchRanchos();
+    }
+  }, [user]);
+
+  // 🔥 FULLSCREEN MAPA
+  const abrirMapaCompleto = () => {
+    const element = document.getElementById("mapa-container");
+    if (element?.requestFullscreen) {
+      element.requestFullscreen();
+    }
+  };
 
   return (
     <div className="trazabilidad-page">
@@ -57,6 +94,26 @@ const TrazabilidadScreen = () => {
           </div>
         </div>
 
+        {/* 🔥 TABS DE RANCHOS */}
+        <div style={{ marginBottom: "15px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          {ranchos.map((r) => (
+            <button
+              key={r.id_rancho}
+              onClick={() => setRanchoActivo(r)}
+              style={{
+                padding: "8px 15px",
+                borderRadius: "20px",
+                border: "none",
+                cursor: "pointer",
+                background: ranchoActivo?.id_rancho === r.id_rancho ? "#22c55e" : "#e5e7eb",
+                color: ranchoActivo?.id_rancho === r.id_rancho ? "#fff" : "#000"
+              }}
+            >
+              {r.nombre}
+            </button>
+          ))}
+        </div>
+
         {/* ALERTA */}
         <div className="alert">
           ⚠️ 3 reses necesitan atención sanitaria
@@ -64,24 +121,36 @@ const TrazabilidadScreen = () => {
 
         {/* MÉTRICAS */}
         <div className="metrics">
-          <div className="metric">124<br/><span>Total de vacas</span></div>
-          <div className="metric">24<br/><span>En monitoreo</span></div>
-          <div className="metric">96%<br/><span>Salud del ganado</span></div>
-          <div className="metric">15<br/><span>Sensores activos</span></div>
+          <div className="metric">124<br /><span>Total de vacas</span></div>
+          <div className="metric">24<br /><span>En monitoreo</span></div>
+          <div className="metric">96%<br /><span>Salud del ganado</span></div>
+          <div className="metric">15<br /><span>Sensores activos</span></div>
         </div>
 
         {/* MAPA + ALERTAS */}
         <div className="grid">
 
           <div className="map">
+
             <div className="map-header">
               <h3>Localización de Ganado</h3>
-              <button>Ver Mapa Completo</button>
+
+              <button onClick={abrirMapaCompleto}>
+                Ver Mapa Completo
+              </button>
             </div>
 
-            <div className="map-box">
-              <MapComponent />
+            <div id="mapa-container" className="map-box">
+              {ranchoActivo ? (
+                <MapComponent
+                  lat={parseFloat(ranchoActivo.latitud)}
+                  lng={parseFloat(ranchoActivo.longitud)}
+                />
+              ) : (
+                <p>Cargando mapa...</p>
+              )}
             </div>
+
           </div>
 
           <div className="alerts">
@@ -112,55 +181,6 @@ const TrazabilidadScreen = () => {
             </div>
 
             <button className="btn-main">Ver Ganado</button>
-          </div>
-
-        </div>
-
-        {/* GANADO + ACTIVIDAD */}
-        <div className="grid">
-
-          <div className="ganado">
-            <div className="map-header">
-              <h3>Ganado</h3>
-              <button>Ver todo</button>
-            </div>
-
-            <div className="cards">
-
-              <div className="card">
-                <img src={ganado1} alt="vaca" />
-                <h4>Vaca 0124</h4>
-                <p>Hace 10 min</p>
-                <button>Ver Ganado</button>
-              </div>
-
-              <div className="card">
-                <img src={ganado2} alt="vaca" />
-                <h4>Vaca 0478</h4>
-                <p>Hace 10 min</p>
-                <button>Ver Ganado</button>
-              </div>
-
-              <div className="card">
-                <img src={ganado1} alt="vaca" />
-                <h4>Vaca 0856</h4>
-                <p>Hace 1 día</p>
-                <button>Ver Ganado</button>
-              </div>
-
-            </div>
-          </div>
-
-          <div className="activity">
-            <h3>Recientes</h3>
-
-            <ul>
-              <li>Vaca 0478 salió del rancho</li>
-              <li>Vaca 0124 se trasladó</li>
-              <li>Sensor activo</li>
-            </ul>
-
-            <button className="btn-main">Ver Reportes</button>
           </div>
 
         </div>

@@ -92,8 +92,12 @@ const ClientProfile = () => {
 
         <ul className="menu">
 
+            <li>
+            <Link to="/indexscreen">🏠 {!collapsed && "Inicio"}</Link>
+          </li>
+
           <li>
-            <Link to="/areacliente">🏠 {!collapsed && "Inicio"}</Link>
+            <Link to="/areacliente">🏠 {!collapsed && "Dashboard"}</Link>
           </li>
 
           <li>
@@ -113,6 +117,9 @@ const ClientProfile = () => {
           </li>
             <li>
             <Link to="/rancho">👤 {!collapsed && "Rancho"}</Link>
+            </li>
+              <li>
+            <Link to="/trazabilidad">👤 {!collapsed && "Trazabilidad"}</Link>
             </li>
 
           <li className="logout">

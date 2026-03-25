@@ -36,8 +36,16 @@ return(
 <ul className="menu">
 
 <li className="active">
-<Link to="/areacliente">🏠 {!collapsed && "Inicio"}</Link>
+
+  
+
+
+<Link to="/areacliente">🏠 {!collapsed && "Dashboard"}</Link>
 </li>
+
+<li>
+   <Link to="/indexscreen">🏠 {!collapsed && "Inicio"}</Link>
+   </li>
 
 <li>
 <Link to="/mis-pedidos">📦 {!collapsed && "Mis pedidos"}</Link>
@@ -57,6 +65,9 @@ return(
 
 <li>
 <Link to="/rancho">👤 {!collapsed && "Rancho"}</Link>
+</li>
+<li>
+<Link to="/trazabilidad">👤 {!collapsed && "Trazabilidad"}</Link>
 </li>
 
 <li className="logout">

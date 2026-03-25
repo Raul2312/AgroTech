@@ -253,9 +253,65 @@ transition:0.3s;
 transform:scale(1.03);
 }
 
+/* 🔥 ESCRITORIO */
+.hamburger {
+  display: none;
+}
+
+.sidebar {
+  display: block;
+}
+
+/* 📱 RESPONSIVE */
+@media (max-width: 768px) {
+
+  .hamburger {
+    display: block;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .sidebar.active {
+    display: block;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    background: white;
+    z-index: 1000;
+  }
+
+}
+
 /* ================= RESPONSIVE ================= */
 @media(max-width:900px){
 .grid{
 grid-template-columns:1fr;
 }
+}
+
+/* 🔥 FIX LOGO + NOMBRE (CORRECTO PARA TU HEADER) */
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.logo h1{
+  margin:0;
+}
+
+.logo img{
+  height:95px;
+  width:auto;
+  display:block;
+}
+
+/* 🔥 OPCIONAL (MEJORA HEADER) */
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
 }

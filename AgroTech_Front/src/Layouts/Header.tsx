@@ -35,6 +35,8 @@ return(
 
 <Link to="/marketplace">Marketplace</Link>
 
+<Link to="/areacliente">Panel</Link>
+
 <Link to="#contacto">Contacto</Link>
 
 <Link to="/login" className="login-btn">

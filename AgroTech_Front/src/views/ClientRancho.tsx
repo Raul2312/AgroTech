@@ -39,8 +39,8 @@
     const [form, setForm] = useState({
       nombre: "asdasd",
       ubicacion: "asdasd",
-      latitud: "111",
-      longitud: "222",
+      latitud: "343",
+      longitud: "332",
       superficie_hectarias: "200",
       telefono: "12312",
       correo: "tet@gmail.com",
@@ -141,9 +141,12 @@
           </div>
 
           <ul className="menu">
+            <li>
+   <Link to="/indexscreen">🏠 {!collapsed && "Inicio"}</Link>
+   </li>
 
             <li>
-              <Link to="/areaCliente">🏠 {!collapsed && "Inicio"}</Link>
+              <Link to="/areaCliente">🏠 {!collapsed && "Dashboard"}</Link>
             </li>
 
             <li>
@@ -164,6 +167,9 @@
 
             <li className="active">
               <Link to="/rancho">🌱 {!collapsed && "Rancho"}</Link>
+            </li>
+            <li>
+            <Link to="/trazabilidad">👤 {!collapsed && "Trazabilidad"}</Link>
             </li>
 
             <li className="logout">
