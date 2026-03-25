@@ -36,7 +36,7 @@ return(
 <ul className="menu">
 
 <li className="active">
-<Link to="/cliente">🏠 {!collapsed && "Inicio"}</Link>
+<Link to="/areacliente">🏠 {!collapsed && "Inicio"}</Link>
 </li>
 
 <li>

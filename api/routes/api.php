@@ -32,7 +32,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
    
     Route::apiResource('ganados', GanadoController::class);
-    Route::put('/usuarios/{id}', [UserController::class, 'update']);
+    
 
     
     Route::apiResource('empresas', EmpresaController::class);
