@@ -1,5 +1,5 @@
 // app/(tabs)/perfil.tsx
-import React from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,60 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter, useFocusEffect } from "expo-router";
 
 export default function Perfil() {
+  const router = useRouter();
+
+  const [nombre, setNombre] = useState("Cargando...");
+  const [correo, setCorreo] = useState("");
+
+  // 🔥 CARGAR USUARIO SIEMPRE QUE ENTRES A LA PANTALLA
+  useFocusEffect(
+    useCallback(() => {
+      const loadUser = async () => {
+        try {
+          const session = await AsyncStorage.getItem("agroSession");
+
+          if (session) {
+            const parsed = JSON.parse(session);
+            const user = parsed.user;
+
+            console.log("USER:", user); // 👈 DEBUG
+
+            // 🔥 AGARRA CUALQUIER FORMATO
+            setNombre(
+              user?.name ||
+              user?.nombre ||
+              user?.usuario ||
+              "Usuario"
+            );
+
+            setCorreo(user?.email || "");
+          } else {
+            setNombre("No logueado");
+            setCorreo("");
+          }
+        } catch (error) {
+          console.log("Error cargando usuario", error);
+        }
+      };
+
+      loadUser();
+    }, [])
+  );
+
+  // 🔥 LOGOUT
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("agroSession");
+      router.replace("/(tabs)/login");
+    } catch (error) {
+      console.log("Error cerrando sesión", error);
+    }
+  };
+
   const menuItems: {
     title: string;
     icon: keyof typeof Ionicons.glyphMap;
@@ -26,19 +78,15 @@ export default function Perfil() {
   return (
     <View style={styles.container}>
       
-      {/* 🌈 HEADER */}
+      {/* HEADER */}
       <LinearGradient colors={["#0f172a", "#14532d"]} style={styles.header}>
         <Text style={styles.headerTitle}>Mi Perfil</Text>
         <Ionicons name="person-circle-outline" size={28} color="#fff" />
       </LinearGradient>
 
-      {/* 📜 SCROLL */}
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.scroll}>
         
-        {/* 👤 AVATAR */}
+        {/* AVATAR */}
         <View style={styles.avatarContainer}>
           <View style={styles.avatarWrapper}>
             <Image
@@ -46,17 +94,17 @@ export default function Perfil() {
               style={styles.avatar}
             />
 
-            {/* Edit icon */}
             <TouchableOpacity style={styles.editBtn}>
               <Ionicons name="camera" size={16} color="#fff" />
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.name}>Luis Valverde</Text>
-          <Text style={styles.email}>luis@example.com</Text>
+          {/* 🔥 DATOS REALES */}
+          <Text style={styles.name}>{nombre}</Text>
+          <Text style={styles.email}>{correo}</Text>
         </View>
 
-        {/* 🧊 CARD */}
+        {/* CARD */}
         <View style={styles.card}>
           {menuItems.map((item, index) => (
             <TouchableOpacity
@@ -66,6 +114,9 @@ export default function Perfil() {
                 index === menuItems.length - 1 && { borderBottomWidth: 0 },
               ]}
               activeOpacity={0.7}
+              onPress={
+                item.title === "Cerrar sesión" ? handleLogout : undefined
+              }
             >
               <View style={styles.left}>
                 <View style={styles.iconBox}>
@@ -91,7 +142,6 @@ export default function Perfil() {
           ))}
         </View>
 
-        {/* 📦 INFO */}
         <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>AgroTech Marketplace 🌱</Text>
           <Text style={styles.infoText}>
@@ -105,13 +155,8 @@ export default function Perfil() {
 }
 
 const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#f8fafc" },
 
-  container: {
-    flex: 1,
-    backgroundColor: "#f8fafc",
-  },
-
-  /* 🔝 HEADER */
   header: {
     paddingTop: 55,
     paddingBottom: 25,
@@ -127,13 +172,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
-  /* 📜 SCROLL */
   scroll: {
     paddingBottom: 40,
     paddingTop: 10,
   },
 
-  /* 👤 AVATAR */
   avatarContainer: {
     alignItems: "center",
     marginBottom: 20,
@@ -174,7 +217,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  /* 🧊 CARD */
   card: {
     backgroundColor: "#fff",
     marginHorizontal: 15,
@@ -211,7 +253,6 @@ const styles = StyleSheet.create({
     color: "#1e293b",
   },
 
-  /* 📦 INFO */
   infoCard: {
     backgroundColor: "#fff",
     margin: 15,
@@ -231,5 +272,4 @@ const styles = StyleSheet.create({
     color: "#475569",
     fontSize: 13,
   },
-
 });

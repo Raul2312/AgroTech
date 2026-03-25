@@ -10,9 +10,14 @@ import {
   Platform,
   Animated,
   Easing,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const API_URL = "http://192.168.1.8:8000/api"; // ⚠️ CAMBIA ESTA IP
 
 export default function Login() {
   const router = useRouter();
@@ -39,15 +44,71 @@ export default function Login() {
         useNativeDriver: true,
       }),
     ]).start();
+
+    checkSession();
   }, []);
 
-  const handleLogin = () => {
+  // 🔥 AUTO LOGIN
+  const checkSession = async () => {
+    const session = await AsyncStorage.getItem("agroSession");
+    if (session) {
+      router.replace("/(tabs)");
+    }
+  };
+
+  // 🔥 LOGIN REAL
+  const handleLogin = async () => {
+    if (!correo || !password) {
+      Alert.alert("Error", "Completa todos los campos");
+      return;
+    }
+
     setLoading(true);
 
-    setTimeout(() => {
-      console.log("Login:", correo, password);
-      setLoading(false);
-    }, 1500);
+    try {
+      const response = await axios.post(`${API_URL}/login`, {
+        email: correo,
+        password: password,
+      });
+
+      const data = response.data;
+
+      if (data.token) {
+        const sessionData = {
+          token: data.token,
+          user: data.user,
+        };
+
+        await AsyncStorage.setItem(
+          "agroSession",
+          JSON.stringify(sessionData)
+        );
+
+        Alert.alert("Bienvenido 🌱", "Inicio de sesión exitoso");
+
+        // 🔥 ADMIN CHECK (igual que web)
+        const adminEmails = [
+          "22cg0095@itsncg.edu.mx",
+          "sebastiannn231@gmail.com",
+          "raulmadridflores202@gmail.com",
+        ];
+
+        if (adminEmails.includes(data.user.email)) {
+          router.replace("/(tabs)/perfil"); // puedes cambiar si tienes dashboard
+        } else {
+          router.replace("/(tabs)");
+        }
+      }
+    } catch (error: any) {
+      console.log(error);
+
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Credenciales incorrectas"
+      );
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -93,6 +154,7 @@ export default function Login() {
                 style={styles.input}
                 value={correo}
                 onChangeText={setCorreo}
+                autoCapitalize="none"
               />
             </View>
 
@@ -119,10 +181,8 @@ export default function Login() {
               </Text>
             </TouchableOpacity>
 
-            {/* 🔥 CREAR CUENTA */}
-            <TouchableOpacity
-              onPress={() => router.push("/register")} // 👈 ruta a registro
-            >
+            {/* IR A REGISTRO */}
+            <TouchableOpacity onPress={() => router.push("/register")}>
               <Text style={styles.registerText}>
                 ¿No tienes cuenta?{" "}
                 <Text style={styles.registerLink}>Crear cuenta</Text>
@@ -141,9 +201,7 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
+  background: { flex: 1 },
 
   overlay: {
     ...StyleSheet.absoluteFillObject,

@@ -10,11 +10,20 @@ import {
   Platform,
   Animated,
   Easing,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import axios from "axios";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const API_URL = "http://192.168.1.8:8000/api";
 
 export default function Register() {
+  const router = useRouter();
+
   const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState(""); // 🔥 NUEVO
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -40,24 +49,67 @@ export default function Register() {
     ]).start();
   }, []);
 
-  const handleRegister = () => {
-    if (!nombre || !correo || !password) {
-      alert("Completa todos los campos");
+  // 🔥 REGISTER REAL
+  const handleRegister = async () => {
+    if (!nombre || !apellido || !correo || !password) {
+      Alert.alert("Error", "Completa todos los campos");
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("Las contraseñas no coinciden");
+      Alert.alert("Error", "Las contraseñas no coinciden");
       return;
     }
 
     setLoading(true);
 
-    setTimeout(() => {
-      console.log("Registro:", { nombre, correo, password });
-      setLoading(false);
-      alert("Cuenta creada correctamente");
-    }, 1500);
+    try {
+      const response = await axios.post(`${API_URL}/register`, {
+        nombre: nombre,
+        apellido: apellido,
+        email: correo, // 🔥 FIX IMPORTANTE
+        password: password,
+      });
+
+      const data = response.data;
+
+      if (data.token) {
+        const sessionData = {
+          token: data.token,
+          user: data.user,
+        };
+
+        // 🔥 GUARDAR SESIÓN
+        await AsyncStorage.setItem(
+          "agroSession",
+          JSON.stringify(sessionData)
+        );
+
+        Alert.alert("Éxito 🌱", "Cuenta creada correctamente");
+
+        // 🔥 REDIRECCIÓN
+        const adminEmails = [
+          "22cg0095@itsncg.edu.mx",
+          "sebastiannn231@gmail.com",
+          "raulmadridflores202@gmail.com",
+        ];
+
+        if (adminEmails.includes(data.user.email)) {
+          router.replace("/(tabs)/perfil");
+        } else {
+          router.replace("/(tabs)");
+        }
+      }
+    } catch (error: any) {
+      console.log(error);
+
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Error al registrar"
+      );
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -95,6 +147,7 @@ export default function Register() {
 
           {/* FORM */}
           <View style={styles.form}>
+            {/* NOMBRE */}
             <View style={styles.inputBox}>
               <Ionicons name="person-outline" size={20} color="#16a34a" />
               <TextInput
@@ -106,6 +159,19 @@ export default function Register() {
               />
             </View>
 
+            {/* APELLIDO */}
+            <View style={styles.inputBox}>
+              <Ionicons name="person-outline" size={20} color="#16a34a" />
+              <TextInput
+                placeholder="Apellido"
+                placeholderTextColor="#94a3b8"
+                style={styles.input}
+                value={apellido}
+                onChangeText={setApellido}
+              />
+            </View>
+
+            {/* EMAIL */}
             <View style={styles.inputBox}>
               <Ionicons name="mail-outline" size={20} color="#16a34a" />
               <TextInput
@@ -114,9 +180,11 @@ export default function Register() {
                 style={styles.input}
                 value={correo}
                 onChangeText={setCorreo}
+                autoCapitalize="none"
               />
             </View>
 
+            {/* PASSWORD */}
             <View style={styles.inputBox}>
               <Ionicons name="lock-closed-outline" size={20} color="#16a34a" />
               <TextInput
@@ -129,6 +197,7 @@ export default function Register() {
               />
             </View>
 
+            {/* CONFIRM PASSWORD */}
             <View style={styles.inputBox}>
               <Ionicons name="lock-closed-outline" size={20} color="#16a34a" />
               <TextInput
@@ -151,7 +220,20 @@ export default function Register() {
                 {loading ? "Creando cuenta..." : "Registrarse"}
               </Text>
             </TouchableOpacity>
+
+            {/* IR A LOGIN */}
+            <TouchableOpacity onPress={() => router.push("/(tabs)/login")}>
+              <Text style={styles.registerText}>
+                ¿Ya tienes cuenta?{" "}
+                <Text style={styles.registerLink}>Iniciar sesión</Text>
+              </Text>
+            </TouchableOpacity>
           </View>
+
+          {/* FOOTER */}
+          <Text style={styles.footerText}>
+            © 2026 AgroTech • Sistema inteligente
+          </Text>
         </Animated.View>
       </KeyboardAvoidingView>
     </ImageBackground>
@@ -159,9 +241,7 @@ export default function Register() {
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
+  background: { flex: 1 },
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -178,10 +258,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(15,23,42,0.9)",
     borderRadius: 20,
     padding: 25,
-    shadowColor: "#000",
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 8,
   },
 
   header: {
@@ -240,5 +316,23 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+
+  registerText: {
+    color: "#94a3b8",
+    textAlign: "center",
+    marginTop: 15,
+  },
+
+  registerLink: {
+    color: "#38bdf8",
+    fontWeight: "bold",
+  },
+
+  footerText: {
+    color: "#94a3b8",
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 12,
   },
 });

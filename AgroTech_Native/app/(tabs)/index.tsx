@@ -15,8 +15,9 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useCart } from "../../context/CartContext";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // 🔥 NUEVO
 
-const API_URL = "http://10.250.242.123:8000/api";
+const API_URL = "http://192.168.1.8:8000/api";
 
 export type ProductType = {
   id_productos: number;
@@ -71,6 +72,21 @@ export default function Marketplace() {
     ).start();
   }, []);
 
+  // 🔥 VALIDAR LOGIN
+  const checkAuth = async () => {
+    const session = await AsyncStorage.getItem("agroSession");
+
+    if (!session) {
+      router.push({
+        pathname: "/(tabs)/login",
+        params: { redirect: "index" },
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const fetchProductsAndCategories = async () => {
     try {
       const resProducts = await fetch(`${API_URL}/productos`);
@@ -116,7 +132,12 @@ export default function Marketplace() {
     }
   };
 
-  const handleAddToCart = (item: ProductType) => {
+  // 🔥 MODIFICADO (PROTEGIDO)
+  const handleAddToCart = async (item: ProductType) => {
+    const isLogged = await checkAuth();
+
+    if (!isLogged) return;
+
     addToCart({
       id: item.id_productos,
       name: item.nombre,

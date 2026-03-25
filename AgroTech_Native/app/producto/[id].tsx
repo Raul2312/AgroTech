@@ -146,6 +146,11 @@ export default function Producto() {
               <Text style={styles.infoText}>{prod.estado}</Text>
             </View>
 
+            <View style={styles.infoRow}>
+              <Ionicons name="location-outline" size={16} color="#64748b" />
+              <Text style={styles.infoText}>Chihuahu, Mx</Text>
+            </View>
+
             {/* MENSAJE */}
             {added && (
               <View style={styles.addedBox}>
