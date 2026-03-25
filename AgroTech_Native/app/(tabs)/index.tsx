@@ -17,7 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useCart } from "../../context/CartContext";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // 🔥 NUEVO
 
-const API_URL = "http://192.168.1.8:8000/api";
+const API_URL = "http://10.250.242.123:8000/api";
 
 export type ProductType = {
   id_productos: number;
