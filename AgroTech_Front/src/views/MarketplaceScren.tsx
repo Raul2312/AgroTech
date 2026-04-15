@@ -32,7 +32,7 @@ type Categoria = {
   descripcion: string;
   estado: string;
 };
-
+const apiUrl = import.meta.env.VITE_API;
 const getImageUrl = (img: string) => {
   if (!img) return "https://via.placeholder.com/150?text=Sin+Imagen";
 
@@ -40,7 +40,7 @@ const getImageUrl = (img: string) => {
   if (img.startsWith("http")) return img;
 
   // Si es imagen de Laravel
-  return `http://127.0.0.1:8000/products/${img}`;
+  return apiUrl.replace("api/","")+`/products/${img}`;
 };
 
 const Marketplace: React.FC = () => {
@@ -63,10 +63,11 @@ const Marketplace: React.FC = () => {
     fetchProducts();
     fetchCategories();
   }, []);
-
+  
   const fetchProducts = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/productos");
+      const res = await axios.get(apiUrl+"productos");
+      console.log(apiUrl+"/api/productos")
       setProducts(res.data);
     } catch (error) {
       console.error("Error cargando productos:", error);
@@ -75,7 +76,7 @@ const Marketplace: React.FC = () => {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/categorias");
+      const res = await axios.get(apiUrl+"categorias");
       setCategories(res.data);
     } catch (error) {
       console.error("Error cargando categorias:", error);

@@ -5,7 +5,7 @@ import "../css/login.css";
 import logo from "../assets/img/agro.png";
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/api";
+const API_URL = import.meta.env.VITE_API;
 
 const Login = () => {
 
