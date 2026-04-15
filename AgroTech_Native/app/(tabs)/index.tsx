@@ -15,9 +15,9 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useCart } from "../../context/CartContext";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // 🔥 NUEVO
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://10.250.242.123:8000/api";
+const API_URL = "http://192.168.1.16:8000/api";
 
 export type ProductType = {
   id_productos: number;
@@ -72,7 +72,7 @@ export default function Marketplace() {
     ).start();
   }, []);
 
-  // 🔥 VALIDAR LOGIN
+  // VALIDAR LOGIN
   const checkAuth = async () => {
     const session = await AsyncStorage.getItem("agroSession");
 
@@ -97,7 +97,12 @@ export default function Marketplace() {
       const resCategories = await fetch(`${API_URL}/categorias`);
       const jsonCategories = await resCategories.json();
       const dataCategories = jsonCategories.data ?? jsonCategories;
-      const categoryNames = ["Todos", ...dataCategories.map((c: any) => c.nombre)];
+
+      const categoryNames = [
+        "Todos",
+        ...dataCategories.map((c: any) => c.nombre),
+      ];
+
       setCategories(categoryNames);
     } catch (error) {
       console.log("ERROR API:", error);
@@ -124,7 +129,12 @@ export default function Marketplace() {
       (category === "Todos" || p.categoria.nombre === category)
   );
 
-  const toggleFavorite = (id: number) => {
+  // FAVORITOS PROTEGIDOS
+  const toggleFavorite = async (id: number) => {
+    const isLogged = await checkAuth();
+
+    if (!isLogged) return;
+
     if (favorites.includes(id)) {
       setFavorites(favorites.filter((f) => f !== id));
     } else {
@@ -132,7 +142,7 @@ export default function Marketplace() {
     }
   };
 
-  // 🔥 MODIFICADO (PROTEGIDO)
+  // CARRITO PROTEGIDO
   const handleAddToCart = async (item: ProductType) => {
     const isLogged = await checkAuth();
 
@@ -179,8 +189,6 @@ export default function Marketplace() {
 
   return (
     <View style={styles.container}>
-      
-      {/* HEADER */}
       <LinearGradient colors={["#0f172a", "#14532d"]} style={styles.header}>
         <View style={styles.logoRow}>
           <Image
@@ -191,10 +199,15 @@ export default function Marketplace() {
         </View>
       </LinearGradient>
 
-      {/* BUSCADOR */}
       <View style={styles.searchBox}>
         <View style={styles.searchWrapper}>
-          <Ionicons name="search" size={18} color="#16a34a" style={{ marginRight: 10 }} />
+          <Ionicons
+            name="search"
+            size={18}
+            color="#16a34a"
+            style={{ marginRight: 10 }}
+          />
+
           <TextInput
             placeholder="Buscar productos..."
             placeholderTextColor="#64748b"
@@ -205,7 +218,6 @@ export default function Marketplace() {
         </View>
       </View>
 
-      {/* CATEGORÍAS */}
       <View style={styles.categoriesBar}>
         <FlatList
           horizontal
@@ -214,6 +226,7 @@ export default function Marketplace() {
           keyExtractor={(item) => item}
           renderItem={({ item }) => {
             const icon = categoryIcons[item] ?? "🛒";
+
             return (
               <TouchableOpacity
                 onPress={() => setCategory(item)}
@@ -236,17 +249,20 @@ export default function Marketplace() {
         />
       </View>
 
-      {/* PRODUCTOS */}
       <FlatList
         data={filtered}
         numColumns={2}
         keyExtractor={(item) => item.id_productos.toString()}
         contentContainerStyle={{ paddingBottom: 120 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#16a34a"]} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#16a34a"]}
+          />
         }
         renderItem={({ item }) => {
-          const rating = item.rating ?? (Math.random() * 2 + 3);
+          const rating = item.rating ?? Math.random() * 2 + 3;
 
           return (
             <TouchableOpacity
@@ -263,9 +279,11 @@ export default function Marketplace() {
               }
             >
               <View style={styles.card}>
-
                 <View style={styles.imageContainer}>
-                  <Image source={{ uri: item.imagen_url }} style={styles.productImg} />
+                  <Image
+                    source={{ uri: item.imagen_url }}
+                    style={styles.productImg}
+                  />
 
                   <LinearGradient
                     colors={["transparent", "rgba(0,0,0,0.6)"]}
@@ -277,9 +295,17 @@ export default function Marketplace() {
                     onPress={() => toggleFavorite(item.id_productos)}
                   >
                     <Ionicons
-                      name={favorites.includes(item.id_productos) ? "heart" : "heart-outline"}
+                      name={
+                        favorites.includes(item.id_productos)
+                          ? "heart"
+                          : "heart-outline"
+                      }
                       size={20}
-                      color={favorites.includes(item.id_productos) ? "#ef4444" : "#fff"}
+                      color={
+                        favorites.includes(item.id_productos)
+                          ? "#ef4444"
+                          : "#fff"
+                      }
                     />
                   </TouchableOpacity>
 
@@ -297,11 +323,17 @@ export default function Marketplace() {
 
                   <View style={styles.ratingRow}>
                     {renderStars(rating)}
-                    <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
+                    <Text style={styles.ratingText}>
+                      {rating.toFixed(1)}
+                    </Text>
                   </View>
 
                   <View style={styles.locationRow}>
-                    <Ionicons name="location-outline" size={12} color="#94a3b8" />
+                    <Ionicons
+                      name="location-outline"
+                      size={12}
+                      color="#94a3b8"
+                    />
                     <Text style={styles.locationText}>Chihuahua, MX</Text>
                   </View>
 
@@ -311,6 +343,7 @@ export default function Marketplace() {
                         ${Number(item.precio_anterior).toFixed(2)}
                       </Text>
                     )}
+
                     <Text style={styles.price}>
                       ${Number(item.precio).toFixed(2)}
                     </Text>
@@ -323,7 +356,6 @@ export default function Marketplace() {
                 >
                   <Ionicons name="add" size={22} color="white" />
                 </TouchableOpacity>
-
               </View>
             </TouchableOpacity>
           );
@@ -334,8 +366,16 @@ export default function Marketplace() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f1f5f9" },
-  loading: { flex: 1, justifyContent: "center", alignItems: "center" },
+  container: {
+    flex: 1,
+    backgroundColor: "#f1f5f9",
+  },
+
+  loading: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
   header: {
     paddingTop: 55,
@@ -343,11 +383,27 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
   },
 
-  logoRow: { flexDirection: "row", alignItems: "center" },
-  logo: { width: 35, height: 35, marginRight: 10 },
-  logoText: { color: "white", fontSize: 18, fontWeight: "bold"  },
+  logoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
-  searchBox: { padding: 15 },
+  logo: {
+    width: 35,
+    height: 35,
+    marginRight: 10,
+  },
+
+  logoText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+
+  searchBox: {
+    padding: 15,
+  },
+
   searchWrapper: {
     flexDirection: "row",
     alignItems: "center",
@@ -357,9 +413,18 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     elevation: 4,
   },
-  search: { flex: 1, fontSize: 16, color: "#1e293b" },
 
-  categoriesBar: { paddingVertical: 10, paddingLeft: 10 },
+  search: {
+    flex: 1,
+    fontSize: 16,
+    color: "#1e293b",
+  },
+
+  categoriesBar: {
+    paddingVertical: 10,
+    paddingLeft: 10,
+  },
+
   categoryPill: {
     backgroundColor: "white",
     paddingHorizontal: 16,
@@ -367,11 +432,24 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 10,
   },
-  categoryActive: { backgroundColor: "#16a34a" },
-  categoryText: { fontWeight: "600", color: "#1e293b" },
-  categoryTextActive: { color: "white" },
 
-  cardWrapper: { flex: 1, padding: 8 },
+  categoryActive: {
+    backgroundColor: "#16a34a",
+  },
+
+  categoryText: {
+    fontWeight: "600",
+    color: "#1e293b",
+  },
+
+  categoryTextActive: {
+    color: "white",
+  },
+
+  cardWrapper: {
+    flex: 1,
+    padding: 8,
+  },
 
   card: {
     backgroundColor: "#fff",
@@ -380,8 +458,14 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
 
-  imageContainer: { position: "relative" },
-  productImg: { width: "100%", height: 150 },
+  imageContainer: {
+    position: "relative",
+  },
+
+  productImg: {
+    width: "100%",
+    height: 150,
+  },
 
   imageOverlay: {
     position: "absolute",
@@ -415,7 +499,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
-  cardContent: { padding: 10 },
+  cardContent: {
+    padding: 10,
+  },
 
   productName: {
     fontSize: 14,

@@ -12,6 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useCart } from "../../context/CartContext";
 import { useState, useRef } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type ProductoType = {
   id_productos: number;
@@ -56,9 +57,27 @@ export default function Producto() {
     ]).start();
   };
 
-  const handleAddToCart = () => {
+  // VALIDAR LOGIN
+  const checkAuth = async () => {
+    const session = await AsyncStorage.getItem("agroSession");
+
+    if (!session) {
+      router.push({
+        pathname: "/(tabs)/login",
+        params: { redirect: "producto" },
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleAddToCart = async () => {
     animateButton();
 
+    const isLogged = await checkAuth();
+
+    if (!isLogged) return;
     if (!prod) return;
 
     addToCart({
@@ -70,6 +89,25 @@ export default function Producto() {
     });
 
     setAdded(true);
+  };
+
+  const handleBuyNow = async () => {
+    animateButton();
+
+    const isLogged = await checkAuth();
+
+    if (!isLogged) return;
+    if (!prod) return;
+
+    addToCart({
+      id: prod.id_productos,
+      name: prod.nombre,
+      price: Number(prod.precio),
+      image: prod.imagen_url,
+      quantity: 1,
+    });
+
+    router.push("/carrito/pago");
   };
 
   if (!prod) {
@@ -85,7 +123,6 @@ export default function Producto() {
       <Stack.Screen options={{ headerShown: false }} />
 
       <View style={styles.container}>
-        {/* HEADER */}
         <LinearGradient colors={["#0f172a", "#14532d"]} style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={26} color="#fff" />
@@ -99,8 +136,6 @@ export default function Producto() {
         </LinearGradient>
 
         <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-          
-          {/* IMAGEN CON OVERLAY */}
           <View style={styles.imageContainer}>
             <Image source={{ uri: prod.imagen_url }} style={styles.image} />
 
@@ -109,7 +144,6 @@ export default function Producto() {
               style={styles.imageOverlay}
             />
 
-            {/* Badge categoría */}
             <View style={styles.categoryTag}>
               <Text style={styles.categoryText}>
                 {prod.categoria.nombre}
@@ -117,20 +151,15 @@ export default function Producto() {
             </View>
           </View>
 
-          {/* CARD */}
           <View style={styles.card}>
-            
             <Text style={styles.title}>{prod.nombre}</Text>
 
             <Text style={styles.price}>
               ${Number(prod.precio).toFixed(2)} {prod.moneda}
             </Text>
 
-            <Text style={styles.description}>
-              {prod.descripcion}
-            </Text>
+            <Text style={styles.description}>{prod.descripcion}</Text>
 
-            {/* INFO EXTRA */}
             <View style={styles.infoRow}>
               <Ionicons name="cube-outline" size={16} color="#64748b" />
               <Text style={styles.infoText}>Stock: {prod.stock}</Text>
@@ -142,20 +171,29 @@ export default function Producto() {
             </View>
 
             <View style={styles.infoRow}>
-              <Ionicons name="checkmark-circle-outline" size={16} color="#64748b" />
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={16}
+                color="#64748b"
+              />
               <Text style={styles.infoText}>{prod.estado}</Text>
             </View>
 
             <View style={styles.infoRow}>
               <Ionicons name="location-outline" size={16} color="#64748b" />
-              <Text style={styles.infoText}>Chihuahu, Mx</Text>
+              <Text style={styles.infoText}>Chihuahua, Mx</Text>
             </View>
 
-            {/* MENSAJE */}
             {added && (
               <View style={styles.addedBox}>
-                <Ionicons name="checkmark-circle" size={20} color="#16a34a" />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={20}
+                  color="#16a34a"
+                />
+
                 <Text style={styles.addedText}>Agregado al carrito</Text>
+
                 <TouchableOpacity onPress={() => router.push("/carrito")}>
                   <Text style={styles.goCart}>Ver</Text>
                 </TouchableOpacity>
@@ -164,10 +202,13 @@ export default function Producto() {
           </View>
         </ScrollView>
 
-        {/* BOTONES FIJOS ABAJO */}
         <View style={styles.bottomBar}>
-
-          <Animated.View style={{ transform: [{ scale: scaleAnim }], flex: 1 }}>
+          <Animated.View
+            style={{
+              transform: [{ scale: scaleAnim }],
+              flex: 1,
+            }}
+          >
             <TouchableOpacity
               style={styles.cartButton}
               onPress={handleAddToCart}
@@ -177,11 +218,13 @@ export default function Producto() {
             </TouchableOpacity>
           </Animated.View>
 
-          <TouchableOpacity style={styles.buyButton}>
+          <TouchableOpacity
+            style={styles.buyButton}
+            onPress={handleBuyNow}
+          >
             <MaterialIcons name="flash-on" size={20} color="#fff" />
             <Text style={styles.buyText}>Comprar</Text>
           </TouchableOpacity>
-
         </View>
       </View>
     </>
@@ -189,7 +232,6 @@ export default function Producto() {
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#f1f5f9",
@@ -346,5 +388,4 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginLeft: 6,
   },
-
 });

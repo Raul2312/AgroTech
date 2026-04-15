@@ -1,19 +1,36 @@
-import { Tabs, useSegments } from "expo-router";
+import { Tabs, useSegments, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { View, Text, Animated, Easing } from "react-native";
+import {
+  View,
+  Text,
+  Animated,
+  Easing,
+  TouchableOpacity,
+} from "react-native";
 import { useCart } from "../../context/CartContext";
 import { useEffect, useRef, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Layout() {
   const { cartCount } = useCart();
+  const router = useRouter();
 
-  // 👇 FIX DE TYPESCRIPT
   const segments = useSegments() as string[];
-
   const isCarrito = segments.includes("carrito");
 
   const animatedValue = useRef(new Animated.Value(1)).current;
   const [prevCount, setPrevCount] = useState(cartCount);
+
+  const [isLogged, setIsLogged] = useState(false);
+
+  useEffect(() => {
+    checkSession();
+  }, [segments]);
+
+  const checkSession = async () => {
+    const session = await AsyncStorage.getItem("agroSession");
+    setIsLogged(!!session);
+  };
 
   useEffect(() => {
     if (cartCount > prevCount) {
@@ -32,6 +49,7 @@ export default function Layout() {
         }),
       ]).start();
     }
+
     setPrevCount(cartCount);
   }, [cartCount]);
 
@@ -62,42 +80,57 @@ export default function Layout() {
       />
 
       <Tabs.Screen
-        name="carrito"
-        options={{
-          title: "Carrito",
-          tabBarIcon: ({ color, size }) => (
-            <View>
-              <Ionicons name="cart-outline" size={size} color={color} />
-              {cartCount > 0 && (
-                <Animated.View
-                  style={{
-                    position: "absolute",
-                    top: -4,
-                    right: -6,
-                    backgroundColor: "red",
-                    borderRadius: 8,
-                    width: 16,
-                    height: 16,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    transform: [{ scale: animatedValue }],
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "white",
-                      fontSize: 10,
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {cartCount}
-                  </Text>
-                </Animated.View>
-              )}
-            </View>
-          ),
-        }}
-      />
+  name="carrito"
+  listeners={{
+    tabPress: async (e) => {
+      const session = await AsyncStorage.getItem("agroSession");
+
+      if (!session) {
+        e.preventDefault();
+
+        router.replace({
+          pathname: "/(tabs)/login",
+          params: { redirect: "carrito" },
+        });
+      }
+    },
+  }}
+  options={{
+    title: "Carrito",
+    tabBarIcon: ({ color, size }) => (
+      <View>
+        <Ionicons name="cart-outline" size={size} color={color} />
+
+        {cartCount > 0 && (
+          <Animated.View
+            style={{
+              position: "absolute",
+              top: -4,
+              right: -6,
+              backgroundColor: "red",
+              borderRadius: 8,
+              width: 16,
+              height: 16,
+              alignItems: "center",
+              justifyContent: "center",
+              transform: [{ scale: animatedValue }],
+            }}
+          >
+            <Text
+              style={{
+                color: "white",
+                fontSize: 10,
+                fontWeight: "bold",
+              }}
+            >
+              {cartCount}
+            </Text>
+          </Animated.View>
+        )}
+      </View>
+    ),
+  }}
+/>
 
       <Tabs.Screen
         name="perfil"
@@ -112,6 +145,7 @@ export default function Layout() {
       <Tabs.Screen
         name="login"
         options={{
+          href: isLogged ? null : undefined,
           title: "Login",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="log-in-outline" color={color} size={size} />
