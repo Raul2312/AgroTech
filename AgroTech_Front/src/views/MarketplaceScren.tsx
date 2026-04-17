@@ -192,7 +192,6 @@ const Marketplace: React.FC = () => {
         <nav className={menuOpen ? "active" : ""}>
           <a href="/indexScreen">Inicio</a>
           <a href="/trazabilidad">Trazabilidad</a>
-          <a href="#">Ofertas</a>
           <a onClick={goPanel}>Panel</a>
           {!(localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession")) && <a href="/Login">Login</a>}
         </nav>

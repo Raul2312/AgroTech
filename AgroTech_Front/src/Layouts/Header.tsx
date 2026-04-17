@@ -37,7 +37,7 @@ return(
 
 <Link to="/areacliente">Panel</Link>
 
-<Link to="#contacto">Contacto</Link>
+<Link to="/contacto">Contacto</Link>
 
 <Link to="/login" className="login-btn">
 Ingresar

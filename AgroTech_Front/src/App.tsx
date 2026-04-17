@@ -11,6 +11,7 @@ import ClientProfile from './views/ClientProfile'
 import AdminProductos from "./views/AdminProductos";
 import AdminUsuarios from './views/AdminUser'
 import ClientRancho from './views/ClientRancho'
+import Contacto from './views/Contacto'
 
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
           <Route path="/productos" element={<AdminProductos />} />
           <Route path="/usuarios" element={<AdminUsuarios />} />
           <Route path="/rancho" element={<ClientRancho />} />
+          <Route path="/contacto" element={<Contacto />} />
            
           
   
