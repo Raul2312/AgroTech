@@ -50,9 +50,7 @@ const TrazabilidadScreen = () => {
   // 🔥 CARGAR RANCHOS
   const fetchRanchos = async () => {
     try {
-      const res = await axios.get(
-        import.meta.env.VITE_API + "rancho?id_usuario=" + user?.user?.id_usuario
-      );
+     const res = await axios.get(`${import.meta.env.VITE_API}rancho?id_usuario=${user?.user?.id_usuario}`);
 
       setRanchos(res.data);
 

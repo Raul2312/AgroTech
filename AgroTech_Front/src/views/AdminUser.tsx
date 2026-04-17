@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../css/admin.css";
 import logo from "../assets/img/agro.png";
+const API_URL = import.meta.env.VITE_API;
 
 const AdminUsuarios = () => {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ const AdminUsuarios = () => {
 
   const cargarUsuarios = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/usuarios");
+      const res = await axios.get(`${API_URL}usuarios`);
       setUsuarios(res.data);
     } catch (error) {
       console.log(error);
@@ -52,7 +53,7 @@ const AdminUsuarios = () => {
     try {
       if (idEditando) {
         // UPDATE
-        await axios.put(`http://localhost:8000/api/usuarios/${idEditando}`, {
+        await axios.put(`${API_URL}usuarios/${idEditando}`, {
           nombre,
           apellido,
           email,
@@ -62,7 +63,7 @@ const AdminUsuarios = () => {
         });
       } else {
         // CREATE
-        await axios.post("http://localhost:8000/api/usuarios", {
+        await axios.post(`${API_URL}usuarios`, {
           nombre,
           apellido,
           email,
@@ -97,7 +98,7 @@ const AdminUsuarios = () => {
     if (!confirm("¿Eliminar usuario?")) return;
 
     try {
-      await axios.delete(`http://localhost:8000/api/usuarios/${id}`);
+      await axios.delete(`${API_URL}usuarios/${id}`);
       cargarUsuarios();
     } catch (error) {
       console.log(error);

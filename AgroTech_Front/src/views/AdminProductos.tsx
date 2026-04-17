@@ -4,11 +4,12 @@ import axios from "axios";
 import "../css/admin.css";
 import logo from "../assets/img/agro.png";
 
+const API_URL = import.meta.env.VITE_API;
 // 🔥 YA NO NECESITAS ESTO PERO LO DEJO POR SI FALLA
 const getImageUrl = (img: string) => {
   if (!img) return "https://via.placeholder.com/150?text=Sin+Imagen";
   if (img.startsWith("http")) return img;
-  return `http://127.0.0.1:8000/products/${img}`;
+  return `http://api.agrootech.com.mx/products/${img}`;
 };
 
 const AdminProductos = () => {
@@ -46,7 +47,7 @@ const AdminProductos = () => {
 
   const cargarUsuarios = async () => {
     try {
-      const res = await axios.get("http://127.0.0.1:8000/api/usuarios");
+      const res = await axios.get(`${API_URL}usuarios`);
       setUsuarios(res.data);
     } catch (error) {
       console.log(error);
@@ -55,7 +56,7 @@ const AdminProductos = () => {
 
   const cargarCategorias = async () => {
     try {
-      const res = await axios.get("http://127.0.0.1:8000/api/categorias");
+      const res = await axios.get(`${API_URL}categorias`);
       setCategorias(res.data);
     } catch (error) {
       console.log(error);
@@ -64,7 +65,7 @@ const AdminProductos = () => {
 
   const cargarProductos = async () => {
     try {
-      const res = await axios.get("http://127.0.0.1:8000/api/productos");
+      const res = await axios.get(`${API_URL}productos`);
       setProductos(res.data);
     } catch (error) {
       console.log("Error cargando productos", error);
@@ -101,7 +102,7 @@ const AdminProductos = () => {
         formData.append("imagen", imagen);
       }
 
-      await axios.post("http://127.0.0.1:8000/api/productos", formData, {
+      await axios.post(`${API_URL}productos`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -126,7 +127,7 @@ const AdminProductos = () => {
   const eliminarProducto = async (id: number) => {
     if (!confirm("¿Eliminar producto?")) return;
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/productos/${id}`);
+      await axios.delete(`${API_URL}productos/${id}`);
       cargarProductos();
     } catch (error) {
       console.log(error);

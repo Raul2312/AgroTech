@@ -4,6 +4,8 @@ import axios from "axios";
 import "../css/clientProfile.css";
 import logo from "../assets/img/agro.png";
 
+const API_URL = import.meta.env.VITE_API;
+
 const ClientProfile = () => {
 
   const [collapsed, setCollapsed] = useState(false);
@@ -59,7 +61,7 @@ const ClientProfile = () => {
       }
 
       await axios.put(
-        `http://localhost:8000/api/usuarios/${userData.id_usuario}`,
+       `${API_URL}usuarios/${userData.id_usuario}`,
         {
           nombre: form.nombre,
           apellido: form.apellido,

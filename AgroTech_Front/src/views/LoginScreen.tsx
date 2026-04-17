@@ -51,7 +51,7 @@ const Login = () => {
 
     try {
 
-      const response = await axios.post(`${API_URL}/register`, {
+      const response = await axios.post(`${API_URL}register`, {
         nombre: registerData.name,
         apellido: registerData.apellido,
         email: registerData.email,
@@ -108,7 +108,7 @@ const Login = () => {
 
     try {
 
-      const response = await axios.post(`${API_URL}/login`, loginData);
+      const response = await axios.post(`${API_URL}login`, loginData);
 
       const data = response.data;
 

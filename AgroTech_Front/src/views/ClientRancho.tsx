@@ -4,6 +4,8 @@
   import "../css/rancho.css";
   import logo from "../assets/img/agro.png";
 
+  const API_URL = import.meta.env.VITE_API;
+
   const ClientRancho = () => {
 
     const navigate = useNavigate();
@@ -59,7 +61,7 @@
     // 👇 CARGAR RANCHOS
     const fetchRanchos = async () => {
       try {
-        const res = await axios.get(import.meta.env.VITE_API+"rancho");
+        const res = await axios.get(`${API_URL}rancho`);
 
         const propios = res.data.filter(
           (r: any) => r.id_usuario === user?.user.id_usuario
@@ -96,7 +98,7 @@
           fecha_registro: new Date().toISOString().split("T")[0]
         })
 
-        await axios.post("http://localhost:8000/api/rancho", {
+        await axios.post(`${API_URL}rancho` ,{
           ...form,
           latitud: parseFloat(form.latitud),
           longitud: parseFloat(form.longitud),

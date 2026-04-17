@@ -40,7 +40,7 @@ const getImageUrl = (img: string) => {
   if (img.startsWith("http")) return img;
 
   // Si es imagen de Laravel
-  return apiUrl.replace("api/","")+`/products/${img}`;
+  return apiUrl.replace("api/","")+`products/${img}`;
 };
 
 const Marketplace: React.FC = () => {
