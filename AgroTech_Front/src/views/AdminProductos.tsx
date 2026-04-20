@@ -9,7 +9,7 @@ const API_URL = import.meta.env.VITE_API;
 const getImageUrl = (img: string) => {
   if (!img) return "https://via.placeholder.com/150?text=Sin+Imagen";
   if (img.startsWith("http")) return img;
-  return `http://api.agrootech.com.mx/products/${img}`;
+  return `https://api.agrootech.com.mx/products/${img}`;
 };
 
 const AdminProductos = () => {
