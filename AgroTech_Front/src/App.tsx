@@ -12,6 +12,7 @@ import AdminProductos from "./views/AdminProductos";
 import AdminUsuarios from './views/AdminUser'
 import ClientRancho from './views/ClientRancho'
 import Contacto from './views/Contacto'
+import MisPedidos from './views/MisPedidos'
 
 
 function App() {
@@ -30,7 +31,7 @@ function App() {
           <Route path="/usuarios" element={<AdminUsuarios />} />
           <Route path="/rancho" element={<ClientRancho />} />
           <Route path="/contacto" element={<Contacto />} />
-           
+           <Route path="/mis-pedidos" element={<MisPedidos />} />
           
   
         </Routes>

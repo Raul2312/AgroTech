@@ -32,15 +32,13 @@ type Categoria = {
   descripcion: string;
   estado: string;
 };
+
 const apiUrl = import.meta.env.VITE_API;
+
 const getImageUrl = (img: string) => {
   if (!img) return "https://via.placeholder.com/150?text=Sin+Imagen";
-
-  // Si ya es URL
   if (img.startsWith("http")) return img;
-
-  // Si es imagen de Laravel
-  return apiUrl.replace("api/","")+`products/${img}`;
+  return apiUrl.replace("api/", "") + `products/${img}`;
 };
 
 const Marketplace: React.FC = () => {
@@ -48,7 +46,13 @@ const Marketplace: React.FC = () => {
   const [products, setProducts] = useState<Producto[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  
+  // PERSISTENCIA: Inicializamos el carrito leyendo del localStorage
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
   const [discount, setDiscount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [couponInput, setCouponInput] = useState("");
@@ -63,11 +67,15 @@ const Marketplace: React.FC = () => {
     fetchProducts();
     fetchCategories();
   }, []);
-  
+
+  // PERSISTENCIA: Cada vez que el carrito cambie, guardamos en localStorage
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
   const fetchProducts = async () => {
     try {
-      const res = await axios.get(apiUrl+"productos");
-      console.log(apiUrl+"/api/productos")
+      const res = await axios.get(apiUrl + "productos");
       setProducts(res.data);
     } catch (error) {
       console.error("Error cargando productos:", error);
@@ -76,7 +84,7 @@ const Marketplace: React.FC = () => {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get(apiUrl+"categorias");
+      const res = await axios.get(apiUrl + "categorias");
       setCategories(res.data);
     } catch (error) {
       console.error("Error cargando categorias:", error);
@@ -238,42 +246,41 @@ const Marketplace: React.FC = () => {
       </section>
 
       <section className="products">
-  <h2>Productos Destacados</h2>
-  <div className="product-grid">
-    {filteredProducts.map((product) => (
-      <div
-        key={product.id_productos}
-        className="product-card"
-        onClick={() => openDetails(product)} // click en toda la tarjeta abre detalles
-        style={{ cursor: "pointer" }} // opcional: cambia cursor a mano
-      >
-        <img
-          src={getImageUrl(product.imagen)}
-          alt={product.nombre}
-        />
-        <div className="product-info">
-          <h3>{product.nombre}</h3>
-          <p className="brand">AgroTech</p>
-          <div className="rating">⭐⭐⭐⭐☆</div>
-          <div className="price">${Number(product.precio).toFixed(2)} MXN</div>
-          <div className="shipping">
-            Envío: ${Number(product.precio) > 2000 ? 0 : 150}
-          </div>
-          <button
-            className="buy-btn"
-            onClick={(e) => {
-              e.stopPropagation(); // evita que al agregar al carrito se abra modal
-              addToCart(product.nombre, product.precio, product.imagen);
-            }}
-          >
-            Agregar al carrito
-          </button>
-          {/* El botón “Ver detalles” se elimina */}
+        <h2>Productos Destacados</h2>
+        <div className="product-grid">
+          {filteredProducts.map((product) => (
+            <div
+              key={product.id_productos}
+              className="product-card"
+              onClick={() => openDetails(product)}
+              style={{ cursor: "pointer" }}
+            >
+              <img
+                src={getImageUrl(product.imagen)}
+                alt={product.nombre}
+              />
+              <div className="product-info">
+                <h3>{product.nombre}</h3>
+                <p className="brand">AgroTech</p>
+                <div className="rating">⭐⭐⭐⭐☆</div>
+                <div className="price">${Number(product.precio).toFixed(2)} MXN</div>
+                <div className="shipping">
+                  Envío: ${Number(product.precio) > 2000 ? 0 : 150}
+                </div>
+                <button
+                  className="buy-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addToCart(product.nombre, product.precio, product.imagen);
+                  }}
+                >
+                  Agregar al carrito
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
-    ))}
-  </div>
-</section>
+      </section>
 
       <section className="ad-section">
         <h2>📢 Publicita tus Productos Aquí</h2>
@@ -335,7 +342,6 @@ const Marketplace: React.FC = () => {
         </div>
       </div>
 
-     {/* Modal de detalles */}
       {detailsOpen && selectedProduct && (
         <ProductDetailsModal
           product={selectedProduct}
