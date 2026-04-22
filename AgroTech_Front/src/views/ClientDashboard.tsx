@@ -36,10 +36,6 @@ return(
 <ul className="menu">
 
 <li className="active">
-
-  
-
-
 <Link to="/areacliente">🏠 {!collapsed && "Dashboard"}</Link>
 </li>
 

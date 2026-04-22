@@ -13,6 +13,7 @@ import AdminUsuarios from './views/AdminUser'
 import ClientRancho from './views/ClientRancho'
 import Contacto from './views/Contacto'
 import MisPedidos from './views/MisPedidos'
+import AdminRanchos from './views/AdminRanchos'
 
 
 function App() {
@@ -27,7 +28,8 @@ function App() {
           <Route path='/dashboard' element={<AdminDashboard />} />
           <Route path='/areacliente' element={<ClientDashboard />} />
           <Route path='/perfil' element={<ClientProfile />} />
-          <Route path="/productos" element={<AdminProductos />} />
+          <Route path="/productos" element={<AdminProductos />} />          
+          <Route path="/productores" element={<AdminRanchos />} />
           <Route path="/usuarios" element={<AdminUsuarios />} />
           <Route path="/rancho" element={<ClientRancho />} />
           <Route path="/contacto" element={<Contacto />} />
