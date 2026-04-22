@@ -126,11 +126,11 @@ const AdminUsuarios = () => {
 
         <ul className="menu">
 
-<li className="active">
+<li>
 <Link to="/dashboard">📊 {!collapsed && "Dashboard"}</Link>
 </li>
 
-<li>
+<li className="active">
 <Link to="/usuarios">👥 {!collapsed && "Usuarios"}</Link>
 </li>
 
@@ -142,12 +142,10 @@ const AdminUsuarios = () => {
 <Link to="/compradores">🛒 {!collapsed && "Compradores"}</Link>
 </li>
 
-<li>
-<Link to="/productos">📦 {!collapsed && "Productos"}</Link>
-</li>
+<li><Link to="/marketplace">🛒 {!collapsed && "Marketplace"}</Link></li>
 
 <li>
-<Link to="/trazabilidad">🌱 {!collapsed && "Trazabilidad"}</Link>
+<Link to="/productos">📦 {!collapsed && "Productos"}</Link>
 </li>
 
 <li>

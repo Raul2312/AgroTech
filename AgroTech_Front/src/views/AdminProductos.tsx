@@ -5,7 +5,7 @@ import "../css/admin.css";
 import logo from "../assets/img/agro.png";
 
 const API_URL = import.meta.env.VITE_API;
-// 🔥 YA NO NECESITAS ESTO PERO LO DEJO POR SI FALLA
+
 const getImageUrl = (img: string) => {
   if (!img) return "https://via.placeholder.com/150?text=Sin+Imagen";
   if (img.startsWith("http")) return img;
@@ -25,6 +25,9 @@ const AdminProductos = () => {
   const [productos, setProductos] = useState<any[]>([]);
   const [usuarios, setUsuarios] = useState<any[]>([]);
   const [categorias, setCategorias] = useState<any[]>([]);
+
+  // 🔥 ESTADO NUEVO PARA EDICIÓN
+  const [editandoId, setEditandoId] = useState<number | null>(null);
 
   const [usuario, setUsuario] = useState<number | "">("");
   const [categoria, setCategoria] = useState<number | "">("");
@@ -88,7 +91,6 @@ const AdminProductos = () => {
 
     try {
       const formData = new FormData();
-
       formData.append("nombre", nombre);
       formData.append("descripcion", descripcion);
       formData.append("precio", precio);
@@ -108,20 +110,77 @@ const AdminProductos = () => {
         },
       });
 
-      setNombre("");
-      setDescripcion("");
-      setPrecio("");
-      setStock("");
-      setImagen(null);
-      setUsuario("");
-      setCategoria("");
-      setEstado("activo");
-
+      limpiarFormulario();
       cargarProductos();
     } catch (error: any) {
       console.log(error.response?.data);
       alert("Error al agregar producto");
     }
+  };
+
+  // 🔥 NUEVA FUNCIÓN PARA CARGAR DATOS AL FORMULARIO
+  const prepararEdicion = (producto: any) => {
+    setEditandoId(producto.id_productos);
+    setNombre(producto.nombre);
+    setDescripcion(producto.descripcion || "");
+    setPrecio(producto.precio);
+    setMoneda(producto.moneda || "MXN");
+    setStock(producto.stock);
+    setUsuario(producto.id_usuario);
+    setCategoria(producto.id_categoria);
+    setEstado(producto.estado || "activo");
+    setImagen(null); // Se resetea para no sobreescribir la imagen si no se selecciona una nueva
+  };
+
+  // 🔥 NUEVA FUNCIÓN PARA GUARDAR LOS CAMBIOS
+  const guardarEdicion = async () => {
+    if (!nombre || !precio || !stock || usuario === "" || categoria === "") {
+      alert("Completa los campos obligatorios");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("nombre", nombre);
+      formData.append("descripcion", descripcion);
+      formData.append("precio", precio);
+      formData.append("moneda", moneda);
+      formData.append("stock", String(stock));
+      formData.append("id_usuario", String(usuario));
+      formData.append("id_categoria", String(categoria));
+      formData.append("estado", estado);
+      formData.append("_method", "PUT"); // Para que APIs como Laravel acepten la actualización por POST con archivos
+
+      if (imagen) {
+        formData.append("imagen", imagen);
+      }
+
+      await axios.post(`${API_URL}productos/${editandoId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      limpiarFormulario();
+      cargarProductos();
+      alert("Producto actualizado correctamente");
+    } catch (error: any) {
+      console.log(error.response?.data);
+      alert("Error al editar producto");
+    }
+  };
+
+  // 🔥 FUNCIÓN PARA LIMPIAR EL FORMULARIO
+  const limpiarFormulario = () => {
+    setEditandoId(null);
+    setNombre("");
+    setDescripcion("");
+    setPrecio("");
+    setStock("");
+    setImagen(null);
+    setUsuario("");
+    setCategoria("");
+    setEstado("activo");
   };
 
   const eliminarProducto = async (id: number) => {
@@ -147,8 +206,8 @@ const AdminProductos = () => {
           <li><Link to="/usuarios">👥 {!collapsed && "Usuarios"}</Link></li>
           <li><Link to="/productores">🚜 {!collapsed && "Productores"}</Link></li>
           <li><Link to="/compradores">🛒 {!collapsed && "Compradores"}</Link></li>
+          <li><Link to="/marketplace">🛒 {!collapsed && "Marketplace"}</Link></li>
           <li className="active"><Link to="/productos">📦 {!collapsed && "Productos"}</Link></li>
-          <li><Link to="/trazabilidad">🌱 {!collapsed && "Trazabilidad"}</Link></li>
           <li><Link to="/reportes">📈 {!collapsed && "Reportes"}</Link></li>
           <li className="logout">
             <button onClick={logout}>❌ {!collapsed && "Cerrar sesión"}</button>
@@ -174,7 +233,8 @@ const AdminProductos = () => {
         </header>
 
         <section className="table-section">
-          <h3 className="titulo-form">Agregar Producto</h3>
+          {/* 🔥 TÍTULO DINÁMICO */}
+          <h3 className="titulo-form">{editandoId ? "Editar Producto" : "Agregar Producto"}</h3>
 
           <div className="producto-card">
             <div className="form-grid">
@@ -227,7 +287,6 @@ const AdminProductos = () => {
                 <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} />
               </div>
 
-              {/* 🔥 INPUT FILE */}
               <div className="input-group full">
                 <label>Imagen</label>
                 <input type="file" onChange={e => setImagen(e.target.files?.[0] || null)} />
@@ -242,7 +301,6 @@ const AdminProductos = () => {
               </div>
             </div>
 
-            {/* 🔥 PREVIEW */}
             <div className="preview-img">
               <p>Vista previa</p>
               {imagen ? (
@@ -252,9 +310,22 @@ const AdminProductos = () => {
               )}
             </div>
 
-            <button className="btn-agregar" onClick={agregarProducto}>
-              ➕ Agregar Producto
-            </button>
+            {/* 🔥 BOTONES DINÁMICOS DEPENDIENDO SI ESTÁ EDITANDO */}
+            {editandoId ? (
+              <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                <button className="btn-agregar" onClick={guardarEdicion}>
+                  💾 Guardar Cambios
+                </button>
+                <button className="btn-agregar" onClick={limpiarFormulario} style={{ background: '#7f8c8d' }}>
+                  ❌ Cancelar
+                </button>
+              </div>
+            ) : (
+              <button className="btn-agregar" onClick={agregarProducto} style={{ marginTop: '15px' }}>
+                ➕ Agregar Producto
+              </button>
+            )}
+
           </div>
         </section>
 
@@ -291,11 +362,39 @@ const AdminProductos = () => {
                     <img src={p.imagen_url || getImageUrl(p.imagen)} style={{ width: "50px" }} />
                   </td>
 
-                  <td>
-                    <button onClick={() => eliminarProducto(p.id_productos)}>
-                      Eliminar
-                    </button>
-                  </td>
+                  <td style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+  {/* Botón Editar */}
+  <button 
+    onClick={() => prepararEdicion(p)} 
+    style={{ 
+      background: "#0b3c5d", 
+      color: "white", 
+      border: "none", 
+      padding: "10px 24px", 
+      borderRadius: "10px", 
+      cursor: "pointer",
+      fontWeight: "500"
+    }}
+  >
+    Editar
+  </button>
+
+  {/* Botón Eliminar */}
+  <button 
+    onClick={() => eliminarProducto(p.id_productos)} 
+    style={{ 
+      background: "#ff0000", 
+      color: "white", 
+      border: "none", 
+      padding: "10px 24px", 
+      borderRadius: "10px", 
+      cursor: "pointer",
+      fontWeight: "500"
+    }}
+  >
+    Eliminar
+  </button>
+</td>
                 </tr>
               ))}
             </tbody>

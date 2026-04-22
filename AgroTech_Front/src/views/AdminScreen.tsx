@@ -90,12 +90,10 @@ return(
 <Link to="/compradores">🛒 {!collapsed && "Compradores"}</Link>
 </li>
 
-<li>
-<Link to="/productos">📦 {!collapsed && "Productos"}</Link>
-</li>
+<li><Link to="/marketplace">🛒 {!collapsed && "Marketplace"}</Link></li>
 
 <li>
-<Link to="/trazabilidad">🌱 {!collapsed && "Trazabilidad"}</Link>
+<Link to="/productos">📦 {!collapsed && "Productos"}</Link>
 </li>
 
 <li>
