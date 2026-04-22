@@ -1,4 +1,3 @@
-// app/(tabs)/perfil.tsx
 import React, { useState, useCallback } from "react";
 import {
   View,
@@ -19,7 +18,6 @@ export default function Perfil() {
   const [nombre, setNombre] = useState("Cargando...");
   const [correo, setCorreo] = useState("");
 
-  // 🔥 CARGAR USUARIO SIEMPRE QUE ENTRES A LA PANTALLA
   useFocusEffect(
     useCallback(() => {
       const loadUser = async () => {
@@ -30,17 +28,18 @@ export default function Perfil() {
             const parsed = JSON.parse(session);
             const user = parsed.user;
 
-            console.log("USER:", user); // 👈 DEBUG
-
-            // 🔥 AGARRA CUALQUIER FORMATO
             setNombre(
               user?.name ||
-              user?.nombre ||
-              user?.usuario ||
-              "Usuario"
+                user?.nombre ||
+                user?.usuario ||
+                "Usuario"
             );
 
-            setCorreo(user?.email || "");
+            setCorreo(
+              user?.email ||
+                user?.correo ||
+                "Sin correo"
+            );
           } else {
             setNombre("No logueado");
             setCorreo("");
@@ -54,10 +53,11 @@ export default function Perfil() {
     }, [])
   );
 
-  // 🔥 LOGOUT
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem("agroSession");
+      await AsyncStorage.removeItem("agroFavorites");
+
       router.replace("/(tabs)/login");
     } catch (error) {
       console.log("Error cerrando sesión", error);
@@ -75,18 +75,36 @@ export default function Perfil() {
     { title: "Cerrar sesión", icon: "log-out-outline", color: "#ef4444" },
   ];
 
+  const handleMenuPress = (title: string) => {
+    if (title === "Cerrar sesión") {
+      handleLogout();
+      return;
+    }
+
+    if (title === "Favoritos") {
+      router.push("/perfil/favoritos");
+      return;
+    }
+
+    if (title === "Mis compras") {
+      router.push("/perfil/compras");
+      return;
+    }
+
+    if (title === "Configuración") {
+      router.push("/perfil/configuracion");
+      return;
+    }
+  };
+
   return (
     <View style={styles.container}>
-      
-      {/* HEADER */}
       <LinearGradient colors={["#0f172a", "#14532d"]} style={styles.header}>
         <Text style={styles.headerTitle}>Mi Perfil</Text>
         <Ionicons name="person-circle-outline" size={28} color="#fff" />
       </LinearGradient>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        
-        {/* AVATAR */}
         <View style={styles.avatarContainer}>
           <View style={styles.avatarWrapper}>
             <Image
@@ -99,24 +117,22 @@ export default function Perfil() {
             </TouchableOpacity>
           </View>
 
-          {/* 🔥 DATOS REALES */}
           <Text style={styles.name}>{nombre}</Text>
           <Text style={styles.email}>{correo}</Text>
         </View>
 
-        {/* CARD */}
         <View style={styles.card}>
           {menuItems.map((item, index) => (
             <TouchableOpacity
               key={index}
               style={[
                 styles.option,
-                index === menuItems.length - 1 && { borderBottomWidth: 0 },
+                index === menuItems.length - 1 && {
+                  borderBottomWidth: 0,
+                },
               ]}
               activeOpacity={0.7}
-              onPress={
-                item.title === "Cerrar sesión" ? handleLogout : undefined
-              }
+              onPress={() => handleMenuPress(item.title)}
             >
               <View style={styles.left}>
                 <View style={styles.iconBox}>
@@ -137,7 +153,11 @@ export default function Perfil() {
                 </Text>
               </View>
 
-              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color="#94a3b8"
+              />
             </TouchableOpacity>
           ))}
         </View>
@@ -148,22 +168,26 @@ export default function Perfil() {
             Gestiona tus compras, favoritos y configuración desde aquí.
           </Text>
         </View>
-
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8fafc" },
+  container: {
+    flex: 1,
+    backgroundColor: "#f8fafc",
+  },
 
   header: {
-    paddingTop: 55,
-    paddingBottom: 25,
-    paddingHorizontal: 20,
+   paddingTop: 48,
+    paddingBottom: 16,
+    paddingHorizontal: 18,
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
   },
 
   headerTitle: {

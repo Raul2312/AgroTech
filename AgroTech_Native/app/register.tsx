@@ -17,7 +17,7 @@ import axios from "axios";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.1.16:8000/api";
+const API_URL = "https://api.agrootech.com.mx/api";
 
 export default function Register() {
   const router = useRouter();

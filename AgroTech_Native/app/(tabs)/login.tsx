@@ -17,7 +17,7 @@ import { useRouter } from "expo-router";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.137.140:8000/api"; // ⚠️ CAMBIA ESTA IP
+const API_URL = "https://api.agrootech.com.mx/api";
 
 export default function Login() {
   const router = useRouter();

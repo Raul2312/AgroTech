@@ -5,7 +5,6 @@ import {
   Text,
   Animated,
   Easing,
-  TouchableOpacity,
 } from "react-native";
 import { useCart } from "../../context/CartContext";
 import { useEffect, useRef, useState } from "react";
@@ -80,57 +79,57 @@ export default function Layout() {
       />
 
       <Tabs.Screen
-  name="carrito"
-  listeners={{
-    tabPress: async (e) => {
-      const session = await AsyncStorage.getItem("agroSession");
+        name="carrito"
+        listeners={{
+          tabPress: async (e) => {
+            const session = await AsyncStorage.getItem("agroSession");
 
-      if (!session) {
-        e.preventDefault();
+            if (!session) {
+              e.preventDefault();
 
-        router.replace({
-          pathname: "/(tabs)/login",
-          params: { redirect: "carrito" },
-        });
-      }
-    },
-  }}
-  options={{
-    title: "Carrito",
-    tabBarIcon: ({ color, size }) => (
-      <View>
-        <Ionicons name="cart-outline" size={size} color={color} />
+              router.replace({
+                pathname: "/(tabs)/login",
+                params: { redirect: "carrito" },
+              });
+            }
+          },
+        }}
+        options={{
+          title: "Carrito",
+          tabBarIcon: ({ color, size }) => (
+            <View>
+              <Ionicons name="cart-outline" size={size} color={color} />
 
-        {cartCount > 0 && (
-          <Animated.View
-            style={{
-              position: "absolute",
-              top: -4,
-              right: -6,
-              backgroundColor: "red",
-              borderRadius: 8,
-              width: 16,
-              height: 16,
-              alignItems: "center",
-              justifyContent: "center",
-              transform: [{ scale: animatedValue }],
-            }}
-          >
-            <Text
-              style={{
-                color: "white",
-                fontSize: 10,
-                fontWeight: "bold",
-              }}
-            >
-              {cartCount}
-            </Text>
-          </Animated.View>
-        )}
-      </View>
-    ),
-  }}
-/>
+              {cartCount > 0 && (
+                <Animated.View
+                  style={{
+                    position: "absolute",
+                    top: -4,
+                    right: -6,
+                    backgroundColor: "red",
+                    borderRadius: 8,
+                    width: 16,
+                    height: 16,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transform: [{ scale: animatedValue }],
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 10,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {cartCount}
+                  </Text>
+                </Animated.View>
+              )}
+            </View>
+          ),
+        }}
+      />
 
       <Tabs.Screen
         name="perfil"
@@ -139,6 +138,27 @@ export default function Layout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" color={color} size={size} />
           ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="perfil/favoritos"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="perfil/compras"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="perfil/configuracion"
+        options={{
+          href: null,
         }}
       />
 

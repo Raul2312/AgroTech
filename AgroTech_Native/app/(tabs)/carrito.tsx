@@ -13,9 +13,9 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCart } from "../../context/CartContext";
-import { useRouter, Stack, useFocusEffect } from "expo-router";
+import { useRouter, Stack } from "expo-router";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function carrito() {
@@ -26,21 +26,19 @@ export default function carrito() {
     increase,
     decrease,
     removeFromCart,
-    clearCart,
   } = useCart();
 
-  /* 🔥 CUPONES */
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
-  /* 🔒 VALIDAR LOGIN Y LIMPIAR CARRITO SI CERRÓ SESIÓN */
-  useFocusEffect(
-    useCallback(() => {
-      const checkSession = async () => {
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
         const session = await AsyncStorage.getItem("agroSession");
 
         if (!session) {
-          clearCart();
+          setCheckingAuth(false);
 
           router.replace({
             pathname: "/(tabs)/login",
@@ -48,14 +46,28 @@ export default function carrito() {
               redirect: "carrito",
             },
           });
+
+          return;
         }
-      };
 
-      checkSession();
-    }, [])
-  );
+        setCheckingAuth(false);
+      } catch (error) {
+        console.log("Error verificando sesión:", error);
+        setCheckingAuth(false);
+      }
+    };
 
-  /* 💰 CALCULOS */
+    checkSession();
+  }, []);
+
+  if (checkingAuth) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Cargando...</Text>
+      </View>
+    );
+  }
+
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -64,7 +76,6 @@ export default function carrito() {
   const envio = subtotal > 0 ? 120 : 0;
   const total = subtotal + envio - discount;
 
-  /* 🎯 APLICAR CUPON */
   const applyCoupon = () => {
     Keyboard.dismiss();
 
@@ -87,7 +98,6 @@ export default function carrito() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.container}>
-          {/* HEADER */}
           <LinearGradient
             colors={["#0f172a", "#14532d"]}
             style={styles.header}
@@ -101,7 +111,6 @@ export default function carrito() {
             <Ionicons name="cart" size={24} color="#fff" />
           </LinearGradient>
 
-          {/* 🔥 AREA SCROLL + DISMISS */}
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={{ flex: 1 }}>
               <FlatList
@@ -173,7 +182,6 @@ export default function carrito() {
             </View>
           </TouchableWithoutFeedback>
 
-          {/* FOOTER */}
           <View style={styles.footer}>
             <View style={styles.couponBox}>
               <Ionicons
@@ -202,12 +210,12 @@ export default function carrito() {
             <View style={styles.summary}>
               <View style={styles.row}>
                 <Text style={styles.label}>Subtotal</Text>
-                <Text style={styles.value}>${subtotal}</Text>
+                <Text style={styles.value}>${subtotal.toFixed(2)}</Text>
               </View>
 
               <View style={styles.row}>
                 <Text style={styles.label}>Envío</Text>
-                <Text style={styles.value}>${envio}</Text>
+                <Text style={styles.value}>${envio.toFixed(2)}</Text>
               </View>
 
               {discount > 0 && (
@@ -230,7 +238,10 @@ export default function carrito() {
             </View>
 
             <TouchableOpacity
-              style={styles.checkoutBtn}
+              style={[
+                styles.checkoutBtn,
+                cart.length === 0 && { opacity: 0.5 },
+              ]}
               disabled={cart.length === 0}
               onPress={() =>
                 router.push({
@@ -265,13 +276,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#f1f5f9",
   },
 
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f1f5f9",
+  },
+
+  loadingText: {
+    fontSize: 16,
+    color: "#475569",
+    fontWeight: "600",
+  },
+
   header: {
+    paddingTop: 48,
+    paddingBottom: 16,
+    paddingHorizontal: 18,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingTop: 50,
-    paddingHorizontal: 20,
-    paddingBottom: 15,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
   },
 
   headerTitle: {

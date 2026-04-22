@@ -17,7 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useCart } from "../../context/CartContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.137.140:8000/api";
+const API_URL = "https://api.agrootech.com.mx/api";
 
 export type ProductType = {
   id_productos: number;
@@ -72,7 +72,23 @@ export default function Marketplace() {
     ).start();
   }, []);
 
-  // VALIDAR LOGIN
+  useEffect(() => {
+    fetchProductsAndCategories();
+    loadFavorites();
+  }, []);
+
+  const loadFavorites = async () => {
+    try {
+      const savedFavorites = await AsyncStorage.getItem("agroFavorites");
+
+      if (savedFavorites) {
+        setFavorites(JSON.parse(savedFavorites));
+      }
+    } catch (error) {
+      console.log("Error cargando favoritos", error);
+    }
+  };
+
   const checkAuth = async () => {
     const session = await AsyncStorage.getItem("agroSession");
 
@@ -112,13 +128,10 @@ export default function Marketplace() {
     }
   };
 
-  useEffect(() => {
-    fetchProductsAndCategories();
-  }, []);
-
   const onRefresh = () => {
     setRefreshing(true);
     fetchProductsAndCategories();
+    loadFavorites();
   };
 
   const filtered = products.filter(
@@ -129,20 +142,31 @@ export default function Marketplace() {
       (category === "Todos" || p.categoria.nombre === category)
   );
 
-  // FAVORITOS PROTEGIDOS
   const toggleFavorite = async (id: number) => {
     const isLogged = await checkAuth();
 
     if (!isLogged) return;
 
-    if (favorites.includes(id)) {
-      setFavorites(favorites.filter((f) => f !== id));
-    } else {
-      setFavorites([...favorites, id]);
+    try {
+      let updatedFavorites: number[] = [];
+
+      if (favorites.includes(id)) {
+        updatedFavorites = favorites.filter((f) => f !== id);
+      } else {
+        updatedFavorites = [...favorites, id];
+      }
+
+      setFavorites(updatedFavorites);
+
+      await AsyncStorage.setItem(
+        "agroFavorites",
+        JSON.stringify(updatedFavorites)
+      );
+    } catch (error) {
+      console.log("Error guardando favoritos", error);
     }
   };
 
-  // CARRITO PROTEGIDO
   const handleAddToCart = async (item: ProductType) => {
     const isLogged = await checkAuth();
 
@@ -378,9 +402,14 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    paddingTop: 55,
-    paddingHorizontal: 20,
-    paddingBottom: 15,
+    paddingTop: 48,
+    paddingBottom: 16,
+    paddingHorizontal: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
   },
 
   logoRow: {
