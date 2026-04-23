@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import {  useNavigate } from "react-router-dom";
 import axios from "axios";
+import Sidebar from "../Layouts/Sidebar";
 import "../css/admin.css";
-import logo from "../assets/img/agro.png";
 
 const API_URL = import.meta.env.VITE_API;
 
@@ -17,6 +17,14 @@ const AdminRanchos = () => {
   useEffect(() => {
     cargarRanchos();
   }, []);
+
+
+  const logout = () => {
+    localStorage.removeItem("agroSession");
+    sessionStorage.removeItem("agroSession");
+    navigate("/login");
+  };
+
 
   const cargarRanchos = async () => {
     try {
@@ -41,25 +49,7 @@ const AdminRanchos = () => {
 
   return (
     <div className="admin-page">
-      <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
-        <div className="logo-container">
-          <img src={logo} className="logo-img" alt="Logo" />
-          {!collapsed && <span className="logo-text">AgroTech</span>}
-        </div>
-        <ul className="menu">
-          <li><Link to="/dashboard">📊 {!collapsed && "Dashboard"}</Link></li>
-          <li><Link to="/usuarios">👥 {!collapsed && "Usuarios"}</Link></li>
-          <li className="active"><Link to="/productores">🚜 {!collapsed && "Productores"}</Link></li>
-          <li><Link to="/compradores">🛒 {!collapsed && "Compradores"}</Link></li>
-          <li><Link to="/marketplace">🛒 {!collapsed && "Marketplace"}</Link></li>
-          <li><Link to="/productos">📦 {!collapsed && "Productos"}</Link></li>
-          <li><Link to="/reportes">📈 {!collapsed && "Reportes"}</Link></li>
-          <li className="logout">
-            <button onClick={() => navigate("/login")}>❌ {!collapsed && "Cerrar sesión"}</button>
-          </li>
-        </ul>
-      </aside>
-
+     <Sidebar collapsed={collapsed} logout={logout} />
       <div className={`main ${collapsed ? "expanded" : ""}`}>
         <header className="admin-header">
           <div className="left-header">

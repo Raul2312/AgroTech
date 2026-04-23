@@ -119,11 +119,11 @@ const Login = () => {
           user: data.user
         };
 
-        if (rememberMe) {
+      
           localStorage.setItem("agroSession", JSON.stringify(sessionData));
-        } else {
+    
           sessionStorage.setItem("agroSession", JSON.stringify(sessionData));
-        }
+      
 
         Swal.fire({
           title: "Bienvenido 🌱",

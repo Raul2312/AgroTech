@@ -5,6 +5,7 @@ import "../css/marketplace.css";
 import logo from "../assets/img/agro.png";
 import ProductDetailsModal from "./ProductDetailsModal";
 
+// --- Tipados ---
 type CartItem = {
   name: string;
   price: number;
@@ -47,7 +48,6 @@ const Marketplace: React.FC = () => {
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   
-  // PERSISTENCIA: Inicializamos el carrito leyendo del localStorage
   const [cart, setCart] = useState<CartItem[]>(() => {
     const savedCart = localStorage.getItem("cart");
     return savedCart ? JSON.parse(savedCart) : [];
@@ -58,17 +58,17 @@ const Marketplace: React.FC = () => {
   const [couponInput, setCouponInput] = useState("");
   const [search, setSearch] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
-
-  // Modal de detalles
   const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+
+  // 1. Correos de administradores (Extraídos de tu Seeder)
+ 
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
   }, []);
 
-  // PERSISTENCIA: Cada vez que el carrito cambie, guardamos en localStorage
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
@@ -92,29 +92,41 @@ const Marketplace: React.FC = () => {
   };
 
   const checkSession = () => {
-    const session =
-      localStorage.getItem("agroSession") ||
-      sessionStorage.getItem("agroSession");
-    return session ? true : false;
+    const session = localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession");
+    return !!session;
   };
 
+  // 🔥 Función goPanel corregida para comparar con los 3 correos
   const goPanel = () => {
-    if (!checkSession()) {
+    const sessionString = localStorage.getItem("agroSession");
+
+    if (!sessionString) {
       navigate("/login");
       return;
     }
-    navigate("/areacliente");
+
+    try {
+      const sessionData = JSON.parse(sessionString);
+      
+      // Normalizamos el email para evitar errores por mayúsculas o espacios
+      const userEmail = sessionData.user.email;
+      console.log(userEmail)
+      // Comparamos si el email de la sesión coincide con alguno de los 3 admins
+      if (sessionData.user.tipo == "admin") {
+        navigate("/dashboard");
+      } else {
+        navigate("/areacliente");
+      }
+    } catch (error) {
+      console.error("Error parsing session:", error);
+      navigate("/areacliente");
+    }
   };
 
   const toggleCart = () => setIsOpen(!isOpen);
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
-  const addToCart = (
-    name: string,
-    price: string | number,
-    image: string,
-    quantity: number = 1
-  ) => {
+  const addToCart = (name: string, price: string | number, image: string, quantity: number = 1) => {
     if (!checkSession()) {
       navigate("/login");
       return;
@@ -124,9 +136,7 @@ const Marketplace: React.FC = () => {
       const existing = prev.find((item) => item.name === name);
       if (existing) {
         return prev.map((item) =>
-          item.name === name
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
+          item.name === name ? { ...item, quantity: item.quantity + quantity } : item
         );
       } else {
         return [...prev, { name, price: priceNumber, image, quantity }];
@@ -139,9 +149,7 @@ const Marketplace: React.FC = () => {
     setCart((prev) =>
       prev
         .map((item, i) =>
-          i === index
-            ? { ...item, quantity: Math.max(item.quantity + change, 0) }
-            : item
+          i === index ? { ...item, quantity: Math.max(item.quantity + change, 0) } : item
         )
         .filter((item) => item.quantity > 0)
     );
@@ -165,16 +173,8 @@ const Marketplace: React.FC = () => {
   };
 
   const filterByCategory = (id: number | null) => setSelectedCategory(id);
-
-  const openDetails = (product: Producto) => {
-    setSelectedProduct(product);
-    setDetailsOpen(true);
-  };
-
-  const closeDetails = () => {
-    setSelectedProduct(null);
-    setDetailsOpen(false);
-  };
+  const openDetails = (product: Producto) => { setSelectedProduct(product); setDetailsOpen(true); };
+  const closeDetails = () => { setSelectedProduct(null); setDetailsOpen(false); };
 
   const filteredProducts = products.filter(
     (product) =>
@@ -190,18 +190,14 @@ const Marketplace: React.FC = () => {
   return (
     <div>
       <header>
-        <div className="logo">
-          <img src={logo} alt="AgroTech Logo" />
-        </div>
+        <div className="logo"><img src={logo} alt="AgroTech Logo" /></div>
         <h1>AgroTech Marketplace</h1>
-        <div className="menu-toggle" onClick={toggleMenu}>
-          ☰
-        </div>
+        <div className="menu-toggle" onClick={toggleMenu}>☰</div>
         <nav className={menuOpen ? "active" : ""}>
           <a href="/indexScreen">Inicio</a>
           <a href="/trazabilidad">Trazabilidad</a>
-          <a onClick={goPanel}>Panel</a>
-          {!(localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession")) && <a href="/Login">Login</a>}
+          <a onClick={goPanel} style={{ cursor: "pointer" }}>Panel</a>
+          {!checkSession() && <a href="/Login">Login</a>}
         </nav>
         <div className="cart-icon" onClick={toggleCart}>
           🛒 <span>{cartCount}</span>
@@ -217,11 +213,10 @@ const Marketplace: React.FC = () => {
               <input
                 type="text"
                 className="search-input"
-                placeholder="Buscar alimento, vacunas, maquinaria..."
+                placeholder="Buscar alimento, vacunas..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              <button className="search-button">Buscar</button>
             </div>
           </div>
         </div>
@@ -249,31 +244,12 @@ const Marketplace: React.FC = () => {
         <h2>Productos Destacados</h2>
         <div className="product-grid">
           {filteredProducts.map((product) => (
-            <div
-              key={product.id_productos}
-              className="product-card"
-              onClick={() => openDetails(product)}
-              style={{ cursor: "pointer" }}
-            >
-              <img
-                src={getImageUrl(product.imagen)}
-                alt={product.nombre}
-              />
+            <div key={product.id_productos} className="product-card" onClick={() => openDetails(product)} style={{ cursor: "pointer" }}>
+              <img src={getImageUrl(product.imagen)} alt={product.nombre} />
               <div className="product-info">
                 <h3>{product.nombre}</h3>
-                <p className="brand">AgroTech</p>
-                <div className="rating">⭐⭐⭐⭐☆</div>
                 <div className="price">${Number(product.precio).toFixed(2)} MXN</div>
-                <div className="shipping">
-                  Envío: ${Number(product.precio) > 2000 ? 0 : 150}
-                </div>
-                <button
-                  className="buy-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addToCart(product.nombre, product.precio, product.imagen);
-                  }}
-                >
+                <button className="buy-btn" onClick={(e) => { e.stopPropagation(); addToCart(product.nombre, product.precio, product.imagen); }}>
                   Agregar al carrito
                 </button>
               </div>
@@ -297,28 +273,21 @@ const Marketplace: React.FC = () => {
           <button className="cart-close" onClick={toggleCart}>✕</button>
         </div>
         <div className="cart-body">
-          <ul>
-            {cart.map((item, index) => (
-              <li key={index} className="cart-item">
-                <img
-                  src={getImageUrl(item.image)}
-                  alt={item.name}
-                />
-                <div className="cart-item-info">
-                  <div className="cart-item-title">{item.name}</div>
-                  <div className="cart-item-price">
-                    ${parseFloat(item.price as any).toFixed(2)} MXN
-                  </div>
-                  <div className="quantity-controls">
-                    <button onClick={() => changeQty(index, -1)}>−</button>
-                    <span>{item.quantity}</span>
-                    <button onClick={() => changeQty(index, 1)}>+</button>
-                  </div>
-                  <button className="remove-btn" onClick={() => removeItem(index)}>Eliminar</button>
+          {cart.map((item, index) => (
+            <div key={index} className="cart-item">
+              <img src={getImageUrl(item.image)} alt={item.name} />
+              <div className="cart-item-info">
+                <div className="cart-item-title">{item.name}</div>
+                <div className="cart-item-price">${item.price.toFixed(2)} MXN</div>
+                <div className="quantity-controls">
+                  <button onClick={() => changeQty(index, -1)}>−</button>
+                  <span>{item.quantity}</span>
+                  <button onClick={() => changeQty(index, 1)}>+</button>
                 </div>
-              </li>
-            ))}
-          </ul>
+                <button className="remove-btn" onClick={() => removeItem(index)}>Eliminar</button>
+              </div>
+            </div>
+          ))}
         </div>
         <div className="cart-footer">
           <div className="coupon-section">
@@ -338,16 +307,12 @@ const Marketplace: React.FC = () => {
               <strong>Total: ${total.toFixed(2)} MXN</strong>
             </div>
           </div>
-          <button className="checkout-btn">Finalizar Compra</button>
+          <button className="checkout-btn" onClick={() => navigate("/pagos")}>Finalizar Compra</button>
         </div>
       </div>
 
       {detailsOpen && selectedProduct && (
-        <ProductDetailsModal
-          product={selectedProduct}
-          onClose={closeDetails}
-          addToCart={addToCart}
-        />
+        <ProductDetailsModal product={selectedProduct} onClose={closeDetails} addToCart={addToCart} />
       )}
     </div>
   );
