@@ -5,7 +5,21 @@ import "../css/marketplace.css";
 import logo from "../assets/img/agro.png";
 import ProductDetailsModal from "./ProductDetailsModal";
 
-// --- Tipados ---
+import {
+  FaShoppingCart,
+  FaSearch,
+  FaUserCircle,
+  FaTruck,
+  FaShieldAlt,
+  FaStar,
+  FaFire,
+  FaBars,
+  FaTimes,
+  FaTag,
+  FaLeaf,
+  FaTrashAlt
+} from "react-icons/fa";
+
 type CartItem = {
   name: string;
   price: number;
@@ -47,30 +61,26 @@ const Marketplace: React.FC = () => {
   const [products, setProducts] = useState<Producto[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    const savedCart = localStorage.getItem("cart");
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
-
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [discount, setDiscount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [search, setSearch] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+
   const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
-
-  // 1. Correos de administradores (Extraídos de tu Seeder)
- 
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
+    // Cargar carrito del localStorage si existe
+    const savedCart = localStorage.getItem("agroCart");
+    if (savedCart) setCart(JSON.parse(savedCart));
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
+    localStorage.setItem("agroCart", JSON.stringify(cart));
   }, [cart]);
 
   const fetchProducts = async () => {
@@ -92,56 +102,50 @@ const Marketplace: React.FC = () => {
   };
 
   const checkSession = () => {
-    const session = localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession");
-    return !!session;
+    const session =
+      localStorage.getItem("agroSession") ||
+      sessionStorage.getItem("agroSession");
+    return session ? true : false;
   };
 
-  // 🔥 Función goPanel corregida para comparar con los 3 correos
   const goPanel = () => {
-    const sessionString = localStorage.getItem("agroSession");
-
-    if (!sessionString) {
+    if (!checkSession()) {
       navigate("/login");
       return;
     }
-
-    try {
-      const sessionData = JSON.parse(sessionString);
-      
-      // Normalizamos el email para evitar errores por mayúsculas o espacios
-      const userEmail = sessionData.user.email;
-      console.log(userEmail)
-      // Comparamos si el email de la sesión coincide con alguno de los 3 admins
-      if (sessionData.user.tipo == "admin") {
-        navigate("/dashboard");
-      } else {
-        navigate("/areacliente");
-      }
-    } catch (error) {
-      console.error("Error parsing session:", error);
-      navigate("/areacliente");
-    }
+    navigate("/areacliente");
   };
 
   const toggleCart = () => setIsOpen(!isOpen);
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
-  const addToCart = (name: string, price: string | number, image: string, quantity: number = 1) => {
+  const addToCart = (
+    name: string,
+    price: string | number,
+    image: string,
+    quantity: number = 1
+  ) => {
     if (!checkSession()) {
       navigate("/login");
       return;
     }
+
     const priceNumber = Number(price);
+
     setCart((prev) => {
       const existing = prev.find((item) => item.name === name);
+
       if (existing) {
         return prev.map((item) =>
-          item.name === name ? { ...item, quantity: item.quantity + quantity } : item
+          item.name === name
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
         );
-      } else {
-        return [...prev, { name, price: priceNumber, image, quantity }];
       }
+
+      return [...prev, { name, price: priceNumber, image, quantity }];
     });
+
     setIsOpen(true);
   };
 
@@ -149,7 +153,9 @@ const Marketplace: React.FC = () => {
     setCart((prev) =>
       prev
         .map((item, i) =>
-          i === index ? { ...item, quantity: Math.max(item.quantity + change, 0) } : item
+          i === index
+            ? { ...item, quantity: Math.max(item.quantity + change, 0) }
+            : item
         )
         .filter((item) => item.quantity > 0)
     );
@@ -172,9 +178,19 @@ const Marketplace: React.FC = () => {
     }
   };
 
-  const filterByCategory = (id: number | null) => setSelectedCategory(id);
-  const openDetails = (product: Producto) => { setSelectedProduct(product); setDetailsOpen(true); };
-  const closeDetails = () => { setSelectedProduct(null); setDetailsOpen(false); };
+  const filterByCategory = (id: number | null) => {
+    setSelectedCategory(id);
+  };
+
+  const openDetails = (product: Producto) => {
+    setSelectedProduct(product);
+    setDetailsOpen(true);
+  };
+
+  const closeDetails = () => {
+    setSelectedProduct(null);
+    setDetailsOpen(false);
+  };
 
   const filteredProducts = products.filter(
     (product) =>
@@ -182,56 +198,149 @@ const Marketplace: React.FC = () => {
       (selectedCategory === null || product.id_categoria === selectedCategory)
   );
 
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const subtotal = cart.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
+
   const shipping = subtotal > 300 ? 0 : subtotal === 0 ? 0 : 150;
   const total = subtotal + shipping - discount;
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <div>
-      <header>
-        <div className="logo"><img src={logo} alt="AgroTech Logo" /></div>
-        <h1>AgroTech Marketplace</h1>
-        <div className="menu-toggle" onClick={toggleMenu}>☰</div>
-        <nav className={menuOpen ? "active" : ""}>
+    <div className="marketplace-page">
+      <header className="marketplace-header">
+        <div className="header-left">
+          <div className="logo-section">
+            <img src={logo} alt="AgroTech Logo" />
+            <div>
+              <h1>AgroTech <span>Marketplace</span></h1>
+              <span>Soluciones para ganadería y campo</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="menu-toggle" onClick={toggleMenu}>
+          {menuOpen ? <FaTimes /> : <FaBars />}
+        </div>
+
+        <nav className={`main-nav ${menuOpen ? "active" : ""}`}>
           <a href="/indexScreen">Inicio</a>
           <a href="/trazabilidad">Trazabilidad</a>
-          <a onClick={goPanel} style={{ cursor: "pointer" }}>Panel</a>
-          {!checkSession() && <a href="/Login">Login</a>}
+          <a onClick={goPanel}>Panel</a>
+          {!(localStorage.getItem("agroSession") ||
+            sessionStorage.getItem("agroSession")) && (
+            <a href="/Login">Login</a>
+          )}
         </nav>
-        <div className="cart-icon" onClick={toggleCart}>
-          🛒 <span>{cartCount}</span>
+
+        <div className="header-actions">
+          <button className="profile-btn pill" onClick={goPanel}>
+            <FaUserCircle />
+            <span>Mi Cuenta</span>
+          </button>
+
+          <div className="cart-icon-wrapper" onClick={toggleCart}>
+            <FaShoppingCart />
+            <span className="badge">{cartCount}</span>
+          </div>
         </div>
       </header>
 
       <section className="hero">
+        <div className="hero-overlay"></div>
+
         <div className="hero-content">
-          <h1>Productos Profesionales para Ganadería</h1>
+          <div className="hero-badge pill">
+            <FaLeaf /> Marketplace #1 para el sector ganadero
+          </div>
+
+          <h1>Todo para tu rancho, granja y producción agropecuaria</h1>
+
+          <p>
+            Encuentra alimento, medicamentos, herramientas, maquinaria y
+            accesorios profesionales en un solo lugar.
+          </p>
+
           <div className="search-container">
-            <div className="search-wrapper">
-              <div className="search-icon">🔍</div>
+            <div className="search-wrapper pill">
+              <FaSearch className="search-icon" />
               <input
                 type="text"
                 className="search-input"
-                placeholder="Buscar alimento, vacunas..."
+                placeholder="Buscar alimento, vacunas, maquinaria..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
+              <button className="search-button pill">Buscar</button>
+            </div>
+          </div>
+
+          <div className="hero-features">
+            <div className="hero-feature-card pill">
+              <FaTruck />
+              <span>Envíos a todo México</span>
+            </div>
+
+            <div className="hero-feature-card pill">
+              <FaShieldAlt />
+              <span>Compra segura</span>
+            </div>
+
+            <div className="hero-feature-card pill">
+              <FaTag />
+              <span>Ofertas exclusivas</span>
             </div>
           </div>
         </div>
       </section>
 
+      <section className="benefits-section">
+        <div className="benefit-card">
+          <div className="benefit-icon"><FaTruck /></div>
+          <div>
+            <h4>Envío Gratis</h4>
+            <p>En compras mayores a $300 MXN</p>
+          </div>
+        </div>
+
+        <div className="benefit-card">
+          <div className="benefit-icon"><FaShieldAlt /></div>
+          <div>
+            <h4>Pago Seguro</h4>
+            <p>Protección en todas tus compras</p>
+          </div>
+        </div>
+
+        <div className="benefit-card">
+          <div className="benefit-icon"><FaFire /></div>
+          <div>
+            <h4>Promociones</h4>
+            <p>Descuentos y productos destacados</p>
+          </div>
+        </div>
+      </section>
+
       <section className="categories">
-        <h2>Categorías</h2>
+        <div className="section-header">
+          <h2>Categorías</h2>
+          <p>Explora productos por categoría</p>
+        </div>
+
         <div className="category-grid">
-          <div className="category-card" onClick={() => filterByCategory(null)}>
+          <div
+            className={`category-card pill ${selectedCategory === null ? "active" : ""}`}
+            onClick={() => filterByCategory(null)}
+          >
             🌎 Todas
           </div>
+
           {categories.map((cat) => (
             <div
               key={cat.id}
-              className="category-card"
+              className={`category-card pill ${
+                selectedCategory === cat.id ? "active" : ""
+              }`}
               onClick={() => filterByCategory(cat.id)}
             >
               {cat.nombre}
@@ -241,17 +350,73 @@ const Marketplace: React.FC = () => {
       </section>
 
       <section className="products">
-        <h2>Productos Destacados</h2>
+        <div className="section-header">
+          <h2>Productos Destacados</h2>
+          <p>{filteredProducts.length} productos encontrados</p>
+        </div>
+
         <div className="product-grid">
           {filteredProducts.map((product) => (
-            <div key={product.id_productos} className="product-card" onClick={() => openDetails(product)} style={{ cursor: "pointer" }}>
-              <img src={getImageUrl(product.imagen)} alt={product.nombre} />
+            <div
+              key={product.id_productos}
+              className="product-card"
+              onClick={() => openDetails(product)}
+            >
+              <div className="product-image-wrapper">
+                <span className="product-badge pill">Top Venta</span>
+                <img
+                  src={getImageUrl(product.imagen)}
+                  alt={product.nombre}
+                />
+              </div>
+
               <div className="product-info">
+                <p className="brand">AgroTech Premium</p>
                 <h3>{product.nombre}</h3>
-                <div className="price">${Number(product.precio).toFixed(2)} MXN</div>
-                <button className="buy-btn" onClick={(e) => { e.stopPropagation(); addToCart(product.nombre, product.precio, product.imagen); }}>
-                  Agregar al carrito
-                </button>
+
+                <div className="rating">
+                  <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
+                  <span>(4.8)</span>
+                </div>
+
+                <p className="product-description">
+                  {product.descripcion?.slice(0, 80)}...
+                </p>
+
+                <div className="price-row">
+                  <div className="price">
+                    ${Number(product.precio).toFixed(2)} MXN
+                  </div>
+                  <div className={`stock-status-pill ${product.stock > 0 ? "in-stock" : "out-stock"}`}>
+                    {product.stock > 0 ? "Disponible" : "Agotado"}
+                  </div>
+                </div>
+
+                <div className="product-actions">
+                  <button
+                    className="details-btn pill"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openDetails(product);
+                    }}
+                  >
+                    Detalles
+                  </button>
+
+                  <button
+                    className="buy-btn pill"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(
+                        product.nombre,
+                        product.precio,
+                        product.imagen
+                      );
+                    }}
+                  >
+                    Agregar
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -259,60 +424,87 @@ const Marketplace: React.FC = () => {
       </section>
 
       <section className="ad-section">
-        <h2>📢 Publicita tus Productos Aquí</h2>
-        <p>Llega a miles de productores en todo México.</p>
+        <div className="ad-content">
+          <h2>📢 ¿Quieres vender con nosotros?</h2>
+          <p>Llega a miles de ganaderos en todo México publicando tus productos en nuestra red.</p>
+          <button className="pill">Quiero anunciarme</button>
+        </div>
       </section>
 
-      <footer>© 2026 AgroTech - Marketplace Profesional</footer>
+      <footer className="footer">
+        <div className="footer-info">
+          <h3>AgroTech Marketplace</h3>
+          <p>La mejor plataforma para productos del sector agropecuario.</p>
+        </div>
+        <div className="footer-copy">
+          <p>© 2026 AgroTech - Marketplace Profesional</p>
+        </div>
+      </footer>
 
-      {isOpen && <div className="cart-overlay active" onClick={toggleCart}></div>}
+      {isOpen && (
+        <div className="cart-overlay active" onClick={toggleCart}></div>
+      )}
 
-      <div className={`cart ${isOpen ? "active" : ""}`}>
+      {/* CARRITO MEJORADO */}
+      <div className={`cart-sidebar ${isOpen ? "active" : ""}`}>
         <div className="cart-header">
-          <h2>🛒 Tu Carrito</h2>
-          <button className="cart-close" onClick={toggleCart}>✕</button>
+          <h3><FaShoppingCart /> Tu Carrito</h3>
+          <button className="close-cart" onClick={toggleCart}>✕</button>
         </div>
+
         <div className="cart-body">
-          {cart.map((item, index) => (
-            <div key={index} className="cart-item">
-              <img src={getImageUrl(item.image)} alt={item.name} />
-              <div className="cart-item-info">
-                <div className="cart-item-title">{item.name}</div>
-                <div className="cart-item-price">${item.price.toFixed(2)} MXN</div>
-                <div className="quantity-controls">
-                  <button onClick={() => changeQty(index, -1)}>−</button>
-                  <span>{item.quantity}</span>
-                  <button onClick={() => changeQty(index, 1)}>+</button>
+          {cart.length === 0 ? (
+            <div className="empty-cart-msg">Tu carrito está vacío</div>
+          ) : (
+            cart.map((item, index) => (
+              <div key={index} className="cart-item-modern">
+                <img src={getImageUrl(item.image)} alt={item.name} />
+                <div className="cart-item-details">
+                  <h4>{item.name}</h4>
+                  <p className="item-price">${(item.price * item.quantity).toFixed(2)} MXN</p>
+                  <div className="item-controls">
+                    <div className="qty-pill">
+                      <button onClick={() => changeQty(index, -1)}>−</button>
+                      <span>{item.quantity}</span>
+                      <button onClick={() => changeQty(index, 1)}>+</button>
+                    </div>
+                    <button className="trash-btn" onClick={() => removeItem(index)}>
+                      <FaTrashAlt />
+                    </button>
+                  </div>
                 </div>
-                <button className="remove-btn" onClick={() => removeItem(index)}>Eliminar</button>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
-        <div className="cart-footer">
-          <div className="coupon-section">
-            <input
-              type="text"
-              placeholder="Código de descuento"
-              value={couponInput}
-              onChange={(e) => setCouponInput(e.target.value)}
+
+        <div className="cart-footer-modern">
+          <div className="coupon-row">
+            <input 
+              type="text" 
+              placeholder="Código" 
+              value={couponInput} 
+              onChange={(e) => setCouponInput(e.target.value)} 
             />
-            <button onClick={applyCoupon}>Aplicar</button>
+            <button className="pill" onClick={applyCoupon}>OK</button>
           </div>
-          <div className="cart-summary">
-            <div>Subtotal: ${subtotal.toFixed(2)}</div>
-            <div>Envío: ${shipping.toFixed(2)}</div>
-            <div>Descuento: -${discount.toFixed(2)}</div>
-            <div className="total-row">
-              <strong>Total: ${total.toFixed(2)} MXN</strong>
-            </div>
+          <div className="summary-details">
+            <div className="summary-line"><span>Subtotal:</span> <span>${subtotal.toFixed(2)}</span></div>
+            <div className="summary-line"><span>Envío:</span> <span>${shipping.toFixed(2)}</span></div>
+            <div className="summary-line total"><span>Total:</span> <span>${total.toFixed(2)} MXN</span></div>
           </div>
-          <button className="checkout-btn" onClick={() => navigate("/pagos")}>Finalizar Compra</button>
+          <button className="checkout-btn pill" onClick={() => navigate("/pagos")}>
+            Finalizar Compra
+          </button>
         </div>
       </div>
 
       {detailsOpen && selectedProduct && (
-        <ProductDetailsModal product={selectedProduct} onClose={closeDetails} addToCart={addToCart} />
+        <ProductDetailsModal
+          product={selectedProduct}
+          onClose={closeDetails}
+          addToCart={addToCart}
+        />
       )}
     </div>
   );
