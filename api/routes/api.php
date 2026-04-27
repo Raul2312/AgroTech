@@ -27,6 +27,8 @@ Route::apiResource('productos', ProductoController::class);
 Route::apiResource('categorias', CategoriaController::class);
 Route::apiResource('/usuarios', UserController::class);
 Route::apiResource('rancho', RanchoController::class);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 
 Route::middleware(['jwt.auth'])->group(function () {
@@ -51,8 +53,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
 
     
-Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
 
 });
     
