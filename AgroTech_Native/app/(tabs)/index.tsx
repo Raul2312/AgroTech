@@ -183,7 +183,7 @@ export default function Marketplace() {
 
   const renderStars = (rating: number) => {
     return (
-      <View style={{ flexDirection: "row", marginTop: 2 }}>
+      <View style={styles.starsRow}>
         {Array.from({ length: 5 }, (_, i) => (
           <Ionicons
             key={i}
@@ -231,7 +231,6 @@ export default function Marketplace() {
             color="#16a34a"
             style={{ marginRight: 10 }}
           />
-
           <TextInput
             placeholder="Buscar productos..."
             placeholderTextColor="#64748b"
@@ -277,7 +276,9 @@ export default function Marketplace() {
         data={filtered}
         numColumns={2}
         keyExtractor={(item) => item.id_productos.toString()}
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={styles.listContent}
+        columnWrapperStyle={styles.columnWrapper}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -307,6 +308,7 @@ export default function Marketplace() {
                   <Image
                     source={{ uri: item.imagen_url }}
                     style={styles.productImg}
+                    resizeMode="cover"
                   />
 
                   <LinearGradient
@@ -341,36 +343,37 @@ export default function Marketplace() {
                 </View>
 
                 <View style={styles.cardContent}>
-                  <Text numberOfLines={4} style={styles.productName}>
-                    {item.nombre}
-                  </Text>
-
-                  <View style={styles.ratingRow}>
-                    {renderStars(rating)}
-                    <Text style={styles.ratingText}>
-                      {rating.toFixed(1)}
+                  <View>
+                    <Text numberOfLines={2} style={styles.productName}>
+                      {item.nombre}
                     </Text>
-                  </View>
 
-                  <View style={styles.locationRow}>
-                    <Ionicons
-                      name="location-outline"
-                      size={12}
-                      color="#94a3b8"
-                    />
-                    <Text style={styles.locationText}>Chihuahua, MX</Text>
+                    <View style={styles.ratingRow}>
+                      {renderStars(rating)}
+                      <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
+                    </View>
+
+                    <View style={styles.locationRow}>
+                      <Ionicons
+                        name="location-outline"
+                        size={12}
+                        color="#94a3b8"
+                      />
+                      <Text style={styles.locationText}>Chihuahua, MX</Text>
+                    </View>
                   </View>
 
                   <View style={styles.priceRow}>
-                    {item.precio_anterior && (
-                      <Text style={styles.oldPrice}>
-                        ${Number(item.precio_anterior).toFixed(2)}
+                    <View style={styles.priceBlock}>
+                      {item.precio_anterior && (
+                        <Text style={styles.oldPrice}>
+                          ${Number(item.precio_anterior).toFixed(2)}
+                        </Text>
+                      )}
+                      <Text style={styles.price}>
+                        ${Number(item.precio).toFixed(2)}
                       </Text>
-                    )}
-
-                    <Text style={styles.price}>
-                      ${Number(item.precio).toFixed(2)}
-                    </Text>
+                    </View>
                   </View>
                 </View>
 
@@ -475,9 +478,18 @@ const styles = StyleSheet.create({
     color: "white",
   },
 
+  listContent: {
+    paddingHorizontal: 8,
+    paddingBottom: 120,
+  },
+
+  columnWrapper: {
+    justifyContent: "space-between",
+  },
+
   cardWrapper: {
-    flex: 1,
-    padding: 8,
+    width: "48%",
+    marginBottom: 14,
   },
 
   card: {
@@ -485,6 +497,8 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     overflow: "hidden",
     elevation: 8,
+    height: 305,
+    position: "relative",
   },
 
   imageContainer: {
@@ -529,19 +543,26 @@ const styles = StyleSheet.create({
   },
 
   cardContent: {
+    flex: 1,
     padding: 10,
+    justifyContent: "space-between",
   },
 
   productName: {
     fontSize: 14,
     fontWeight: "bold",
     color: "#0f172a",
+    minHeight: 38,
+  },
+
+  starsRow: {
+    flexDirection: "row",
   },
 
   ratingRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 3,
+    marginTop: 4,
   },
 
   ratingText: {
@@ -553,7 +574,7 @@ const styles = StyleSheet.create({
   locationRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 2,
+    marginTop: 4,
   },
 
   locationText: {
@@ -563,9 +584,11 @@ const styles = StyleSheet.create({
   },
 
   priceRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 5,
+    marginTop: 8,
+  },
+
+  priceBlock: {
+    paddingRight: 48,
   },
 
   price: {
@@ -578,13 +601,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#94a3b8",
     textDecorationLine: "line-through",
-    marginRight: 6,
+    marginBottom: 2,
   },
 
   cartBtn: {
     position: "absolute",
-    bottom: 10,
-    right: 10,
+    bottom: 12,
+    right: 12,
     backgroundColor: "#16a34a",
     width: 38,
     height: 38,

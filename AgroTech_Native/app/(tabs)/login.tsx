@@ -11,6 +11,7 @@ import {
   Animated,
   Easing,
   Alert,
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -25,6 +26,11 @@ export default function Login() {
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Recuperación
+  const [forgotVisible, setForgotVisible] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
@@ -48,7 +54,6 @@ export default function Login() {
     checkSession();
   }, []);
 
-  // 🔥 AUTO LOGIN
   const checkSession = async () => {
     const session = await AsyncStorage.getItem("agroSession");
     if (session) {
@@ -56,7 +61,6 @@ export default function Login() {
     }
   };
 
-  // 🔥 LOGIN REAL
   const handleLogin = async () => {
     if (!correo || !password) {
       Alert.alert("Error", "Completa todos los campos");
@@ -86,7 +90,6 @@ export default function Login() {
 
         Alert.alert("Bienvenido 🌱", "Inicio de sesión exitoso");
 
-        // 🔥 ADMIN CHECK (igual que web)
         const adminEmails = [
           "22cg0095@itsncg.edu.mx",
           "sebastiannn231@gmail.com",
@@ -94,7 +97,7 @@ export default function Login() {
         ];
 
         if (adminEmails.includes(data.user.email)) {
-          router.replace("/(tabs)/perfil"); // puedes cambiar si tienes dashboard
+          router.replace("/(tabs)/perfil");
         } else {
           router.replace("/(tabs)");
         }
@@ -109,6 +112,39 @@ export default function Login() {
     }
 
     setLoading(false);
+  };
+
+  const handleRecovery = async () => {
+    if (!recoveryEmail) {
+      Alert.alert("Error", "Ingresa tu correo electrónico");
+      return;
+    }
+
+    setRecoveryLoading(true);
+
+    try {
+      await axios.post(`${API_URL}/forgot-password`, {
+        email: recoveryEmail,
+      });
+
+      Alert.alert(
+        "Correo enviado 📩",
+        "Te enviamos instrucciones para recuperar tu cuenta."
+      );
+
+      setRecoveryEmail("");
+      setForgotVisible(false);
+    } catch (error: any) {
+      console.log(error);
+
+      Alert.alert(
+        "Error",
+        error.response?.data?.message ||
+          "No se pudo enviar el correo de recuperación"
+      );
+    }
+
+    setRecoveryLoading(false);
   };
 
   return (
@@ -132,7 +168,6 @@ export default function Login() {
             },
           ]}
         >
-          {/* HEADER */}
           <View style={styles.header}>
             <View style={styles.logoCircle}>
               <Ionicons name="leaf" size={32} color="#16a34a" />
@@ -144,7 +179,6 @@ export default function Login() {
             </Text>
           </View>
 
-          {/* FORM */}
           <View style={styles.form}>
             <View style={styles.inputBox}>
               <Ionicons name="mail-outline" size={20} color="#16a34a" />
@@ -170,7 +204,6 @@ export default function Login() {
               />
             </View>
 
-            {/* BOTÓN LOGIN */}
             <TouchableOpacity
               style={[styles.button, loading && { opacity: 0.7 }]}
               onPress={handleLogin}
@@ -181,7 +214,10 @@ export default function Login() {
               </Text>
             </TouchableOpacity>
 
-            {/* IR A REGISTRO */}
+            <TouchableOpacity onPress={() => setForgotVisible(true)}>
+              <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity onPress={() => router.push("/register")}>
               <Text style={styles.registerText}>
                 ¿No tienes cuenta?{" "}
@@ -190,12 +226,59 @@ export default function Login() {
             </TouchableOpacity>
           </View>
 
-          {/* FOOTER */}
           <Text style={styles.footerText}>
             © 2026 AgroTech • Sistema inteligente
           </Text>
         </Animated.View>
       </KeyboardAvoidingView>
+
+      {/* MODAL RECUPERAR CUENTA */}
+      <Modal
+        visible={forgotVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setForgotVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <Ionicons name="mail-open-outline" size={26} color="#16a34a" />
+              <Text style={styles.modalTitle}>Recuperar cuenta</Text>
+            </View>
+
+            <Text style={styles.modalSubtitle}>
+              Ingresa tu correo y te enviaremos instrucciones para recuperar tu
+              contraseña.
+            </Text>
+
+            <View style={styles.inputBox}>
+              <Ionicons name="mail-outline" size={20} color="#16a34a" />
+              <TextInput
+                placeholder="Correo electrónico"
+                placeholderTextColor="#94a3b8"
+                style={styles.input}
+                value={recoveryEmail}
+                onChangeText={setRecoveryEmail}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.button, recoveryLoading && { opacity: 0.7 }]}
+              onPress={handleRecovery}
+              disabled={recoveryLoading}
+            >
+              <Text style={styles.buttonText}>
+                {recoveryLoading ? "Enviando..." : "Enviar recuperación"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setForgotVisible(false)}>
+              <Text style={styles.closeText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ImageBackground>
   );
 }
@@ -278,6 +361,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 
+  forgotText: {
+    color: "#38bdf8",
+    textAlign: "center",
+    marginTop: 15,
+    fontWeight: "600",
+  },
+
   registerText: {
     color: "#94a3b8",
     textAlign: "center",
@@ -294,5 +384,44 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
     fontSize: 12,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+
+  modalCard: {
+    backgroundColor: "#0f172a",
+    borderRadius: 20,
+    padding: 20,
+  },
+
+  modalHeader: {
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  modalTitle: {
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "bold",
+    marginTop: 8,
+  },
+
+  modalSubtitle: {
+    color: "#94a3b8",
+    textAlign: "center",
+    marginBottom: 20,
+    fontSize: 13,
+  },
+
+  closeText: {
+    color: "#94a3b8",
+    textAlign: "center",
+    marginTop: 15,
+    fontWeight: "600",
   },
 });
