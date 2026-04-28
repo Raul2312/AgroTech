@@ -10,37 +10,38 @@ import Header from "../Layouts/Header";
 const IndexScreen = () => {
   return (
     <div className="index-page">
-
-      <Header/>
+      <Header />
 
       {/* HERO */}
       <section className="hero">
-
         <div className="overlay"></div>
 
         <div className="hero-content">
+          <span className="hero-badge">Plataforma Ganadera Inteligente</span>
 
-          <h2>Innovación Digital en la Ganadería</h2>
+          <h2>Innovación Digital en la Ganadería Moderna</h2>
 
           <p>
             Control total del ganado, trazabilidad inteligente y marketplace
-            digital en una sola plataforma.
+            digital en una sola plataforma robusta, segura y escalable.
           </p>
 
-          <Link to="/login" className="btn">
-            Ingresar a la Plataforma
-          </Link>
+          <div className="hero-actions">
+            <Link to="/login" className="btn primary-btn">
+              Ingresar a la Plataforma
+            </Link>
 
+            <a href="#trazabilidad" className="btn secondary-btn">
+              Explorar Solución
+            </a>
+          </div>
         </div>
-
       </section>
-
 
       {/* TRAZABILIDAD */}
       <section id="trazabilidad" className="info-section">
-
         <div className="info-text">
-
+          <span className="section-tag">Trazabilidad</span>
           <h2>Sistema de Trazabilidad Inteligente</h2>
 
           <p>
@@ -54,21 +55,17 @@ const IndexScreen = () => {
             <li>✔ Seguimiento Geográfico</li>
             <li>✔ Historial Digital Seguro</li>
           </ul>
-
         </div>
 
         <div className="info-img">
-          <img src={trazabilidadImg} alt="Sistema de Trazabilidad"/>
+          <img src={trazabilidadImg} alt="Sistema de Trazabilidad" />
         </div>
-
       </section>
-
 
       {/* MARKETPLACE */}
       <section id="marketplace" className="info-section reverse">
-
         <div className="info-text">
-
+          <span className="section-tag">Marketplace</span>
           <h2>Marketplace Ganadero Digital</h2>
 
           <p>
@@ -82,48 +79,32 @@ const IndexScreen = () => {
             <li>✔ Pagos Seguros</li>
             <li>✔ Sistema de Reputación</li>
           </ul>
-
         </div>
 
         <div className="info-img">
-          <img src={marketplaceImg} alt="Marketplace Ganadero"/>
+          <img src={marketplaceImg} alt="Marketplace Ganadero" />
         </div>
-
       </section>
-
 
       {/* GALERÍA */}
       <section className="gallery">
-
+        <span className="section-tag center">Producción Inteligente</span>
         <h2>Producción y Control en Campo</h2>
 
         <div className="gallery-grid">
-
-          <img src={ganado1} alt="Ganado 1"/>
-          <img src={ganado2} alt="Ganado 2"/>
-
+          <img src={ganado1} alt="Ganado 1" />
+          <img src={ganado2} alt="Ganado 2" />
         </div>
-
       </section>
-
 
       {/* FOOTER */}
       <footer id="contacto">
-
         <div className="footer-content">
-
           <h3>AgroTech</h3>
-
-          <p>
-            Plataforma digital para la transformación del sector ganadero.
-          </p>
-
+          <p>Plataforma digital para la transformación del sector ganadero.</p>
           <p>© 2026 Todos los derechos reservados</p>
-
         </div>
-
       </footer>
-
     </div>
   );
 };

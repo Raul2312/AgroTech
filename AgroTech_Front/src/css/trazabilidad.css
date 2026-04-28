@@ -300,7 +300,10 @@ grid-template-columns:1fr;
 }
 
 .logo h1{
-  margin:0;
+  color: white;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
 .logo img{
@@ -311,7 +314,32 @@ grid-template-columns:1fr;
 
 /* 🔥 OPCIONAL (MEJORA HEADER) */
 .header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 7%;
+  background: linear-gradient(135deg, #081426 0%, #0d1f3c 25%, #12335d 60%, #0f8f42 100%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.35s ease;
 }
+a{
+    position: relative;
+    color: rgba(255, 255, 255, 0.88);
+    text-decoration: none;
+    font-size: 0.96rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+.nav{
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
