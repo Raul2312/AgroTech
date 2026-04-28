@@ -61,41 +61,38 @@ class AuthController extends Controller
 
     }
 
-    public function forgotPassword(Request $request)
+ public function forgotPassword(Request $request)
 {
-    $request->validate([
-        'email' => 'required|email'
-    ]);
-
+    $request->validate(['email' => 'required|email']);
     $user = User::where('email', $request->email)->first();
 
     if (!$user) {
-        return response()->json([
-            'message' => 'No existe una cuenta con ese correo'
-        ], 404);
+        return response()->json(['message' => 'Este correo no está registrado'], 404);
     }
 
-    $token = Str::random(64);
+    // Generamos un código numérico de 6 dígitos
+    $codigo = rand(100000, 999999);
 
+    // Guardamos el código en la tabla (con Hash para seguridad)
     DB::table('password_reset_tokens')->updateOrInsert(
         ['email' => $request->email],
         [
-            'email' => $request->email,
-            'token' => Hash::make($token),
+            'token' => Hash::make($codigo),
             'created_at' => now()
         ]
     );
 
-    $resetLink = "https://agrootech.com.mx/api/reset-password?token=$token&email=" . urlencode($request->email);
+    // ENVIAR EL CORREO (Asegúrate de que la vista exista en resources/views/emails/recovery.blade.php)
+    try {
+        Mail::send('emails.recovery', ['codigo' => $codigo], function ($message) use ($user) {
+            $message->to($user->email)
+                    ->subject($codigo . ' es tu código de recuperación - AgroTech 🌱');
+        });
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Error al enviar el correo'], 500);
+    }
 
-    Mail::raw("Recupera tu cuenta aquí: $resetLink", function ($message) use ($request) {
-        $message->to($request->email)
-                ->subject('Recuperación de contraseña');
-    });
-
-    return response()->json([
-        'message' => 'Correo de recuperación enviado'
-    ]);
+    return response()->json(['message' => 'Código enviado con éxito']);
 }
 
 public function resetPassword(Request $request)
