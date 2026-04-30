@@ -71,6 +71,12 @@ const Marketplace: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
+  const adminEmails = [
+  "22cg0095@itsncg.edu.mx",
+  "sebastiannn231@gmail.com",
+  "raulmadridflores202@gmail.com"
+];
+
   useEffect(() => {
     fetchProducts();
     fetchCategories();
@@ -108,13 +114,31 @@ const Marketplace: React.FC = () => {
     return session ? true : false;
   };
 
-  const goPanel = () => {
-    if (!checkSession()) {
-      navigate("/login");
-      return;
+ const goPanel = () => {
+  const sessionStr = localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession");
+
+  // 1. Si no hay sesión, al login
+  if (!sessionStr) {
+    navigate("/login");
+    return;
+  }
+
+  try {
+    const sessionData = JSON.parse(sessionStr);
+    const userEmail = sessionData.user?.email;
+
+    // 2. Si es admin, mandarlo al dashboard de admin
+    if (userEmail && adminEmails.includes(userEmail)) {
+      navigate("/dashboard");
+    } else {
+      // 3. Si es cliente normal, mandarlo a su área
+      navigate("/areacliente");
     }
-    navigate("/areacliente");
-  };
+  } catch (error) {
+    console.error("Error al redirigir:", error);
+    navigate("/login");
+  }
+};
 
   const toggleCart = () => setIsOpen(!isOpen);
   const toggleMenu = () => setMenuOpen(!menuOpen);

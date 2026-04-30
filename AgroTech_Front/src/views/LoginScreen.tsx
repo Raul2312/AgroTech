@@ -41,13 +41,30 @@ const Login: React.FC = () => {
   ];
 
   // AUTO LOGIN: Si ya hay sesión, mandarlo al marketplace
+  // AUTO LOGIN CORREGIDO: Verifica el rol antes de redirigir
   useEffect(() => {
-    const session =
-      localStorage.getItem("agroSession") ||
-      sessionStorage.getItem("agroSession");
+    const sessionStr = localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession");
 
-    if (session) {
-      navigate("/marketplace");
+    if (sessionStr) {
+      try {
+        const sessionData = JSON.parse(sessionStr);
+        const userEmail = sessionData.user?.email;
+
+        if (userEmail) {
+          // Si el email está en la lista de admins, mándalo al dashboard
+          if (adminEmails.includes(userEmail)) {
+            navigate("/dashboard");
+          } else {
+            // Si no, al marketplace
+            navigate("/marketplace");
+          }
+        }
+      } catch (error) {
+        console.error("Error al leer la sesión:", error);
+        // Si la sesión está corrupta, mejor limpiamos
+        localStorage.removeItem("agroSession");
+        sessionStorage.removeItem("agroSession");
+      }
     }
   }, [navigate]);
 
