@@ -86,10 +86,13 @@ class AuthController extends Controller
     try {
         Mail::send('emails.recovery', ['codigo' => $codigo], function ($message) use ($user) {
             $message->to($user->email)
-                    ->subject($codigo . ' es tu código de recuperación - AgroTech 🌱');
+                    ->subject( 'Código de recuperación - AgroTech 🌱');
         });
     } catch (\Exception $e) {
-        return response()->json(['message' => 'Error al enviar el correo'], 500);
+        return response()->json([
+            'message' => 'Error al enviar el correo',
+            'error'=>$e->getMessage()
+            ], 500);
     }
 
     return response()->json(['message' => 'Código enviado con éxito']);

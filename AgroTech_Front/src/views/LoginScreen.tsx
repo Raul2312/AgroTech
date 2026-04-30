@@ -129,7 +129,9 @@ const Login: React.FC = () => {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_URL}forgot-password`, { email: recoveryEmail });
+      await axios.post(`${API_URL}forgot-password`, { email: recoveryEmail }).catch((error:any)=>{
+        console.log(error)
+      });
       
       Swal.fire({
         title: "Código enviado",
@@ -144,6 +146,7 @@ const Login: React.FC = () => {
       setView("reset"); 
 
     } catch (error: any) {
+      console.log(error)
       Swal.fire({
         title: "Error",
         text: error.response?.data?.message || "Error al enviar correo",
@@ -175,6 +178,7 @@ const Login: React.FC = () => {
       setLoginData({ ...loginData, email: recoveryEmail });
       setView("login"); // Regresar al login tras éxito
     } catch (error: any) {
+      console.log(error)
       Swal.fire({
         title: "Error",
         text: error.response?.data?.message || "Código inválido o expirado",
