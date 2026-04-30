@@ -31,6 +31,9 @@ export default function Login() {
   const [forgotVisible, setForgotVisible] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState("");
   const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [recoveryStep, setRecoveryStep] = useState<"forgot" | "reset">("forgot");
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
@@ -83,10 +86,7 @@ export default function Login() {
           user: data.user,
         };
 
-        await AsyncStorage.setItem(
-          "agroSession",
-          JSON.stringify(sessionData)
-        );
+        await AsyncStorage.setItem("agroSession", JSON.stringify(sessionData));
 
         Alert.alert("Bienvenido 🌱", "Inicio de sesión exitoso");
 
@@ -103,8 +103,6 @@ export default function Login() {
         }
       }
     } catch (error: any) {
-      console.log(error);
-
       Alert.alert(
         "Error",
         error.response?.data?.message || "Credenciales incorrectas"
@@ -127,24 +125,53 @@ export default function Login() {
         email: recoveryEmail,
       });
 
-      Alert.alert(
-        "Correo enviado 📩",
-        "Te enviamos instrucciones para recuperar tu cuenta."
-      );
-
-      setRecoveryEmail("");
-      setForgotVisible(false);
+      Alert.alert("Código enviado 📩", "Revisa tu bandeja de entrada");
+      setRecoveryStep("reset");
     } catch (error: any) {
-      console.log(error);
-
       Alert.alert(
         "Error",
-        error.response?.data?.message ||
-          "No se pudo enviar el correo de recuperación"
+        error.response?.data?.message || "No se pudo enviar el código"
       );
     }
 
     setRecoveryLoading(false);
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetCode || !newPassword) {
+      Alert.alert("Error", "Completa todos los campos");
+      return;
+    }
+
+    try {
+      await axios.post(`${API_URL}/reset-password`, {
+        email: recoveryEmail,
+        token: resetCode,
+        password: newPassword,
+      });
+
+      Alert.alert("Éxito", "Tu contraseña ha sido actualizada");
+
+      setForgotVisible(false);
+      setRecoveryStep("forgot");
+      setRecoveryEmail("");
+      setResetCode("");
+      setNewPassword("");
+      setCorreo(recoveryEmail);
+    } catch (error: any) {
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Código inválido o expirado"
+      );
+    }
+  };
+
+  const closeRecoveryModal = () => {
+    setForgotVisible(false);
+    setRecoveryStep("forgot");
+    setRecoveryEmail("");
+    setResetCode("");
+    setNewPassword("");
   };
 
   return (
@@ -232,48 +259,96 @@ export default function Login() {
         </Animated.View>
       </KeyboardAvoidingView>
 
-      {/* MODAL RECUPERAR CUENTA */}
       <Modal
         visible={forgotVisible}
         transparent
         animationType="fade"
-        onRequestClose={() => setForgotVisible(false)}
+        onRequestClose={closeRecoveryModal}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <View style={styles.modalHeader}>
               <Ionicons name="mail-open-outline" size={26} color="#16a34a" />
-              <Text style={styles.modalTitle}>Recuperar cuenta</Text>
-            </View>
-
-            <Text style={styles.modalSubtitle}>
-              Ingresa tu correo y te enviaremos instrucciones para recuperar tu
-              contraseña.
-            </Text>
-
-            <View style={styles.inputBox}>
-              <Ionicons name="mail-outline" size={20} color="#16a34a" />
-              <TextInput
-                placeholder="Correo electrónico"
-                placeholderTextColor="#94a3b8"
-                style={styles.input}
-                value={recoveryEmail}
-                onChangeText={setRecoveryEmail}
-                autoCapitalize="none"
-              />
-            </View>
-
-            <TouchableOpacity
-              style={[styles.button, recoveryLoading && { opacity: 0.7 }]}
-              onPress={handleRecovery}
-              disabled={recoveryLoading}
-            >
-              <Text style={styles.buttonText}>
-                {recoveryLoading ? "Enviando..." : "Enviar recuperación"}
+              <Text style={styles.modalTitle}>
+                {recoveryStep === "forgot"
+                  ? "Recuperar cuenta"
+                  : "Restablecer contraseña"}
               </Text>
-            </TouchableOpacity>
+            </View>
 
-            <TouchableOpacity onPress={() => setForgotVisible(false)}>
+            {recoveryStep === "forgot" ? (
+              <>
+                <Text style={styles.modalSubtitle}>
+                  Ingresa tu correo para recibir un código de verificación.
+                </Text>
+
+                <View style={styles.inputBox}>
+                  <Ionicons name="mail-outline" size={20} color="#16a34a" />
+                  <TextInput
+                    placeholder="Correo electrónico"
+                    placeholderTextColor="#94a3b8"
+                    style={styles.input}
+                    value={recoveryEmail}
+                    onChangeText={setRecoveryEmail}
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.button, recoveryLoading && { opacity: 0.7 }]}
+                  onPress={handleRecovery}
+                  disabled={recoveryLoading}
+                >
+                  <Text style={styles.buttonText}>
+                    {recoveryLoading ? "Enviando..." : "Enviar código"}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text style={styles.modalSubtitle}>
+                  Introduce el código enviado a{" "}
+                  <Text style={styles.emailHighlight}>{recoveryEmail}</Text>
+                </Text>
+
+                <View style={styles.inputBox}>
+                  <Ionicons name="key-outline" size={20} color="#16a34a" />
+                  <TextInput
+                    placeholder="Código de verificación"
+                    placeholderTextColor="#94a3b8"
+                    style={styles.input}
+                    value={resetCode}
+                    onChangeText={setResetCode}
+                    keyboardType="number-pad"
+                  />
+                </View>
+
+                <View style={styles.inputBox}>
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={20}
+                    color="#16a34a"
+                  />
+                  <TextInput
+                    placeholder="Nueva contraseña"
+                    placeholderTextColor="#94a3b8"
+                    secureTextEntry
+                    style={styles.input}
+                    value={newPassword}
+                    onChangeText={setNewPassword}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={handleResetPassword}
+                >
+                  <Text style={styles.buttonText}>Actualizar contraseña</Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            <TouchableOpacity onPress={closeRecoveryModal}>
               <Text style={styles.closeText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
@@ -416,6 +491,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
     fontSize: 13,
+  },
+
+  emailHighlight: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 
   closeText: {
