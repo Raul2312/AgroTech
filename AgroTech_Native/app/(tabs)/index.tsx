@@ -16,6 +16,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useCart } from "../../context/CartContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import DailySpinWheel from "../../components/DailySpinWheel";
 
 const API_URL = "https://api.agrootech.com.mx/api";
 
@@ -50,6 +51,7 @@ export default function Marketplace() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Todos");
   const [favorites, setFavorites] = useState<number[]>([]);
+  const [showSpin, setShowSpin] = useState(false);
 
   const offerAnim = useRef(new Animated.Value(0)).current;
 
@@ -75,6 +77,7 @@ export default function Marketplace() {
   useEffect(() => {
     fetchProductsAndCategories();
     loadFavorites();
+    checkSpinVisibility();
   }, []);
 
   const loadFavorites = async () => {
@@ -101,6 +104,30 @@ export default function Marketplace() {
     }
 
     return true;
+  };
+
+  const checkSpinVisibility = async () => {
+    try {
+      const session = await AsyncStorage.getItem("agroSession");
+
+      if (!session) return;
+
+      const alreadySeenToday = await AsyncStorage.getItem("dailySpinSeen");
+      const today = new Date().toDateString();
+
+      if (alreadySeenToday !== today) {
+        setTimeout(() => {
+          setShowSpin(true);
+        }, 800);
+      }
+    } catch (error) {
+      console.log("Error verificando ruleta", error);
+    }
+  };
+
+  const handleCloseSpin = async () => {
+    await AsyncStorage.setItem("dailySpinSeen", new Date().toDateString());
+    setShowSpin(false);
   };
 
   const fetchProductsAndCategories = async () => {
@@ -132,6 +159,7 @@ export default function Marketplace() {
     setRefreshing(true);
     fetchProductsAndCategories();
     loadFavorites();
+    checkSpinVisibility();
   };
 
   const filtered = products.filter(
@@ -271,6 +299,8 @@ export default function Marketplace() {
           }}
         />
       </View>
+
+      <DailySpinWheel visible={showSpin} onClose={handleCloseSpin} />
 
       <FlatList
         data={filtered}
