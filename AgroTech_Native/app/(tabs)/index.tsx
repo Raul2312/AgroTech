@@ -106,29 +106,65 @@ export default function Marketplace() {
     return true;
   };
 
-  const checkSpinVisibility = async () => {
-    try {
-      const session = await AsyncStorage.getItem("agroSession");
+const checkSpinVisibility = async () => {
+  try {
+    const session = await AsyncStorage.getItem(
+      "agroSession"
+    );
 
-      if (!session) return;
+    if (!session) return;
 
-      const alreadySeenToday = await AsyncStorage.getItem("dailySpinSeen");
-      const today = new Date().toDateString();
+    // 🔥 SESSION REAL
+    const parsed = JSON.parse(session);
+    const user = parsed.user;
 
-      if (alreadySeenToday !== today) {
-        setTimeout(() => {
-          setShowSpin(true);
-        }, 800);
-      }
-    } catch (error) {
-      console.log("Error verificando ruleta", error);
+    const correo =
+      user?.email || user?.correo || "guest";
+
+    const spinKey = `dailySpinSeen_${correo}`;
+
+    const alreadySeenToday =
+      await AsyncStorage.getItem(spinKey);
+
+    const today = new Date().toDateString();
+
+    if (alreadySeenToday !== today) {
+      setTimeout(() => {
+        setShowSpin(true);
+      }, 800);
     }
-  };
+  } catch (error) {
+    console.log("Error verificando ruleta", error);
+  }
+};
 
-  const handleCloseSpin = async () => {
-    await AsyncStorage.setItem("dailySpinSeen", new Date().toDateString());
+const handleCloseSpin = async () => {
+  try {
+    const session = await AsyncStorage.getItem(
+      "agroSession"
+    );
+
+    if (!session) return;
+
+    // 🔥 SESSION REAL
+    const parsed = JSON.parse(session);
+    const user = parsed.user;
+
+    const correo =
+      user?.email || user?.correo || "guest";
+
+    const spinKey = `dailySpinSeen_${correo}`;
+
+    await AsyncStorage.setItem(
+      spinKey,
+      new Date().toDateString()
+    );
+
     setShowSpin(false);
-  };
+  } catch (error) {
+    console.log("Error cerrando ruleta", error);
+  }
+};
 
   const fetchProductsAndCategories = async () => {
     try {
