@@ -246,7 +246,14 @@ export default function PagoScreen() {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.payButton}>
+          <TouchableOpacity style={styles.payButton} onPress={() => {
+            router.push({
+                  pathname: "/PaypalWebView",
+                  params: {
+                    total: total
+                  },
+                })
+          }}>
             <Ionicons
               name="lock-closed-outline"
               size={20}

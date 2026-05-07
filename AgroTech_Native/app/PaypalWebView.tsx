@@ -51,7 +51,7 @@ export default function PayPalWebView({ amount = "10.00", currency = "MXN" }: Pa
       <View style={styles.webviewContainer}>
         <WebView
           ref={webViewRef}
-          source={{ uri: `https://acme.alwaysdata.net/payment/${amount}` }}
+          source={{ uri: `https://api.agrootech.com.mx/payment/${amount}` }}
           onMessage={onMessage}
           javaScriptEnabled={true}
           domStorageEnabled={true}
