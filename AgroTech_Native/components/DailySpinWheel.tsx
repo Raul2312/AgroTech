@@ -1,3 +1,5 @@
+// Reemplaza TODO tu archivo DailySpinWheel.tsx por este código completo
+
 import React, { useRef, useState } from "react";
 import {
   View,
@@ -13,10 +15,24 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import Svg, { Path, Text as SvgText, TSpan } from "react-native-svg";
+
 import { useDailySpin } from "@/hooks/useDailySpin";
 import { SPIN_REWARDS } from "@/constants/spinConfig";
 
 const { width } = Dimensions.get("window");
+
+// ===============================
+// CONFIGURACIÓN DE LA RULETA
+// ===============================
+const WHEEL_SIZE = 280;
+const CENTER_SIZE = 72;
+const STROKE_WIDTH = 6;
+const RADIUS = WHEEL_SIZE / 2;
+const INNER_RADIUS = CENTER_SIZE / 2;
+
+// Cada segmento ocupa:
+const SLICE_ANGLE = 360 / SPIN_REWARDS.length;
 
 type Props = {
   visible: boolean;
@@ -31,6 +47,7 @@ export default function DailySpinWheel({ visible, onClose }: Props) {
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  // 5 vueltas completas
   const spinInterpolate = rotateAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ["0deg", "1800deg"],
@@ -55,7 +72,7 @@ export default function DailySpinWheel({ visible, onClose }: Props) {
       scaleAnim.setValue(0.9);
       fadeAnim.setValue(0);
     }
-  }, [visible]);
+  }, [visible, scaleAnim, fadeAnim]);
 
   const handleSpin = async () => {
     if (!canSpin || spinning) return;
@@ -97,6 +114,49 @@ export default function DailySpinWheel({ visible, onClose }: Props) {
     });
   };
 
+  // ===============================
+  // FUNCIONES SVG
+  // ===============================
+  const polarToCartesian = (
+    cx: number,
+    cy: number,
+    radius: number,
+    angleInDegrees: number
+  ) => {
+    const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
+
+    return {
+      x: cx + radius * Math.cos(angleInRadians),
+      y: cy + radius * Math.sin(angleInRadians),
+    };
+  };
+
+  const describeArc = (startAngle: number, endAngle: number) => {
+    const start = polarToCartesian(RADIUS, RADIUS, RADIUS, endAngle);
+    const end = polarToCartesian(RADIUS, RADIUS, RADIUS, startAngle);
+
+    const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+
+    return [
+      `M ${RADIUS} ${RADIUS}`,
+      `L ${start.x} ${start.y}`,
+      `A ${RADIUS} ${RADIUS} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`,
+      "Z",
+    ].join(" ");
+  };
+
+  const getTextPosition = (angle: number) => {
+    const textRadius = RADIUS - 48;
+    const coords = polarToCartesian(
+      RADIUS,
+      RADIUS,
+      textRadius,
+      angle + SLICE_ANGLE / 2
+    );
+
+    return coords;
+  };
+
   if (!visible) return null;
 
   if (loading) {
@@ -127,7 +187,7 @@ export default function DailySpinWheel({ visible, onClose }: Props) {
             colors={["#020617", "#0f172a", "#052e16"]}
             style={styles.card}
           >
-            {/* CLOSE */}
+            {/* BOTÓN CERRAR */}
             {!spinning && (
               <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
                 <Ionicons name="close" size={20} color="#fff" />
@@ -137,41 +197,74 @@ export default function DailySpinWheel({ visible, onClose }: Props) {
             {/* HEADER */}
             <View style={styles.header}>
               <Text style={styles.title}>🎯 Daily Spin</Text>
-              <Text style={styles.subtitle}>Gira y gana recompensas diarias</Text>
+              <Text style={styles.subtitle}>
+                Gira y gana recompensas diarias
+              </Text>
             </View>
 
-            {/* POINTER */}
+            {/* PUNTERO */}
             <View style={styles.pointerWrap}>
               <Ionicons name="caret-down" size={34} color="#22c55e" />
             </View>
 
-            {/* WHEEL */}
+            {/* RULETA */}
             <View style={styles.wheelContainer}>
               <Animated.View
-                style={[
-                  styles.wheel,
-                  {
-                    transform: [{ rotate: spinInterpolate }],
-                  },
-                ]}
+                style={{
+                  width: WHEEL_SIZE,
+                  height: WHEEL_SIZE,
+                  transform: [{ rotate: spinInterpolate }],
+                }}
               >
-                {SPIN_REWARDS.map((reward, index) => (
-                  <View
-                    key={reward.id}
-                    style={[
-                      styles.slice,
-                      {
-                        backgroundColor: reward.color,
-                        transform: [{ rotate: `${index * 60}deg` }],
-                      },
-                    ]}
-                  >
-                    <Text style={styles.sliceText}>{reward.label}</Text>
-                  </View>
-                ))}
+                <Svg width={WHEEL_SIZE} height={WHEEL_SIZE}>
+                  {/* Segmentos */}
+                  {SPIN_REWARDS.map((reward, index) => {
+                    const startAngle = index * SLICE_ANGLE;
+                    const endAngle = startAngle + SLICE_ANGLE;
+                    const path = describeArc(startAngle, endAngle);
+                    const textPos = getTextPosition(startAngle);
 
+                    const words = reward.label.split(" ");
+
+                    return (
+                      <React.Fragment key={reward.id}>
+                        <Path
+                          d={path}
+                          fill={reward.color}
+                          stroke="#ffffff"
+                          strokeWidth={1.5}
+                        />
+
+                        <SvgText
+                          x={textPos.x}
+                          y={textPos.y}
+                          fill="#ffffff"
+                          fontSize="10"
+                          fontWeight="800"
+                          textAnchor="middle"
+                          alignmentBaseline="middle"
+                        >
+                          {words.length > 1 ? (
+                            <>
+                              <TSpan x={textPos.x} dy="-5">
+                                {words[0]}
+                              </TSpan>
+                              <TSpan x={textPos.x} dy="12">
+                                {words.slice(1).join(" ")}
+                              </TSpan>
+                            </>
+                          ) : (
+                            reward.label
+                          )}
+                        </SvgText>
+                      </React.Fragment>
+                    );
+                  })}
+                </Svg>
+
+                {/* CENTRO */}
                 <View style={styles.centerHub}>
-                  <Ionicons name="leaf" size={24} color="#16a34a" />
+                  <Ionicons name="leaf" size={28} color="#16a34a" />
                 </View>
               </Animated.View>
             </View>
@@ -185,15 +278,18 @@ export default function DailySpinWheel({ visible, onClose }: Props) {
 
               <View style={styles.infoBox}>
                 <Text style={styles.infoLabel}>Último premio</Text>
-                <Text style={styles.infoValueSmall}>
+                <Text style={styles.infoValueSmall} numberOfLines={2}>
                   {lastReward ? lastReward.label : "--"}
                 </Text>
               </View>
             </View>
 
-            {/* BUTTON */}
+            {/* BOTÓN GIRAR */}
             <TouchableOpacity
-              style={[styles.spinButton, (!canSpin || spinning) && styles.disabled]}
+              style={[
+                styles.spinButton,
+                (!canSpin || spinning) && styles.disabled,
+              ]}
               onPress={handleSpin}
               disabled={!canSpin || spinning}
             >
@@ -222,6 +318,7 @@ export default function DailySpinWheel({ visible, onClose }: Props) {
 }
 
 const styles = StyleSheet.create({
+  // OVERLAY
   overlay: {
     flex: 1,
     backgroundColor: "rgba(2,6,23,0.82)",
@@ -249,6 +346,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+  // CARD
   card: {
     borderRadius: 28,
     padding: 22,
@@ -270,6 +368,7 @@ const styles = StyleSheet.create({
     zIndex: 50,
   },
 
+  // HEADER
   header: {
     alignItems: "center",
     marginTop: 8,
@@ -288,61 +387,42 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
+  // PUNTERO
   pointerWrap: {
     zIndex: 20,
     marginBottom: -12,
   },
 
+  // RULETA
   wheelContainer: {
-    width: 270,
-    height: 270,
+    width: WHEEL_SIZE + 20,
+    height: WHEEL_SIZE + 20,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 20,
   },
 
-  wheel: {
-    width: 245,
-    height: 245,
-    borderRadius: 122.5,
-    backgroundColor: "#1e293b",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-    overflow: "hidden",
-    borderWidth: 6,
-    borderColor: "#fff",
-  },
-
-  slice: {
-    position: "absolute",
-    width: 122,
-    height: 122,
-    top: 0,
-    left: 122,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  sliceText: {
-    color: "#fff",
-    fontWeight: "800",
-    fontSize: 13,
-    transform: [{ rotate: "30deg" }],
-  },
-
+  // CENTRO
   centerHub: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
-    backgroundColor: "#fff",
+    position: "absolute",
+    top: (WHEEL_SIZE - CENTER_SIZE) / 2,
+    left: (WHEEL_SIZE - CENTER_SIZE) / 2,
+    width: CENTER_SIZE,
+    height: CENTER_SIZE,
+    borderRadius: CENTER_SIZE / 2,
+    backgroundColor: "#ffffff",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 30,
-    borderWidth: 4,
+    zIndex: 50,
+    borderWidth: 5,
     borderColor: "#dcfce7",
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
   },
 
+  // INFO
   infoRow: {
     flexDirection: "row",
     gap: 10,
@@ -370,12 +450,14 @@ const styles = StyleSheet.create({
   },
 
   infoValueSmall: {
-    color: "#fff",
-    fontSize: 15,
+    color: "#ffffff",
+    fontSize: 14,
     fontWeight: "700",
     marginTop: 4,
+    textAlign: "center",
   },
 
+  // BOTÓN
   spinButton: {
     width: "100%",
     borderRadius: 18,
@@ -393,7 +475,7 @@ const styles = StyleSheet.create({
   },
 
   spinText: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 16,
     fontWeight: "800",
   },
