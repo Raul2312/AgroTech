@@ -120,7 +120,7 @@ const ClientRancho = () => {
           <li><Link to="/indexscreen">🏠 {!collapsed && "Inicio"}</Link></li>
           <li><Link to="/areaCliente">📊 {!collapsed && "Dashboard"}</Link></li>
           <li><Link to="/mis-pedidos">📦 {!collapsed && "Mis pedidos"}</Link></li>
-          <li><Link to="/favoritos">⭐ {!collapsed && "Favoritos"}</Link></li>
+       
           <li><Link to="/marketplace">🛒 {!collapsed && "Marketplace"}</Link></li>
           <li><Link to="/perfil">👤 {!collapsed && "Mi perfil"}</Link></li>
           <li className="active"><Link to="/rancho">🌱 {!collapsed && "Rancho"}</Link></li>

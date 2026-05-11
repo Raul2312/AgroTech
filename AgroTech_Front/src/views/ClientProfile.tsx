@@ -82,61 +82,59 @@ const ClientProfile = () => {
 
   return (
 
-    <div className="client-profile">
+      <div className="client-profile">
 
-      {/* SIDEBAR */}
-      <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
+        {/* SIDEBAR */}
+        <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
 
-        <div className="logo-container">
-          <img src={logo} className="logo-img" />
-          {!collapsed && <span className="logo-text">AgroTech</span>}
-        </div>
+          <div className="logo-container">
+            <img src={logo} className="logo-img" />
+            {!collapsed && <span className="logo-text">AgroTech</span>}
+          </div>
 
-        <ul className="menu">
+          <ul className="menu">
+
+              <li>
+              <Link to="/indexscreen">🏠 {!collapsed && "Inicio"}</Link>
+            </li>
 
             <li>
-            <Link to="/indexscreen">🏠 {!collapsed && "Inicio"}</Link>
-          </li>
+              <Link to="/areacliente">🏠 {!collapsed && "Dashboard"}</Link>
+            </li>
 
-          <li>
-            <Link to="/areacliente">🏠 {!collapsed && "Dashboard"}</Link>
-          </li>
-
-          <li>
-            <Link to="/mis-pedidos">📦 {!collapsed && "Mis pedidos"}</Link>
-          </li>
-
-          <li>
-            <Link to="/favoritos">⭐ {!collapsed && "Favoritos"}</Link>
-          </li>
-
-          <li>
-            <Link to="/marketplace">🛒 {!collapsed && "Marketplace"}</Link>
-          </li>
-
-          <li className="active">
-            <Link to="/perfil">👤 {!collapsed && "Mi perfil"}</Link>
-          </li>
             <li>
-            <Link to="/rancho">👤 {!collapsed && "Rancho"}</Link>
+              <Link to="/mis-pedidos">📦 {!collapsed && "Mis pedidos"}</Link>
+            </li>
+
+          
+
+            <li>
+              <Link to="/marketplace">🛒 {!collapsed && "Marketplace"}</Link>
+            </li>
+
+            <li className="active">
+              <Link to="/perfil">👤 {!collapsed && "Mi perfil"}</Link>
             </li>
               <li>
-            <Link to="/trazabilidad">👤 {!collapsed && "Trazabilidad"}</Link>
+              <Link to="/rancho">👤 {!collapsed && "Rancho"}</Link>
+              </li>
+                <li>
+              <Link to="/trazabilidad">👤 {!collapsed && "Trazabilidad"}</Link>
+              </li>
+
+            <li className="logout">
+              <button onClick={() => {
+                localStorage.removeItem("agroSession");
+                sessionStorage.removeItem("agroSession");
+                navigate("/login");
+              }}>
+                ❌ {!collapsed && "Cerrar sesión"}
+              </button>
             </li>
 
-          <li className="logout">
-            <button onClick={() => {
-              localStorage.removeItem("agroSession");
-              sessionStorage.removeItem("agroSession");
-              navigate("/login");
-            }}>
-              ❌ {!collapsed && "Cerrar sesión"}
-            </button>
-          </li>
+          </ul>
 
-        </ul>
-
-      </aside>
+        </aside>
 
       {/* MAIN */}
       <div className={`main ${collapsed ? "expanded" : ""}`}>

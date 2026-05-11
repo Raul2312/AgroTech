@@ -43,9 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, logout }) => {
           <Link to="/productos">📦 {!collapsed && "Productos"}</Link>
         </li>
 
-        <li className={location.pathname === "/reportes" ? "active" : ""}>
-          <Link to="/reportes">📈 {!collapsed && "Reportes"}</Link>
-        </li>
+       
 
         <li className="logout">
           <button onClick={logout}>
