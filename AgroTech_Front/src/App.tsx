@@ -14,6 +14,8 @@ import ClientRancho from './views/ClientRancho'
 import Contacto from './views/Contacto'
 import MisPedidos from './views/MisPedidos'
 import AdminRanchos from './views/AdminRanchos'
+import AgroTechSummary from './views/AgroTechSummary'
+
 
 
 function App() {
@@ -34,6 +36,7 @@ function App() {
           <Route path="/rancho" element={<ClientRancho />} />
           <Route path="/contacto" element={<Contacto />} />
            <Route path="/mis-pedidos" element={<MisPedidos />} />
+           <Route path="/resumen-compra" element={<AgroTechSummary />} />
           
   
         </Routes>

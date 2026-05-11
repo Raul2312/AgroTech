@@ -1,0 +1,239 @@
+/* AgroTechSummary.css - Modern Version with Green Header */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+:root {
+  --primary-green: #059669; /* El verde AgroTech de tu foto */
+  --primary-dark: #0f172a;
+  --bg-light: #f8fafc;
+  --white: #ffffff;
+  --glass-border: rgba(226, 232, 240, 0.8);
+}
+
+.at-fullscreen-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg-light);
+  color: var(--primary-dark);
+}
+
+/* --- HEADER VERDE ACTUALIZADO --- */
+.at-main-header {
+  background-color: var(--primary-green); /* Vuelve el fondo verde */
+  color: var(--white); /* Texto en blanco */
+  padding: 20px 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.1); /* Borde sutil */
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Sombra suave */
+}
+
+/* Botón de regreso */
+.at-back-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.at-back-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15); /* Efecto hover sutil */
+}
+
+.at-main-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--white); /* Texto blanco puro */
+}
+
+.at-header-badge {
+  background: rgba(255, 255, 255, 0.2); /* Badge traslúcido sobre verde */
+  color: var(--white);
+  padding: 8px 18px;
+  border-radius: 100px;
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* --- RESTO DEL DISEÑO MANTENIDO --- */
+
+/* Layout Workspace */
+.at-workspace {
+  display: grid;
+  grid-template-columns: 1fr 480px;
+  gap: 0;
+  flex: 1;
+}
+
+/* Sección de Productos */
+.at-products-section {
+  padding: 50px 60px;
+  background: var(--bg-light);
+}
+
+.at-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.at-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.at-web-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  border-radius: 24px;
+  background: var(--white);
+  border: 1px solid transparent;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.at-web-card:hover {
+  border-color: var(--primary-green);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.at-img-box {
+  width: 70px;
+  height: 70px;
+  background: #f0fdf4;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+/* Sidebar de Pago */
+.at-payment-sidebar {
+  background-color: var(--white);
+  padding: 50px 40px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--glass-border);
+}
+
+.at-summary-box {
+  background: #f8fafc;
+  padding: 30px;
+  border-radius: 28px;
+  margin-bottom: 30px;
+  border: 1px solid var(--glass-border);
+}
+
+.at-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  color: #64748b;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.at-total-big {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px dashed #cbd5e1;
+}
+
+.at-total-price {
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--primary-dark);
+}
+
+/* Selectores de Pago */
+.at-pay-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 40px;
+}
+
+.at-pay-item {
+  cursor: pointer;
+  position: relative;
+  padding: 24px 15px;
+  border: 2px solid #f1f5f9;
+  border-radius: 24px;
+  background: var(--white);
+  transition: 0.3s ease;
+  overflow: hidden;
+}
+
+input[type="radio"]:checked + .at-pay-item {
+  border-color: var(--primary-green);
+  background-color: #f0fdf4;
+}
+
+.at-pay-item .icon-check {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+/* Botón Principal */
+.at-main-btn {
+  width: 100%;
+  padding: 24px;
+  background: var(--primary-dark);
+  color: var(--white);
+  border: none;
+  border-radius: 24px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.at-main-btn:hover {
+  background: var(--primary-green);
+  transform: scale(1.02);
+  box-shadow: 0 20px 40px rgba(5, 150, 105, 0.2);
+}
+
+.at-security-tag {
+  margin-top: auto; /* Empuja el badge hacia abajo */
+  display: flex;
+  gap: 15px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 20px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid var(--glass-border);
+}

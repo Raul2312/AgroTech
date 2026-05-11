@@ -61,7 +61,13 @@ const Marketplace: React.FC = () => {
   const [products, setProducts] = useState<Producto[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  
+  // Inicialización optimizada para persistencia inmediata
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    const savedCart = localStorage.getItem("agroCart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
   const [discount, setDiscount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [couponInput, setCouponInput] = useState("");
@@ -72,19 +78,17 @@ const Marketplace: React.FC = () => {
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   const adminEmails = [
-  "22cg0095@itsncg.edu.mx",
-  "sebastiannn231@gmail.com",
-  "raulmadridflores202@gmail.com"
-];
+    "22cg0095@itsncg.edu.mx",
+    "sebastiannn231@gmail.com",
+    "raulmadridflores202@gmail.com"
+  ];
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
-    // Cargar carrito del localStorage si existe
-    const savedCart = localStorage.getItem("agroCart");
-    if (savedCart) setCart(JSON.parse(savedCart));
   }, []);
 
+  // Efecto que guarda en localStorage cada vez que el carrito cambia
   useEffect(() => {
     localStorage.setItem("agroCart", JSON.stringify(cart));
   }, [cart]);
@@ -114,31 +118,28 @@ const Marketplace: React.FC = () => {
     return session ? true : false;
   };
 
- const goPanel = () => {
-  const sessionStr = localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession");
+  const goPanel = () => {
+    const sessionStr = localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession");
 
-  // 1. Si no hay sesión, al login
-  if (!sessionStr) {
-    navigate("/login");
-    return;
-  }
-
-  try {
-    const sessionData = JSON.parse(sessionStr);
-    const userEmail = sessionData.user?.email;
-
-    // 2. Si es admin, mandarlo al dashboard de admin
-    if (userEmail && adminEmails.includes(userEmail)) {
-      navigate("/dashboard");
-    } else {
-      // 3. Si es cliente normal, mandarlo a su área
-      navigate("/areacliente");
+    if (!sessionStr) {
+      navigate("/login");
+      return;
     }
-  } catch (error) {
-    console.error("Error al redirigir:", error);
-    navigate("/login");
-  }
-};
+
+    try {
+      const sessionData = JSON.parse(sessionStr);
+      const userEmail = sessionData.user?.email;
+
+      if (userEmail && adminEmails.includes(userEmail)) {
+        navigate("/dashboard");
+      } else {
+        navigate("/areacliente");
+      }
+    } catch (error) {
+      console.error("Error al redirigir:", error);
+      navigate("/login");
+    }
+  };
 
   const toggleCart = () => setIsOpen(!isOpen);
   const toggleMenu = () => setMenuOpen(!menuOpen);
@@ -251,7 +252,7 @@ const Marketplace: React.FC = () => {
         <nav className={`main-nav ${menuOpen ? "active" : ""}`}>
           <a href="/indexScreen">Inicio</a>
           <a href="/trazabilidad">Trazabilidad</a>
-          <a onClick={goPanel}>Panel</a>
+          <a onClick={goPanel} style={{cursor: 'pointer'}}>Panel</a>
           {!(localStorage.getItem("agroSession") ||
             sessionStorage.getItem("agroSession")) && (
             <a href="/Login">Login</a>
@@ -517,7 +518,7 @@ const Marketplace: React.FC = () => {
             <div className="summary-line"><span>Envío:</span> <span>${shipping.toFixed(2)}</span></div>
             <div className="summary-line total"><span>Total:</span> <span>${total.toFixed(2)} MXN</span></div>
           </div>
-          <button className="checkout-btn pill" onClick={() => navigate("/pagos")}>
+          <button className="checkout-btn pill" onClick={() => navigate("/resumen-compra")}>
             Finalizar Compra
           </button>
         </div>

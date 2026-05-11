@@ -1014,3 +1014,95 @@ max-height: 92vh;
   color: white;
   margin-top: 20px;
 }
+
+/* DISEÑO DEL RESUMEN DEL CARRITO MEJORADO */
+.cart-footer-modern {
+  padding: 25px;
+  background: #ffffff;
+  border-top: 1px solid #f1f5f9;
+  border-radius: 30px 30px 0 0;
+  box-shadow: 0 -10px 25px rgba(0,0,0,0.03);
+}
+
+.summary-details {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid #edf2f7;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #64748b; /* Color gris suave para subtotal/envío */
+}
+
+.summary-line span:last-child {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.summary-line.total {
+  margin-top: 8px;
+  padding-top: 15px;
+  border-top: 2px dashed #cbd5e1;
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #0d1f3c; /* Azul oscuro premium */
+}
+
+.summary-line.total span:last-child {
+  color: #16a34a; /* Verde para el precio total */
+  text-shadow: 0 4px 10px rgba(22, 163, 74, 0.15);
+}
+
+/* Mejora al input de cupón para que combine con el diseño */
+.coupon-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.coupon-row input {
+  flex: 1;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  outline: none;
+  font-size: 0.9rem;
+  transition: 0.3s;
+}
+
+.coupon-row input:focus {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.coupon-row button {
+  padding: 10px 20px;
+  background: #1e293b;
+  color: white;
+  font-size: 0.85rem;
+}
+
+/* Botón de finalizar compra con efecto de elevación */
+.checkout-btn.pill {
+  width: 100%;
+  padding: 20px !important;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 20px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.25);
+}
+
+.checkout-btn.pill:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(22, 163, 74, 0.35);
+}
