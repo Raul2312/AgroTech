@@ -16,7 +16,7 @@ use App\Http\Controllers\Api\ComentarioController;
 use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\CompraController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\RewardController;
+use App\Http\Controllers\Api\RewardController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 

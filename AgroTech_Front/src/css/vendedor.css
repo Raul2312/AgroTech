@@ -1,0 +1,243 @@
+/* vendedor.css */
+
+.vendedor-container {
+    background-color: #080f14;
+    background-image: radial-gradient(circle at top right, #0b1e1b 0%, #080f14 55%);
+    min-height: 100vh;
+    color: #e0e6ed;
+    padding: 20px;
+    font-family: 'Inter', sans-serif;
+}
+
+.vendedor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto 30px;
+    padding: 15px;
+    border-bottom: 1px solid rgba(165, 214, 167, 0.1);
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #A5D6A7;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.back-btn:hover {
+    background: rgba(46, 125, 50, 0.2);
+    transform: translateX(-3px);
+}
+
+.user-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    text-align: right;
+}
+
+.user-profile-header span {
+    display: block;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fff;
+}
+
+.user-profile-header p {
+    font-size: 0.75rem;
+    color: #A5D6A7;
+    margin: 0;
+}
+
+.user-profile-header img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px solid #2e7d32;
+    background: #162a33;
+}
+
+.vendedor-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.glass {
+    background: rgba(22, 42, 51, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 18px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.section-title {
+    font-size: 1.25rem;
+    margin-bottom: 25px;
+    color: #A5D6A7;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Formulario */
+.vendedor-form .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: #9fb5bc;
+    margin-bottom: 8px;
+}
+
+.input-group input, 
+.input-group select, 
+.input-group textarea {
+    width: 100%;
+    padding: 12px;
+    background: #0a161b;
+    border: 1px solid #1c3038;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+
+.input-group input:focus, .input-group select:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.input-group.full {
+    grid-column: 1 / -1;
+}
+
+.custom-file-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #1c3038;
+    color: #A5D6A7;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px dashed #4CAF50;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.preview-container {
+    background: #071115;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 110px;
+}
+
+.preview-container img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #2e7d32;
+}
+
+.btn-submit {
+    margin-top: 25px;
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(90deg, #2e7d32, #4CAF50);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-submit:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(46, 125, 50, 0.4);
+}
+
+/* Tabla */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+    padding: 15px;
+    font-size: 0.8rem;
+    color: #9fb5bc;
+    border-bottom: 2px solid #1c3038;
+    text-transform: uppercase;
+}
+
+td {
+    padding: 15px;
+    border-bottom: 1px solid #1c3038;
+    font-size: 0.9rem;
+}
+
+.table-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-badge.activo { background: rgba(76, 175, 80, 0.15); color: #81c784; }
+
+.actions-td {
+    display: flex;
+    gap: 10px;
+}
+
+.delete-btn {
+    background: rgba(211, 47, 47, 0.2);
+    color: #ef9a9a;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.delete-btn:hover {
+    background: #d32f2f;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .vendedor-header { flex-direction: column; gap: 15px; text-align: center; }
+}

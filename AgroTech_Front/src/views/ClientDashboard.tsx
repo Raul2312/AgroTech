@@ -186,7 +186,7 @@ const ClientDashboard = () => {
                   <p style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span>Total:</span> <strong>${total.toFixed(2)}</strong>
                   </p>
-                  <button onClick={() => navigate("/resumen-compra")} style={{ width: '100%' }}>Finalizar</button>
+                  <button onClick={() => navigate("/resumen-compra")} style={{ width: '100%' }}>Finalizar Compra</button>
                 </div>
               </div>
             ) : (
