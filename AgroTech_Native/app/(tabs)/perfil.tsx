@@ -6,9 +6,10 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  StatusBar,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter, useFocusEffect } from "expo-router";
 
@@ -17,6 +18,8 @@ export default function Perfil() {
 
   const [nombre, setNombre] = useState("Cargando...");
   const [correo, setCorreo] = useState("");
+  const [agroPoints, setAgroPoints] = useState(0);
+  const [ultimoPremio, setUltimoPremio] = useState("Sin premios");
 
   useFocusEffect(
     useCallback(() => {
@@ -28,27 +31,36 @@ export default function Perfil() {
             const parsed = JSON.parse(session);
             const user = parsed.user;
 
-            setNombre(
-              user?.name ||
-                user?.nombre ||
-                user?.usuario ||
-                "Usuario"
-            );
+            setNombre(user?.name || user?.nombre || user?.usuario || "Usuario");
+            setCorreo(user?.email || user?.correo || "Sin correo");
 
-            setCorreo(
-              user?.email ||
-                user?.correo ||
-                "Sin correo"
-            );
+            const userEmail = user?.email || user?.correo || "guest";
+            const spinKey = `daily_spin_data_${userEmail}`;
+            const spinRaw = await AsyncStorage.getItem(spinKey);
+
+            if (spinRaw) {
+              const spinData = JSON.parse(spinRaw);
+              setAgroPoints(spinData.points || 0);
+
+              if (spinData.lastReward) {
+                const reward = spinData.lastReward;
+                if (reward.type === "points") {
+                  setUltimoPremio(`${reward.value} AgroPoints`);
+                } else if (reward.type === "discount") {
+                  setUltimoPremio(`${reward.value}% OFF`);
+                } else {
+                  setUltimoPremio("Envío gratis");
+                }
+              }
+            }
           } else {
             setNombre("No logueado");
-            setCorreo("");
+            setAgroPoints(0);
           }
         } catch (error) {
           console.log("Error cargando usuario", error);
         }
       };
-
       loadUser();
     }, [])
   );
@@ -57,243 +69,223 @@ export default function Perfil() {
     try {
       await AsyncStorage.removeItem("agroSession");
       await AsyncStorage.removeItem("agroFavorites");
-
       router.replace("/(tabs)/login");
     } catch (error) {
       console.log("Error cerrando sesión", error);
     }
   };
 
-  const menuItems: {
-    title: string;
-    icon: keyof typeof Ionicons.glyphMap;
-    color?: string;
-  }[] = [
-    { title: "Mis compras", icon: "basket-outline" },
-    { title: "Favoritos", icon: "heart-outline" },
-    { title: "Configuración", icon: "settings-outline" },
-    { title: "Cerrar sesión", icon: "log-out-outline", color: "#ef4444" },
+  const menuItems = [
+    { title: "Mis compras", icon: "basket-outline", route: "/perfil/compras" },
+    { title: "Favoritos", icon: "heart-outline", route: "/perfil/favoritos" },
+    { title: "Configuración", icon: "settings-outline", route: "/perfil/configuracion" },
+    { title: "Cerrar sesión", icon: "log-out-outline", color: "#ef4444", action: handleLogout },
   ];
-
-  const handleMenuPress = (title: string) => {
-    if (title === "Cerrar sesión") {
-      handleLogout();
-      return;
-    }
-
-    if (title === "Favoritos") {
-      router.push("/perfil/favoritos");
-      return;
-    }
-
-    if (title === "Mis compras") {
-      router.push("/perfil/compras");
-      return;
-    }
-
-    if (title === "Configuración") {
-      router.push("/perfil/configuracion");
-      return;
-    }
-  };
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={["#0f172a", "#14532d"]} style={styles.header}>
+      <StatusBar barStyle="light-content" />
+      
+      <LinearGradient
+        colors={["#0f172a", "#16a34a"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.header}
+      >
         <Text style={styles.headerTitle}>Mi Perfil</Text>
-        <Ionicons name="person-circle-outline" size={28} color="#fff" />
+        <TouchableOpacity onPress={() => router.push("/perfil/configuracion")}>
+           <Ionicons name="cog-outline" size={24} color="#fff" />
+        </TouchableOpacity>
       </LinearGradient>
 
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.avatarContainer}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        
+        {/* SECCIÓN AVATAR */}
+        <View style={styles.avatarSection}>
           <View style={styles.avatarWrapper}>
             <Image
               source={{ uri: "https://i.pravatar.cc/150?img=12" }}
               style={styles.avatar}
             />
-
             <TouchableOpacity style={styles.editBtn}>
               <Ionicons name="camera" size={16} color="#fff" />
             </TouchableOpacity>
           </View>
-
-          <Text style={styles.name}>{nombre}</Text>
-          <Text style={styles.email}>{correo}</Text>
+          <Text style={styles.nameText}>{nombre}</Text>
+          <Text style={styles.emailText}>{correo}</Text>
         </View>
 
-        <View style={styles.card}>
+        {/* TARJETA DE RECOMPENSAS (REDISEÑADA) */}
+        <View style={styles.rewardsCard}>
+          <View style={styles.rewardItem}>
+            <View style={[styles.rewardIcon, { backgroundColor: '#f0fdf4' }]}>
+              <MaterialCommunityIcons name="leaf" size={26} color="#16a34a" />
+            </View>
+            <Text style={styles.rewardLabel}>AgroPoints</Text>
+            <Text style={styles.rewardValue}>{agroPoints}</Text>
+          </View>
+
+          <View style={styles.verticalDivider} />
+
+          <View style={styles.rewardItem}>
+            <View style={[styles.rewardIcon, { backgroundColor: '#fff7ed' }]}>
+              <MaterialCommunityIcons name="gift-outline" size={26} color="#f59e0b" />
+            </View>
+            <Text style={styles.rewardLabel}>Último Premio</Text>
+            <Text style={styles.rewardValueSmall}>{ultimoPremio}</Text>
+          </View>
+        </View>
+
+        {/* MENÚ DE OPCIONES */}
+        <View style={styles.menuCard}>
           {menuItems.map((item, index) => (
             <TouchableOpacity
               key={index}
-              style={[
-                styles.option,
-                index === menuItems.length - 1 && {
-                  borderBottomWidth: 0,
-                },
-              ]}
-              activeOpacity={0.7}
-              onPress={() => handleMenuPress(item.title)}
+              style={[styles.menuOption, index === menuItems.length - 1 && { borderBottomWidth: 0 }]}
+              onPress={() => item.action ? item.action() : router.push(item.route as any)}
             >
-              <View style={styles.left}>
-                <View style={styles.iconBox}>
-                  <Ionicons
-                    name={item.icon}
-                    size={20}
-                    color={item.color ?? "#16a34a"}
+              <View style={styles.menuLeft}>
+                <View style={[styles.iconContainer, item.color ? { backgroundColor: '#fef2f2' } : null]}>
+                  <Ionicons 
+                    name={item.icon as any} 
+                    size={20} 
+                    color={item.color || "#16a34a"} 
                   />
                 </View>
-
-                <Text
-                  style={[
-                    styles.optionText,
-                    item.color && { color: item.color },
-                  ]}
-                >
+                <Text style={[styles.menuText, item.color ? { color: item.color } : null]}>
                   {item.title}
                 </Text>
               </View>
-
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color="#94a3b8"
-              />
+              <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
             </TouchableOpacity>
           ))}
         </View>
 
-        <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>AgroTech Marketplace 🌱</Text>
-          <Text style={styles.infoText}>
-            Gestiona tus compras, favoritos y configuración desde aquí.
-          </Text>
-        </View>
+        {/* BANNER INFORMATIVO */}
+        <LinearGradient
+          colors={["#f0fdf4", "#ffffff"]}
+          style={styles.infoBanner}
+        >
+          <MaterialCommunityIcons name="sprout" size={24} color="#16a34a" />
+          <View style={styles.infoContent}>
+            <Text style={styles.infoTitle}>AgroTech Marketplace</Text>
+            <Text style={styles.infoSubtitle}>
+              ¡Sigue acumulando puntos para obtener descuentos exclusivos en tus próximas semillas!
+            </Text>
+          </View>
+        </LinearGradient>
+
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8fafc",
-  },
-
+  container: { flex: 1, backgroundColor: "#f8fafc" },
   header: {
-   paddingTop: 48,
-    paddingBottom: 16,
-    paddingHorizontal: 18,
+    paddingTop: 40,
+    paddingBottom: 25,
+    paddingHorizontal: 20,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
   },
+  headerTitle: { color: "#fff", fontSize: 22, fontWeight: "800" },
+  scroll: { paddingBottom: 40, paddingTop: 20 },
 
-  headerTitle: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-
-  scroll: {
-    paddingBottom: 40,
-    paddingTop: 10,
-  },
-
-  avatarContainer: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-
-  avatarWrapper: {
-    position: "relative",
-  },
-
+  avatarSection: { alignItems: "center", marginBottom: 25 },
+  avatarWrapper: { position: "relative" },
   avatar: {
-    width: 110,
-    height: 110,
+    width: 115,
+    height: 115,
     borderRadius: 60,
     borderWidth: 4,
     borderColor: "#fff",
   },
-
   editBtn: {
     position: "absolute",
-    bottom: 5,
+    bottom: 0,
     right: 5,
     backgroundColor: "#16a34a",
-    padding: 6,
+    padding: 8,
     borderRadius: 20,
-    elevation: 4,
+    borderWidth: 3,
+    borderColor: '#fff',
+    elevation: 5,
   },
+  nameText: { marginTop: 12, fontSize: 22, fontWeight: "800", color: "#0f172a" },
+  emailText: { color: "#64748b", fontSize: 14, fontWeight: '500' },
 
-  name: {
-    marginTop: 10,
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#0f172a",
-  },
-
-  email: {
-    color: "#64748b",
-    fontSize: 13,
-    marginTop: 2,
-  },
-
-  card: {
+  rewardsCard: {
     backgroundColor: "#fff",
-    marginHorizontal: 15,
-    borderRadius: 20,
-    paddingVertical: 10,
+    marginHorizontal: 20,
+    marginBottom: 25,
+    borderRadius: 25,
+    paddingVertical: 20,
+    flexDirection: "row",
+    alignItems: "center",
     elevation: 8,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 5 },
   },
+  rewardItem: { flex: 1, alignItems: "center" },
+  rewardIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+  rewardLabel: { fontSize: 11, color: "#94a3b8", fontWeight: '700', textTransform: 'uppercase' },
+  rewardValue: { fontSize: 28, fontWeight: "900", color: "#16a34a" },
+  rewardValueSmall: { fontSize: 15, fontWeight: "700", color: "#1e293b", textAlign: "center", marginTop: 2 },
+  verticalDivider: { width: 1, height: 70, backgroundColor: "#f1f5f9" },
 
-  option: {
+  menuCard: {
+    backgroundColor: "#fff",
+    marginHorizontal: 20,
+    borderRadius: 25,
+    paddingVertical: 5,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    marginBottom: 25
+  },
+  menuOption: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 15,
-    paddingHorizontal: 15,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
+    borderBottomColor: "#f1f5f9",
   },
-
-  left: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  iconBox: {
+  menuLeft: { flexDirection: "row", alignItems: "center" },
+  iconContainer: {
     backgroundColor: "#f0fdf4",
-    padding: 8,
-    borderRadius: 10,
+    padding: 10,
+    borderRadius: 14,
+    marginRight: 15,
   },
+  menuText: { fontSize: 16, fontWeight: "700", color: "#334155" },
 
-  optionText: {
-    fontSize: 15,
-    fontWeight: "600",
-    marginLeft: 12,
-    color: "#1e293b",
+  infoBanner: {
+    marginHorizontal: 20,
+    padding: 20,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#dcfce7'
   },
-
-  infoCard: {
-    backgroundColor: "#fff",
-    margin: 15,
-    padding: 15,
-    borderRadius: 15,
-    elevation: 5,
-  },
-
-  infoTitle: {
-    fontWeight: "bold",
-    fontSize: 16,
-    marginBottom: 5,
-    color: "#16a34a",
-  },
-
-  infoText: {
-    color: "#475569",
-    fontSize: 13,
-  },
+  infoContent: { flex: 1, marginLeft: 15 },
+  infoTitle: { fontSize: 14, fontWeight: '800', color: '#16a34a' },
+  infoSubtitle: { fontSize: 12, color: '#475569', lineHeight: 18, marginTop: 2 }
 });

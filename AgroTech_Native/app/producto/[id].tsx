@@ -7,12 +7,16 @@ import {
   ScrollView,
   TouchableOpacity,
   Animated,
+  StatusBar,
+  Dimensions,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCart } from "../../context/CartContext";
 import { useState, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const { width } = Dimensions.get("window");
 
 type ProductoType = {
   id_productos: number;
@@ -39,353 +43,292 @@ export default function Producto() {
 
   const [added, setAdded] = useState(false);
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   const prod: ProductoType = producto ? JSON.parse(producto) : null;
 
   const animateButton = () => {
     Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 0.9,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
+      Animated.timing(scaleAnim, { toValue: 0.95, duration: 100, useNativeDriver: true }),
+      Animated.timing(scaleAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
     ]).start();
   };
 
-  // VALIDAR LOGIN
   const checkAuth = async () => {
     const session = await AsyncStorage.getItem("agroSession");
-
     if (!session) {
-      router.push({
-        pathname: "/(tabs)/login",
-        params: { redirect: "producto" },
-      });
+      router.push({ pathname: "/(tabs)/login", params: { redirect: "producto" } });
       return false;
     }
-
     return true;
   };
 
   const handleAddToCart = async () => {
     animateButton();
-
-    const isLogged = await checkAuth();
-
-    if (!isLogged) return;
-    if (!prod) return;
-
-    addToCart({
-      id: prod.id_productos,
-      name: prod.nombre,
-      price: Number(prod.precio),
-      image: prod.imagen_url,
-      quantity: 1,
-    });
-
+    if (!(await checkAuth()) || !prod) return;
+    addToCart({ id: prod.id_productos, name: prod.nombre, price: Number(prod.precio), image: prod.imagen_url, quantity: 1 });
     setAdded(true);
+    setTimeout(() => setAdded(false), 3000);
   };
 
   const handleBuyNow = async () => {
     animateButton();
-
-    const isLogged = await checkAuth();
-
-    if (!isLogged) return;
-    if (!prod) return;
-
-    addToCart({
-      id: prod.id_productos,
-      name: prod.nombre,
-      price: Number(prod.precio),
-      image: prod.imagen_url,
-      quantity: 1,
-    });
-
+    if (!(await checkAuth()) || !prod) return;
+    addToCart({ id: prod.id_productos, name: prod.nombre, price: Number(prod.precio), image: prod.imagen_url, quantity: 1 });
     router.push("/carrito/pago");
   };
 
-  if (!prod) {
-    return (
-      <View style={styles.container}>
-        <Text>No se encontró el producto</Text>
-      </View>
-    );
-  }
+  if (!prod) return (
+    <View style={styles.errorContainer}>
+      <Text style={styles.errorText}>No se encontró el producto</Text>
+    </View>
+  );
 
   return (
-    <>
+    <View style={styles.mainContainer}>
+      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={styles.container}>
-        <LinearGradient colors={["#0f172a", "#14532d"]} style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={26} color="#fff" />
-          </TouchableOpacity>
-
-          <Text style={styles.headerTitle}>Producto</Text>
-
-          <TouchableOpacity onPress={() => router.push("/carrito")}>
-            <Ionicons name="cart" size={26} color="#fff" />
-          </TouchableOpacity>
-        </LinearGradient>
-
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-          <View style={styles.imageContainer}>
-            <Image source={{ uri: prod.imagen_url }} style={styles.image} />
-
-            <LinearGradient
-              colors={["transparent", "rgba(0,0,0,0.6)"]}
-              style={styles.imageOverlay}
-            />
-
-            <View style={styles.categoryTag}>
-              <Text style={styles.categoryText}>
-                {prod.categoria.nombre}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.title}>{prod.nombre}</Text>
-
-            <Text style={styles.price}>
-              ${Number(prod.precio).toFixed(2)} {prod.moneda}
-            </Text>
-
-            <Text style={styles.description}>{prod.descripcion}</Text>
-
-            <View style={styles.infoRow}>
-              <Ionicons name="cube-outline" size={16} color="#64748b" />
-              <Text style={styles.infoText}>Stock: {prod.stock}</Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Ionicons name="calendar-outline" size={16} color="#64748b" />
-              <Text style={styles.infoText}>{prod.fecha_publicacion}</Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Ionicons
-                name="checkmark-circle-outline"
-                size={16}
-                color="#64748b"
-              />
-              <Text style={styles.infoText}>{prod.estado}</Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Ionicons name="location-outline" size={16} color="#64748b" />
-              <Text style={styles.infoText}>Chihuahua, Mx</Text>
-            </View>
-
-            {added && (
-              <View style={styles.addedBox}>
-                <Ionicons
-                  name="checkmark-circle"
-                  size={20}
-                  color="#16a34a"
-                />
-
-                <Text style={styles.addedText}>Agregado al carrito</Text>
-
-                <TouchableOpacity onPress={() => router.push("/carrito")}>
-                  <Text style={styles.goCart}>Ver</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        </ScrollView>
-
-        <View style={styles.bottomBar}>
-          <Animated.View
-            style={{
-              transform: [{ scale: scaleAnim }],
-              flex: 1,
-            }}
-          >
-            <TouchableOpacity
-              style={styles.cartButton}
-              onPress={handleAddToCart}
-            >
-              <Ionicons name="cart" size={20} color="#fff" />
-              <Text style={styles.cartText}>Agregar</Text>
-            </TouchableOpacity>
-          </Animated.View>
-
-          <TouchableOpacity
-            style={styles.buyButton}
-            onPress={handleBuyNow}
-          >
-            <MaterialIcons name="flash-on" size={20} color="#fff" />
-            <Text style={styles.buyText}>Comprar</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.headerNav}>
+        <TouchableOpacity style={styles.roundBtn} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={24} color="#0f172a" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.roundBtn} onPress={() => router.push("/carrito")}>
+          <Ionicons name="cart-outline" size={24} color="#0f172a" />
+        </TouchableOpacity>
       </View>
-    </>
+
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
+      >
+        {/* HERO SECTION */}
+        <View style={styles.imageBox}>
+          <Image 
+            source={{ uri: prod.imagen_url }} 
+            style={styles.mainImage} 
+            resizeMode="contain" 
+          />
+          <LinearGradient 
+            colors={["transparent", "rgba(248, 250, 252, 0.5)", "#f8fafc"]} 
+            style={styles.imageOverlay} 
+          />
+        </View>
+
+        {/* CONTENT CARD */}
+        <View style={styles.contentCard}>
+          <View style={styles.badgeContainer}>
+             <View style={styles.categoryBadge}>
+                <Text style={styles.categoryText}>{prod.categoria.nombre.toUpperCase()}</Text>
+             </View>
+             {prod.stock > 0 && (
+                <View style={[styles.categoryBadge, { backgroundColor: '#0EA5E9', marginLeft: 8 }]}>
+                    <Text style={styles.categoryText}>DISPONIBLE</Text>
+                </View>
+             )}
+          </View>
+
+          <View style={styles.titleRow}>
+            <Text style={styles.mainTitle}>{prod.nombre}</Text>
+            <TouchableOpacity><Ionicons name="heart-outline" size={28} color="#64748b" /></TouchableOpacity>
+          </View>
+
+          <View style={styles.priceRow}>
+            <Text style={styles.currencySymbol}>$</Text>
+            <Text style={styles.mainPrice}>{Number(prod.precio).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</Text>
+            <Text style={styles.currencyCode}>{prod.moneda}</Text>
+          </View>
+
+          <View style={styles.divider} />
+
+          <Text style={styles.sectionTitle}>Descripción</Text>
+          <Text style={styles.mainDescription}>{prod.descripcion}</Text>
+
+          {/* SPECS GRID - Restaurado con ubicación y fecha */}
+          <Text style={styles.sectionTitle}>Detalles del Producto</Text>
+          <View style={styles.specsGrid}>
+            <View style={styles.specItem}>
+              <MaterialCommunityIcons name="dolly" size={22} color="#16a34a" />
+              <Text style={styles.specLabel}>Existencia</Text>
+              <Text style={styles.specValue}>{prod.stock} pzas</Text>
+            </View>
+            <View style={styles.specItem}>
+              <MaterialCommunityIcons name="shield-check-outline" size={22} color="#16a34a" />
+              <Text style={styles.specLabel}>Estado</Text>
+              <Text style={styles.specValue}>{prod.estado}</Text>
+            </View>
+            <View style={styles.specItem}>
+              <MaterialCommunityIcons name="map-marker-radius-outline" size={22} color="#16a34a" />
+              <Text style={styles.specLabel}>Ubicación</Text>
+              <Text style={styles.specValue}>Chihuahua, MX</Text>
+            </View>
+            <View style={styles.specItem}>
+              <MaterialCommunityIcons name="calendar-range" size={22} color="#16a34a" />
+              <Text style={styles.specLabel}>Publicado</Text>
+              <Text style={styles.specValue}>{prod.fecha_publicacion.split('T')[0]}</Text>
+            </View>
+          </View>
+
+          {added && (
+            <Animated.View style={styles.successNotice}>
+              <Ionicons name="checkmark-circle" size={20} color="#059669" />
+              <Text style={styles.successText}>¡Agregado con éxito!</Text>
+            </Animated.View>
+          )}
+        </View>
+      </ScrollView>
+
+      {/* FOOTER */}
+      <View style={styles.footer}>
+        <Animated.View style={{ flex: 1, transform: [{ scale: scaleAnim }] }}>
+          <TouchableOpacity style={styles.secondaryBtn} onPress={handleAddToCart}>
+            <Ionicons name="cart-outline" size={22} color="#16a34a" />
+            <Text style={styles.secondaryBtnText}>Carrito</Text>
+          </TouchableOpacity>
+        </Animated.View>
+
+        <TouchableOpacity style={styles.primaryBtn} onPress={handleBuyNow}>
+          <Text style={styles.primaryBtnText}>Comprar Ahora</Text>
+          <MaterialCommunityIcons name="chevron-right" size={20} color="#fff" />
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f1f5f9",
-  },
+  mainContainer: { flex: 1, backgroundColor: "#fff" },
+  errorContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  errorText: { color: "#64748b", fontSize: 16 },
 
-  header: {
+  headerNav: {
+    position: "absolute",
+    top: 50,
+    left: 0,
+    right: 0,
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    paddingTop: 50,
     paddingHorizontal: 20,
-    paddingBottom: 15,
+    zIndex: 20,
+  },
+  roundBtn: {
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 3,
   },
 
-  headerTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
+  imageBox: { 
+    width: width, 
+    height: 380, 
+    backgroundColor: "#fff", 
+    paddingTop: 50 
   },
-
-  imageContainer: {
-    position: "relative",
+  mainImage: { width: "100%", height: "100%" },
+  imageOverlay: { 
+    position: "absolute", 
+    bottom: 0, 
+    width: "100%", 
+    height: 100 
   },
-
-  image: {
-    width: "100%",
-    height: 300,
+  
+  contentCard: {
+    flex: 1,
+    backgroundColor: "#f8fafc",
+    borderTopLeftRadius: 35,
+    borderTopRightRadius: 35,
+    paddingHorizontal: 25,
+    paddingTop: 25,
+    paddingBottom: 120,
+    marginTop: -30,
   },
-
-  imageOverlay: {
-    position: "absolute",
-    bottom: 0,
-    width: "100%",
-    height: 80,
-  },
-
-  categoryTag: {
-    position: "absolute",
-    top: 15,
-    left: 15,
+  badgeContainer: { flexDirection: 'row', marginBottom: 15 },
+  categoryBadge: {
     backgroundColor: "#16a34a",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 8,
   },
+  categoryText: { color: "#fff", fontSize: 10, fontWeight: "900", letterSpacing: 1 },
 
-  categoryText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "bold",
+  titleRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  mainTitle: { fontSize: 24, fontWeight: "800", color: "#0f172a", flex: 1, marginRight: 10 },
+  
+  priceRow: { flexDirection: "row", alignItems: "flex-end", marginTop: 15 },
+  currencySymbol: { fontSize: 20, fontWeight: "700", color: "#16a34a", marginBottom: 5, marginRight: 2 },
+  mainPrice: { fontSize: 36, fontWeight: "900", color: "#16a34a" },
+  currencyCode: { fontSize: 14, fontWeight: "600", color: "#64748b", marginBottom: 8, marginLeft: 5 },
+
+  divider: { height: 1, backgroundColor: "#e2e8f0", marginVertical: 25 },
+  sectionTitle: { fontSize: 16, fontWeight: "700", color: "#0f172a", marginBottom: 10 },
+  mainDescription: { fontSize: 15, color: "#475569", lineHeight: 24, marginBottom: 25 },
+
+  specsGrid: { 
+    flexDirection: "row", 
+    flexWrap: "wrap", 
+    justifyContent: "space-between", 
+    gap: 12 
   },
-
-  card: {
+  specItem: {
+    width: "48%", // Esto permite 2 por fila
     backgroundColor: "#fff",
-    margin: 15,
-    padding: 18,
+    padding: 15,
     borderRadius: 20,
-    elevation: 6,
+    borderWidth: 1,
+    borderColor: "#f1f5f9",
+    elevation: 2,
   },
+  specLabel: { fontSize: 11, color: "#94a3b8", marginTop: 8, fontWeight: "600", textTransform: "uppercase" },
+  specValue: { fontSize: 13, color: "#1e293b", fontWeight: "700", marginTop: 2 },
 
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#0f172a",
-    marginBottom: 5,
-  },
-
-  price: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#16a34a",
-    marginBottom: 15,
-  },
-
-  description: {
-    fontSize: 14,
-    color: "#475569",
-    lineHeight: 20,
-    marginBottom: 15,
-  },
-
-  infoRow: {
+  successNotice: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 6,
+    backgroundColor: "#d1fae5",
+    padding: 12,
+    borderRadius: 12,
+    marginTop: 20,
   },
+  successText: { color: "#065f46", fontWeight: "700", marginLeft: 8 },
 
-  infoText: {
-    marginLeft: 6,
-    color: "#64748b",
-    fontSize: 13,
-  },
-
-  addedBox: {
-    marginTop: 15,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#ecfdf5",
-    padding: 10,
-    borderRadius: 10,
-  },
-
-  addedText: {
-    color: "#065f46",
-    fontWeight: "600",
-  },
-
-  goCart: {
-    color: "#16a34a",
-    fontWeight: "bold",
-  },
-
-  bottomBar: {
+  footer: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: "row",
-    padding: 15,
     backgroundColor: "#fff",
-    gap: 10,
-    elevation: 10,
+    paddingHorizontal: 20,
+    paddingTop: 15,
+    paddingBottom: 35,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 15,
+    borderTopWidth: 1,
+    borderTopColor: "#f1f5f9",
   },
-
-  cartButton: {
+  secondaryBtn: {
     flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: "#16a34a",
+  },
+  secondaryBtnText: { color: "#16a34a", fontWeight: "800", marginLeft: 8, fontSize: 15 },
+  primaryBtn: {
+    flex: 1.5,
     backgroundColor: "#16a34a",
-    padding: 14,
-    borderRadius: 12,
     flexDirection: "row",
-    justifyContent: "center",
     alignItems: "center",
-  },
-
-  cartText: {
-    color: "#fff",
-    fontWeight: "bold",
-    marginLeft: 6,
-  },
-
-  buyButton: {
-    flex: 1,
-    backgroundColor: "#0ea5e9",
-    padding: 14,
-    borderRadius: 12,
-    flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center",
+    paddingVertical: 18,
+    borderRadius: 18,
+    elevation: 5,
   },
-
-  buyText: {
-    color: "#fff",
-    fontWeight: "bold",
-    marginLeft: 6,
-  },
+  primaryBtnText: { color: "#fff", fontWeight: "800", fontSize: 16, marginRight: 5 },
 });

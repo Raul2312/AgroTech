@@ -10,6 +10,7 @@ import {
   Platform,
   Keyboard,
   TouchableWithoutFeedback,
+  StatusBar,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCart } from "../../context/CartContext";
@@ -18,7 +19,7 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function carrito() {
+export default function Carrito() {
   const router = useRouter();
 
   const {
@@ -36,27 +37,19 @@ export default function carrito() {
     const checkSession = async () => {
       try {
         const session = await AsyncStorage.getItem("agroSession");
-
         if (!session) {
-          setCheckingAuth(false);
-
           router.replace({
             pathname: "/(tabs)/login",
-            params: {
-              redirect: "carrito",
-            },
+            params: { redirect: "carrito" },
           });
-
           return;
         }
-
         setCheckingAuth(false);
       } catch (error) {
         console.log("Error verificando sesión:", error);
         setCheckingAuth(false);
       }
     };
-
     checkSession();
   }, []);
 
@@ -68,17 +61,12 @@ export default function carrito() {
     );
   }
 
-  const subtotal = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const envio = subtotal > 0 ? 120 : 0;
   const total = subtotal + envio - discount;
 
   const applyCoupon = () => {
     Keyboard.dismiss();
-
     if (coupon === "AGRO10") {
       setDiscount(subtotal * 0.1);
     } else if (coupon === "AGRO50") {
@@ -91,6 +79,7 @@ export default function carrito() {
 
   return (
     <>
+      <StatusBar barStyle="light-content" />
       <Stack.Screen options={{ headerShown: false }} />
 
       <KeyboardAvoidingView
@@ -99,16 +88,16 @@ export default function carrito() {
       >
         <View style={styles.container}>
           <LinearGradient
-            colors={["#0f172a", "#14532d"]}
+            colors={["#0f172a", "#16a34a"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
             style={styles.header}
           >
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="arrow-back" size={26} color="#fff" />
+            <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+              <Ionicons name="chevron-back" size={26} color="#fff" />
             </TouchableOpacity>
-
-            <Text style={styles.headerTitle}>Carrito</Text>
-
-            <Ionicons name="cart" size={24} color="#fff" />
+            <Text style={styles.headerTitle}>Mi Carrito</Text>
+            <View style={{ width: 40 }} /> 
           </LinearGradient>
 
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -118,25 +107,34 @@ export default function carrito() {
                 keyExtractor={(item) => item.id.toString()}
                 keyboardShouldPersistTaps="always"
                 ListEmptyComponent={
-                  <Text style={styles.empty}>
-                    🛒 Tu carrito está vacío
-                  </Text>
+                  <View style={styles.emptyContainer}>
+                    <Ionicons name="cart-outline" size={80} color="#cbd5e1" />
+                    <Text style={styles.empty}>Tu carrito está vacío</Text>
+                    <TouchableOpacity 
+                        style={styles.shopBtn} 
+                        onPress={() => router.push("/")}
+                    >
+                        <Text style={styles.shopBtnText}>Explorar productos</Text>
+                    </TouchableOpacity>
+                  </View>
                 }
-                contentContainerStyle={{ paddingBottom: 300 }}
+                contentContainerStyle={{ paddingBottom: 320, paddingTop: 10 }}
                 renderItem={({ item }) => (
                   <View style={styles.card}>
-                    <Image
-                      source={{ uri: item.image }}
-                      style={styles.image}
-                    />
+                    <View style={styles.imageWrapper}>
+                        <Image
+                        source={{ uri: item.image }}
+                        style={styles.image}
+                        resizeMode="contain" // EVITA QUE SE CORTE LA FOTO
+                        />
+                    </View>
 
                     <View style={styles.info}>
-                      <Text numberOfLines={4} style={styles.name}>
+                      <Text numberOfLines={2} style={styles.name}>
                         {item.name}
                       </Text>
-
                       <Text style={styles.price}>
-                        ${item.price} MXN
+                        ${item.price.toLocaleString('es-MX')} MXN
                       </Text>
 
                       <View style={styles.qtyRow}>
@@ -144,11 +142,7 @@ export default function carrito() {
                           style={styles.qtyBtn}
                           onPress={() => decrease(item.id)}
                         >
-                          <Ionicons
-                            name="remove"
-                            size={18}
-                            color="#334155"
-                          />
+                          <Ionicons name="remove" size={18} color="#16a34a" />
                         </TouchableOpacity>
 
                         <Text style={styles.qty}>{item.quantity}</Text>
@@ -157,11 +151,7 @@ export default function carrito() {
                           style={styles.qtyBtn}
                           onPress={() => increase(item.id)}
                         >
-                          <Ionicons
-                            name="add"
-                            size={18}
-                            color="#334155"
-                          />
+                          <Ionicons name="add" size={18} color="#16a34a" />
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -170,11 +160,7 @@ export default function carrito() {
                       style={styles.deleteBtn}
                       onPress={() => removeFromCart(item.id)}
                     >
-                      <MaterialIcons
-                        name="delete-outline"
-                        size={22}
-                        color="#ef4444"
-                      />
+                      <MaterialIcons name="delete-outline" size={22} color="#ef4444" />
                     </TouchableOpacity>
                   </View>
                 )}
@@ -184,25 +170,17 @@ export default function carrito() {
 
           <View style={styles.footer}>
             <View style={styles.couponBox}>
-              <Ionicons
-                name="pricetag-outline"
-                size={18}
-                color="#16a34a"
-              />
-
+              <Ionicons name="pricetag-outline" size={18} color="#16a34a" />
               <TextInput
-                placeholder="Código de cupón"
+                placeholder="¿Tienes un cupón?"
                 value={coupon}
                 onChangeText={setCoupon}
                 style={styles.couponInput}
+                placeholderTextColor="#94a3b8"
                 returnKeyType="done"
                 onSubmitEditing={applyCoupon}
               />
-
-              <TouchableOpacity
-                style={styles.couponBtn}
-                onPress={applyCoupon}
-              >
+              <TouchableOpacity style={styles.couponBtn} onPress={applyCoupon}>
                 <Text style={styles.couponBtnText}>Aplicar</Text>
               </TouchableOpacity>
             </View>
@@ -214,14 +192,14 @@ export default function carrito() {
               </View>
 
               <View style={styles.row}>
-                <Text style={styles.label}>Envío</Text>
+                <Text style={styles.label}>Costo de Envío</Text>
                 <Text style={styles.value}>${envio.toFixed(2)}</Text>
               </View>
 
               {discount > 0 && (
                 <View style={styles.row}>
-                  <Text style={{ color: "#16a34a" }}>Descuento</Text>
-                  <Text style={{ color: "#16a34a" }}>
+                  <Text style={{ color: "#16a34a", fontWeight: '600' }}>Descuento</Text>
+                  <Text style={{ color: "#16a34a", fontWeight: '600' }}>
                     - ${discount.toFixed(2)}
                   </Text>
                 </View>
@@ -232,7 +210,7 @@ export default function carrito() {
               <View style={styles.row}>
                 <Text style={styles.totalLabel}>Total</Text>
                 <Text style={styles.total}>
-                  ${total.toFixed(2)} MXN
+                  ${total.toFixed(2)} <Text style={{fontSize: 12}}>MXN</Text>
                 </Text>
               </View>
             </View>
@@ -240,28 +218,18 @@ export default function carrito() {
             <TouchableOpacity
               style={[
                 styles.checkoutBtn,
-                cart.length === 0 && { opacity: 0.5 },
+                cart.length === 0 && { opacity: 0.5, backgroundColor: '#94a3b8' },
               ]}
               disabled={cart.length === 0}
               onPress={() =>
                 router.push({
                   pathname: "/carrito/pago",
-                  params: {
-                    discount: discount.toString(),
-                    coupon: coupon,
-                  },
+                  params: { discount: discount.toString(), coupon: coupon },
                 })
               }
             >
-              <Ionicons
-                name="card-outline"
-                size={22}
-                color="#fff"
-                style={{ marginRight: 8 }}
-              />
-              <Text style={styles.checkoutText}>
-                Proceder al pago
-              </Text>
+              <Text style={styles.checkoutText}>Proceder al pago</Text>
+              <Ionicons name="chevron-forward" size={20} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -271,102 +239,73 @@ export default function carrito() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f1f5f9",
-  },
-
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f1f5f9",
-  },
-
-  loadingText: {
-    fontSize: 16,
-    color: "#475569",
-    fontWeight: "600",
-  },
+  container: { flex: 1, backgroundColor: "#f8fafc" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f8fafc" },
+  loadingText: { fontSize: 16, color: "#475569", fontWeight: "600" },
 
   header: {
-    paddingTop: 48,
-    paddingBottom: 16,
-    paddingHorizontal: 18,
+    paddingTop: 35,
+    paddingBottom: 25,
+    paddingHorizontal: 20,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
   },
-
-  headerTitle: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
+  headerTitle: { color: "#fff", fontSize: 22, fontWeight: "800" },
+  backBtn: { width: 40, height: 40, justifyContent: 'center' },
 
   card: {
     flexDirection: "row",
     backgroundColor: "#fff",
-    marginHorizontal: 15,
-    marginTop: 14,
+    marginHorizontal: 16,
+    marginTop: 15,
     padding: 12,
-    borderRadius: 18,
+    borderRadius: 20,
     alignItems: "center",
-    elevation: 5,
+    elevation: 3,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
   },
-
-  image: {
-    width: 75,
-    height: 75,
-    borderRadius: 12,
-    marginRight: 12,
+  imageWrapper: {
+    width: 85,
+    height: 85,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
   },
+  image: { width: "90%", height: "90%" },
+  info: { flex: 1 },
+  name: { fontWeight: "700", fontSize: 15, marginBottom: 4, color: "#1e293b" },
+  price: { color: "#16a34a", fontWeight: "800", marginBottom: 10, fontSize: 16 },
 
-  info: {
-    flex: 1,
-    marginRight: 10,
-  },
-
-  name: {
-    fontWeight: "600",
-    fontSize: 15,
-    marginBottom: 4,
-    color: "#0f172a",
-  },
-
-  price: {
-    color: "#16a34a",
-    fontWeight: "bold",
-    marginBottom: 8,
-    fontSize: 15,
-  },
-
-  qtyRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
+  qtyRow: { flexDirection: "row", alignItems: "center" },
   qtyBtn: {
-    backgroundColor: "#e2e8f0",
-    width: 34,
-    height: 34,
+    backgroundColor: "#f0fdf4",
+    width: 32,
+    height: 32,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: '#dcfce7'
   },
-
-  qty: {
-    marginHorizontal: 12,
-    fontWeight: "bold",
-    fontSize: 16,
-  },
+  qty: { marginHorizontal: 15, fontWeight: "800", fontSize: 16, color: "#1e293b" },
 
   deleteBtn: {
     backgroundColor: "#fee2e2",
-    padding: 8,
-    borderRadius: 10,
+    padding: 10,
+    borderRadius: 12,
+    marginLeft: 10,
   },
 
   footer: {
@@ -375,95 +314,55 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    elevation: 12,
+    paddingHorizontal: 25,
+    paddingTop: 20,
+    paddingBottom: 40,
+    borderTopLeftRadius: 35,
+    borderTopRightRadius: 35,
+    elevation: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 15,
   },
-
   couponBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f0fdf4",
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    marginBottom: 10,
+    backgroundColor: "#f8fafc",
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#e2e8f0'
   },
+  couponInput: { flex: 1, height: 45, marginHorizontal: 10, fontSize: 14, color: '#1e293b' },
+  couponBtn: { backgroundColor: "#16a34a", paddingHorizontal: 15, paddingVertical: 8, borderRadius: 10 },
+  couponBtnText: { color: "#fff", fontWeight: "700", fontSize: 13 },
 
-  couponInput: {
-    flex: 1,
-    marginHorizontal: 8,
-    fontSize: 14,
-  },
-
-  couponBtn: {
-    backgroundColor: "#16a34a",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-
-  couponBtnText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-
-  summary: {
-    marginBottom: 15,
-  },
-
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-
-  label: {
-    color: "#64748b",
-  },
-
-  value: {
-    fontWeight: "600",
-  },
-
-  divider: {
-    height: 1,
-    backgroundColor: "#e2e8f0",
-    marginVertical: 8,
-  },
-
-  totalLabel: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-
-  total: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#16a34a",
-  },
+  summary: { marginBottom: 20 },
+  row: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
+  label: { color: "#64748b", fontSize: 14, fontWeight: '500' },
+  value: { fontWeight: "700", color: '#1e293b' },
+  divider: { height: 1, backgroundColor: "#f1f5f9", marginVertical: 12 },
+  totalLabel: { fontSize: 18, fontWeight: "800", color: '#0f172a' },
+  total: { fontSize: 26, fontWeight: "900", color: "#16a34a" },
 
   checkoutBtn: {
     backgroundColor: "#16a34a",
-    padding: 16,
-    borderRadius: 14,
+    paddingVertical: 18,
+    borderRadius: 18,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    elevation: 6,
+    elevation: 8,
+    shadowColor: "#16a34a",
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
   },
+  checkoutText: { color: "#fff", fontWeight: "800", fontSize: 17, marginRight: 8 },
 
-  checkoutText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-
-  empty: {
-    textAlign: "center",
-    marginTop: 80,
-    fontSize: 18,
-    color: "#64748b",
-  },
+  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 },
+  empty: { fontSize: 18, color: "#94a3b8", fontWeight: '600', marginTop: 20 },
+  shopBtn: { marginTop: 20, backgroundColor: '#f1f5f9', paddingHorizontal: 25, paddingVertical: 12, borderRadius: 12 },
+  shopBtnText: { color: '#16a34a', fontWeight: '700' }
 });
