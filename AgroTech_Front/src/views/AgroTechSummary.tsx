@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, ShieldCheck, ShoppingBag, ArrowLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { Lock, ShieldCheck, ShoppingBag, ArrowLeft} from 'lucide-react';
 import '../css/AgroTechSummary.css';
 
 // Definimos el tipo basado en tu Marketplace
