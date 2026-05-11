@@ -2,6 +2,10 @@
  
  
 namespace App\Http\Controllers\Api;
+<<<<<<< Updated upstream
+=======
+use App\Http\Controllers\Controller;
+>>>>>>> Stashed changes
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\UserReward;

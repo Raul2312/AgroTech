@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import "../css/vendedor.css";
 import logo from "../assets/img/agro.png";
 import { 
-  FaPlus, FaEdit, FaTrash, FaBoxOpen, 
-  FaImage, FaChevronLeft, FaCheckCircle 
+  FaPlus, FaTrash, FaBoxOpen, FaImage, FaBars 
 } from "react-icons/fa";
 
 const API_URL = import.meta.env.VITE_API;
 
+// 1. DEFINIMOS LA INTERFAZ DE LOS DATOS
 interface Producto {
   id_productos: number;
   nombre: string;
-  precio: string;
+  precio: string | number;
   stock: number;
   imagen: string;
-  estado: string;
   id_usuario: number;
+  estado?: string;
 }
 
 interface Categoria {
@@ -27,10 +27,13 @@ interface Categoria {
 
 const MisPublicaciones: React.FC = () => {
   const navigate = useNavigate();
-  const [products, setProducts] = useState<Producto[]>([]);
+  const [collapsed, setCollapsed] = useState<boolean>(false);
+  
+  // 2. ASIGNAMOS LOS TIPOS A LOS ESTADOS
+  const [products, setProducts] = useState<Producto[]>([]); 
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [preview, setPreview] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -43,7 +46,6 @@ const MisPublicaciones: React.FC = () => {
     imagen: null as File | null
   });
 
-  // Obtener datos del usuario desde el storage
   const sessionStr = localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession");
   const sessionData = sessionStr ? JSON.parse(sessionStr) : null;
   const userData = sessionData?.user || sessionData?.usuario;
@@ -60,32 +62,34 @@ const MisPublicaciones: React.FC = () => {
   const fetchMyProducts = async () => {
     try {
       const res = await axios.get(`${API_URL}productos`);
-      // Filtramos para que el vendedor solo vea lo que él publicó
-      const mine = res.data.filter((p: Producto) => p.id_usuario === userData.id_usuario);
+      const dataArray: Producto[] = Array.isArray(res.data) ? res.data : [];
+      // Filtramos asegurando que el ID coincida
+      const mine = dataArray.filter((p: Producto) => Number(p.id_usuario) === Number(userData.id_usuario));
       setProducts(mine);
     } catch (err) {
-      console.error("Error al obtener productos:", err);
+      console.error("Error:", err);
+      setProducts([]);
     }
   };
 
   const fetchCategories = async () => {
     try {
       const res = await axios.get(`${API_URL}categorias`);
-      setCategories(res.data);
+      setCategories(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error("Error al obtener categorías:", err);
+      console.error(err);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setFormData(prev => ({ ...prev, imagen: file }));
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData({ ...formData, imagen: file });
       setPreview(URL.createObjectURL(file));
     }
   };
@@ -93,7 +97,6 @@ const MisPublicaciones: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     const data = new FormData();
     data.append("nombre", formData.nombre);
     data.append("precio", formData.precio);
@@ -103,15 +106,14 @@ const MisPublicaciones: React.FC = () => {
     data.append("descripcion", formData.descripcion);
     data.append("estado", formData.estado);
     data.append("id_usuario", userData.id_usuario.toString());
-    
+
     if (formData.imagen) {
       data.append("imagen", formData.imagen);
     }
 
     try {
       await axios.post(`${API_URL}productos`, data);
-      alert("¡Producto publicado con éxito!");
-      // Resetear formulario
+      alert("Producto publicado");
       setFormData({
         nombre: "", precio: "", moneda: "MXN", stock: "", 
         id_categoria: "", descripcion: "", estado: "activo", imagen: null
@@ -119,134 +121,153 @@ const MisPublicaciones: React.FC = () => {
       setPreview(null);
       fetchMyProducts();
     } catch (err) {
-      console.error(err);
-      alert("Hubo un error al guardar el producto.");
+      alert("Error al publicar");
     } finally {
       setLoading(false);
     }
   };
 
   const deleteProduct = async (id: number) => {
-    if (window.confirm("¿Estás seguro de eliminar esta publicación?")) {
+    if (window.confirm("¿Eliminar?")) {
       try {
         await axios.delete(`${API_URL}productos/${id}`);
         fetchMyProducts();
       } catch (err) {
-        alert("Error al eliminar el producto.");
+        alert("Error al eliminar");
       }
     }
   };
 
   return (
-    <div className="vendedor-container">
-      <header className="vendedor-header">
-        <button onClick={() => navigate("/areacliente")} className="back-btn">
-          <FaChevronLeft /> Volver al Panel
-        </button>
-        <div className="user-profile-header">
-          <div className="text-right">
-            <span>{userData?.nombre}</span>
-            <p>Panel de Vendedor</p>
-          </div>
-          <img src={logo} alt="Logo" />
+    <div className="client-profile admin-page">
+      <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
+        <div className="logo-container">
+          <img src={logo} className="logo-img" alt="logo" />
+          {!collapsed && <span className="logo-text">AgroTech</span>}
         </div>
-      </header>
 
-      <div className="vendedor-content">
-        <section className="form-section glass">
-          <h2 className="section-title"><FaPlus /> Publicar Producto</h2>
-          <form onSubmit={handleSubmit} className="vendedor-form">
-            <div className="form-grid">
-              <div className="input-group">
-                <label>Nombre</label>
-                <input type="text" name="nombre" value={formData.nombre} onChange={handleInputChange} required />
-              </div>
-              <div className="input-group">
-                <label>Precio (MXN)</label>
-                <input type="number" name="precio" value={formData.precio} onChange={handleInputChange} required />
-              </div>
-              <div className="input-group">
-                <label>Categoría</label>
-                <select name="id_categoria" value={formData.id_categoria} onChange={handleInputChange} required>
-                  <option value="">Seleccionar...</option>
-                  {categories.map(c => (
-                    <option key={c.id} value={c.id}>{c.nombre}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="input-group">
-                <label>Stock</label>
-                <input type="number" name="stock" value={formData.stock} onChange={handleInputChange} required />
-              </div>
-              <div className="input-group full">
-                <label>Descripción del Producto</label>
-                <textarea name="descripcion" value={formData.descripcion} onChange={handleInputChange} required />
-              </div>
-              <div className="input-group">
-                <label className="file-label">Imagen del Producto</label>
-                <input type="file" id="file-upload" onChange={handleImageChange} hidden />
-                <label htmlFor="file-upload" className="custom-file-btn">
-                  <FaImage /> {formData.imagen ? "Cambiar Imagen" : "Elegir Archivo"}
-                </label>
-              </div>
-              <div className="preview-container">
-                {preview ? <img src={preview} alt="Vista previa" /> : <div className="no-image">Sin Vista Previa</div>}
-              </div>
+        <ul className="menu">
+          <li><Link to="/indexscreen">🏠 {!collapsed && "Inicio"}</Link></li>
+          <li><Link to="/areacliente">🏠 {!collapsed && "Dashboard"}</Link></li>
+          <li><Link to="/mis-pedidos">📦 {!collapsed && "Mis pedidos"}</Link></li>
+          <li className="active"><Link to="/mis-productos">📦 {!collapsed && "Mis Productos"}</Link></li>
+          <li><Link to="/marketplace">🛒 {!collapsed && "Marketplace"}</Link></li>
+          <li><Link to="/perfil">👤 {!collapsed && "Mi perfil"}</Link></li>
+          <li><Link to="/rancho">👤 {!collapsed && "Rancho"}</Link></li>
+          <li><Link to="/trazabilidad">👤 {!collapsed && "Trazabilidad"}</Link></li>
+          <li className="logout">
+            <button onClick={() => {
+              localStorage.removeItem("agroSession");
+              sessionStorage.removeItem("agroSession");
+              navigate("/login");
+            }}>❌ {!collapsed && "Cerrar sesión"}</button>
+          </li>
+        </ul>
+      </aside>
+
+      <main className={`main ${collapsed ? "expanded" : ""}`}>
+        <header className="admin-header">
+          <button className="menu-btn" onClick={() => setCollapsed(!collapsed)}><FaBars /></button>
+          <div className="admin-user">
+            <div style={{textAlign: 'right', marginRight: '10px'}}>
+               <span style={{display: 'block', fontWeight: 'bold'}}>{userData?.nombre}</span>
+               <small style={{color: '#A5D6A7'}}>Vendedor</small>
             </div>
-            <button type="submit" className="btn-submit" disabled={loading}>
-              {loading ? "Publicando..." : "Publicar Ahora"}
-            </button>
-          </form>
-        </section>
-
-        <section className="table-section glass">
-          <h2 className="section-title"><FaBoxOpen /> Mis Publicaciones</h2>
-          <div className="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Imagen</th>
-                  <th>Producto</th>
-                  <th>Precio</th>
-                  <th>Stock</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.length > 0 ? (
-                  products.map(p => (
-                    <tr key={p.id_productos}>
-                      <td>
-                        <img 
-                          src={p.imagen.startsWith('http') ? p.imagen : `${API_URL.replace('api/','')}/products/${p.imagen}`} 
-                          className="table-img" 
-                          alt="prod" 
-                        />
-                      </td>
-                      <td><strong>{p.nombre}</strong></td>
-                      <td>${parseFloat(p.precio).toLocaleString()} MXN</td>
-                      <td>{p.stock} unidades</td>
-                      <td><span className={`status-badge ${p.estado}`}>{p.estado}</span></td>
-                      <td className="actions-td">
-                        <button className="delete-btn" onClick={() => deleteProduct(p.id_productos)}>
-                          <FaTrash />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} style={{textAlign: 'center', padding: '30px', color: '#999'}}>
-                      No has publicado productos todavía.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <img src={logo} alt="user" />
           </div>
-        </section>
-      </div>
+        </header>
+
+        <div className="vendedor-content">
+          <div className="glass form-section">
+            <h2 className="section-title"><FaPlus /> Publicar Nuevo Producto</h2>
+            <form onSubmit={handleSubmit} className="vendedor-form">
+              <div className="form-grid">
+                <div className="input-group">
+                  <label>Nombre</label>
+                  <input type="text" name="nombre" value={formData.nombre} onChange={handleInputChange} required />
+                </div>
+                <div className="input-group">
+                  <label>Precio</label>
+                  <input type="number" name="precio" value={formData.precio} onChange={handleInputChange} required />
+                </div>
+                <div className="input-group">
+                  <label>Categoría</label>
+                  <select name="id_categoria" value={formData.id_categoria} onChange={handleInputChange} required>
+                    <option value="">Seleccionar...</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>{c.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="input-group">
+                  <label>Stock</label>
+                  <input type="number" name="stock" value={formData.stock} onChange={handleInputChange} required />
+                </div>
+                <div className="input-group full">
+                  <label>Descripción</label>
+                  <textarea name="descripcion" value={formData.descripcion} onChange={handleInputChange} required />
+                </div>
+                <div className="input-group">
+                  <label className="custom-file-btn">
+                    <FaImage /> {formData.imagen ? "Imagen lista" : "Subir Imagen"}
+                    <input type="file" onChange={handleImageChange} hidden />
+                  </label>
+                </div>
+                <div className="preview-container">
+                  {preview ? <img src={preview} alt="preview" /> : <div className="no-image">Previsualización</div>}
+                </div>
+              </div>
+              <button type="submit" className="btn-submit" disabled={loading}>
+                {loading ? "Publicando..." : "Publicar Producto"}
+              </button>
+            </form>
+          </div>
+
+          <div className="glass table-section" style={{marginTop: '30px'}}>
+            <h2 className="section-title"><FaBoxOpen /> Mis Productos</h2>
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Miniatura</th>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.length > 0 ? (
+                    products.map((p: Producto) => (
+                      <tr key={p.id_productos}>
+                        <td>
+                          <img 
+                            src={p.imagen ? `${API_URL.replace('api/','')}/products/${p.imagen}` : logo} 
+                            className="table-img" 
+                            alt="prod" 
+                          />
+                        </td>
+                        <td>{p.nombre}</td>
+                        <td>${p.precio}</td>
+                        <td>{p.stock}</td>
+                        <td>
+                          <button className="delete-btn" onClick={() => deleteProduct(p.id_productos)}>
+                            <FaTrash />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} style={{textAlign: 'center', padding: '20px'}}>Sin productos.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
