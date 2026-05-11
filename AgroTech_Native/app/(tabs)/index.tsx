@@ -11,6 +11,7 @@ import {
   Animated,
   Easing,
   RefreshControl,
+  StatusBar,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,6 +20,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import DailySpinWheel from "../../components/DailySpinWheel";
 
 const API_URL = "https://api.agrootech.com.mx/api";
+const AnimatedGradient = Animated.createAnimatedComponent(LinearGradient);
 
 export type ProductType = {
   id_productos: number;
@@ -53,26 +55,26 @@ export default function Marketplace() {
   const [favorites, setFavorites] = useState<number[]>([]);
   const [showSpin, setShowSpin] = useState(false);
 
-  const offerAnim = useRef(new Animated.Value(0)).current;
+  const scrollY = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(offerAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: false,
-          easing: Easing.ease,
-        }),
-        Animated.timing(offerAnim, {
-          toValue: 0,
-          duration: 800,
-          useNativeDriver: false,
-          easing: Easing.ease,
-        }),
-      ])
-    ).start();
-  }, []);
+  // Header colapsable: Mínimo 185 para que no choque con el logo
+  const headerHeight = scrollY.interpolate({
+    inputRange: [0, 120],
+    outputRange: [300, 185], 
+    extrapolate: "clamp",
+  });
+
+  const heroOpacity = scrollY.interpolate({
+    inputRange: [0, 80],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
+  const searchTranslateY = scrollY.interpolate({
+    inputRange: [0, 120],
+    outputRange: [0, 5], 
+    extrapolate: "clamp",
+  });
 
   useEffect(() => {
     fetchProductsAndCategories();
@@ -83,190 +85,89 @@ export default function Marketplace() {
   const loadFavorites = async () => {
     try {
       const savedFavorites = await AsyncStorage.getItem("agroFavorites");
-
-      if (savedFavorites) {
-        setFavorites(JSON.parse(savedFavorites));
-      }
-    } catch (error) {
-      console.log("Error cargando favoritos", error);
-    }
+      if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
+    } catch (e) { console.log(e); }
   };
 
   const checkAuth = async () => {
     const session = await AsyncStorage.getItem("agroSession");
-
     if (!session) {
-      router.push({
-        pathname: "/(tabs)/login",
-        params: { redirect: "index" },
-      });
+      router.push({ pathname: "/(tabs)/login", params: { redirect: "index" } });
       return false;
     }
-
     return true;
   };
 
-const checkSpinVisibility = async () => {
-  try {
-    const session = await AsyncStorage.getItem(
-      "agroSession"
-    );
+  const checkSpinVisibility = async () => {
+    try {
+      const session = await AsyncStorage.getItem("agroSession");
+      if (!session) return;
+      const parsed = JSON.parse(session);
+      const user = parsed.user;
+      const correo = user?.email || user?.correo || "guest";
+      const spinKey = `dailySpinSeen_${correo}`;
+      const alreadySeenToday = await AsyncStorage.getItem(spinKey);
+      if (alreadySeenToday !== new Date().toDateString()) {
+        setTimeout(() => setShowSpin(true), 800);
+      }
+    } catch (e) { console.log(e); }
+  };
 
-    if (!session) return;
-
-    // 🔥 SESSION REAL
-    const parsed = JSON.parse(session);
-    const user = parsed.user;
-
-    const correo =
-      user?.email || user?.correo || "guest";
-
-    const spinKey = `dailySpinSeen_${correo}`;
-
-    const alreadySeenToday =
-      await AsyncStorage.getItem(spinKey);
-
-    const today = new Date().toDateString();
-
-    if (alreadySeenToday !== today) {
-      setTimeout(() => {
-        setShowSpin(true);
-      }, 800);
+  const handleCloseSpin = async () => {
+    const session = await AsyncStorage.getItem("agroSession");
+    if (session) {
+      const parsed = JSON.parse(session);
+      await AsyncStorage.setItem(`dailySpinSeen_${parsed.user?.email || "guest"}`, new Date().toDateString());
     }
-  } catch (error) {
-    console.log("Error verificando ruleta", error);
-  }
-};
-
-const handleCloseSpin = async () => {
-  try {
-    const session = await AsyncStorage.getItem(
-      "agroSession"
-    );
-
-    if (!session) return;
-
-    // 🔥 SESSION REAL
-    const parsed = JSON.parse(session);
-    const user = parsed.user;
-
-    const correo =
-      user?.email || user?.correo || "guest";
-
-    const spinKey = `dailySpinSeen_${correo}`;
-
-    await AsyncStorage.setItem(
-      spinKey,
-      new Date().toDateString()
-    );
-
     setShowSpin(false);
-  } catch (error) {
-    console.log("Error cerrando ruleta", error);
-  }
-};
+  };
 
   const fetchProductsAndCategories = async () => {
     try {
       const resProducts = await fetch(`${API_URL}/productos`);
       const jsonProducts = await resProducts.json();
-      const dataProducts = jsonProducts.data ?? jsonProducts;
-      setProducts(dataProducts);
-
+      setProducts(jsonProducts.data ?? jsonProducts);
       const resCategories = await fetch(`${API_URL}/categorias`);
       const jsonCategories = await resCategories.json();
       const dataCategories = jsonCategories.data ?? jsonCategories;
-
-      const categoryNames = [
-        "Todos",
-        ...dataCategories.map((c: any) => c.nombre),
-      ];
-
-      setCategories(categoryNames);
-    } catch (error) {
-      console.log("ERROR API:", error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+      setCategories(["Todos", ...dataCategories.map((c: any) => c.nombre)]);
+    } catch (error) { console.log("ERROR API:", error); } 
+    finally { setLoading(false); setRefreshing(false); }
   };
 
+  // Función para refrescar
   const onRefresh = () => {
     setRefreshing(true);
     fetchProductsAndCategories();
     loadFavorites();
-    checkSpinVisibility();
   };
 
-  const filtered = products.filter(
-    (p) =>
-      p &&
-      p.nombre &&
-      p.nombre.toLowerCase().includes(search.toLowerCase()) &&
-      (category === "Todos" || p.categoria.nombre === category)
+  const filtered = products.filter(p => 
+    p?.nombre?.toLowerCase().includes(search.toLowerCase()) && 
+    (category === "Todos" || p.categoria.nombre === category)
   );
 
   const toggleFavorite = async (id: number) => {
-    const isLogged = await checkAuth();
-
-    if (!isLogged) return;
-
-    try {
-      let updatedFavorites: number[] = [];
-
-      if (favorites.includes(id)) {
-        updatedFavorites = favorites.filter((f) => f !== id);
-      } else {
-        updatedFavorites = [...favorites, id];
-      }
-
-      setFavorites(updatedFavorites);
-
-      await AsyncStorage.setItem(
-        "agroFavorites",
-        JSON.stringify(updatedFavorites)
-      );
-    } catch (error) {
-      console.log("Error guardando favoritos", error);
-    }
+    if (!(await checkAuth())) return;
+    const updated = favorites.includes(id) ? favorites.filter(f => f !== id) : [...favorites, id];
+    setFavorites(updated);
+    await AsyncStorage.setItem("agroFavorites", JSON.stringify(updated));
   };
 
   const handleAddToCart = async (item: ProductType) => {
-    const isLogged = await checkAuth();
-
-    if (!isLogged) return;
-
-    addToCart({
-      id: item.id_productos,
-      name: item.nombre,
-      price: Number(item.precio),
-      image: item.imagen_url,
-      quantity: 1,
-    });
+    if (!(await checkAuth())) return;
+    addToCart({ id: item.id_productos, name: item.nombre, price: Number(item.precio), image: item.imagen_url, quantity: 1 });
   };
 
-  const renderStars = (rating: number) => {
-    return (
-      <View style={styles.starsRow}>
-        {Array.from({ length: 5 }, (_, i) => (
-          <Ionicons
-            key={i}
-            name={i < Math.round(rating) ? "star" : "star-outline"}
-            size={14}
-            color="#f59e0b"
-          />
-        ))}
-      </View>
-    );
-  };
+  const renderStars = (rating: number) => (
+    <View style={styles.starsRow}>
+      {Array.from({ length: 5 }, (_, i) => (
+        <Ionicons key={i} name={i < Math.round(rating) ? "star" : "star-outline"} size={14} color="#F59E0B" />
+      ))}
+    </View>
+  );
 
-  if (loading) {
-    return (
-      <View style={styles.loading}>
-        <Text>Cargando productos...</Text>
-      </View>
-    );
-  }
+  if (loading) return <View style={styles.loading}><Text>Cargando productos...</Text></View>;
 
   const categoryIcons: Record<string, string> = {
     Todos: "🔠",
@@ -277,57 +178,72 @@ const handleCloseSpin = async () => {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={["#0f172a", "#14532d"]} style={styles.header}>
-        <View style={styles.logoRow}>
-          <Image
-            source={require("../../assets/images/agro.png")}
-            style={styles.logo}
-          />
-          <Text style={styles.logoText}>AgroTech MarketPlace</Text>
-        </View>
-      </LinearGradient>
+      <StatusBar barStyle="light-content" />
 
-      <View style={styles.searchBox}>
-        <View style={styles.searchWrapper}>
-          <Ionicons
-            name="search"
-            size={18}
-            color="#16a34a"
-            style={{ marginRight: 10 }}
-          />
+      {/* HEADER PREMIUM ANIMADO */}
+      <AnimatedGradient
+        colors={["#0B1220", "#0F3D2E", "#16A34A"]}
+        style={[styles.header, { height: headerHeight }]}
+      >
+        <View style={styles.headerTopRow}>
+          <View style={styles.logoRow}>
+            <View style={styles.logoContainer}>
+              <Image source={require("../../assets/images/agro.png")} style={styles.logo} />
+            </View>
+            <View>
+              <Text style={styles.headerTitle}>AgroTech</Text>
+              <Animated.View style={{ opacity: heroOpacity }}>
+                <Text style={styles.headerSubtitle}>Marketplace Ganadero</Text>
+              </Animated.View>
+            </View>
+          </View>
+
+          <TouchableOpacity style={styles.notificationBtn}>
+            <Ionicons name="notifications-outline" size={22} color="#fff" />
+            <View style={styles.notificationDot} />
+          </TouchableOpacity>
+        </View>
+
+        <Animated.View style={{ 
+          opacity: heroOpacity, 
+          height: scrollY.interpolate({ inputRange: [0, 80], outputRange: [90, 0], extrapolate: 'clamp' }),
+          overflow: 'hidden' 
+        }}>
+          <Text style={styles.heroTitle}>Todo para tu rancho</Text>
+          <Text style={styles.heroSubtitle}>Compra ganado, herramientas y servicios.</Text>
+        </Animated.View>
+
+        <Animated.View style={[styles.searchWrapper, { transform: [{ translateY: searchTranslateY }] }]}>
+          <Ionicons name="search" size={20} color="#16A34A" />
           <TextInput
             placeholder="Buscar productos..."
-            placeholderTextColor="#64748b"
+            placeholderTextColor="#94A3B8"
             style={styles.search}
             value={search}
             onChangeText={setSearch}
           />
-        </View>
-      </View>
+          <TouchableOpacity style={styles.filterBtn}>
+            <Ionicons name="options-outline" size={18} color="#fff" />
+          </TouchableOpacity>
+        </Animated.View>
+      </AnimatedGradient>
 
-      <View style={styles.categoriesBar}>
+      {/* CATEGORÍAS */}
+      <View style={styles.categoriesContainer}>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
           data={categories}
           keyExtractor={(item) => item}
+          contentContainerStyle={{ paddingHorizontal: 20 }}
           renderItem={({ item }) => {
             const icon = categoryIcons[item] ?? "🛒";
-
             return (
               <TouchableOpacity
                 onPress={() => setCategory(item)}
-                style={[
-                  styles.categoryPill,
-                  category === item && styles.categoryActive,
-                ]}
+                style={[styles.categoryChip, category === item && styles.categoryChipActive]}
               >
-                <Text
-                  style={[
-                    styles.categoryText,
-                    category === item && styles.categoryTextActive,
-                  ]}
-                >
+                <Text style={[styles.categoryChipText, category === item && styles.categoryChipTextActive]}>
                   {icon} {item}
                 </Text>
               </TouchableOpacity>
@@ -338,117 +254,58 @@ const handleCloseSpin = async () => {
 
       <DailySpinWheel visible={showSpin} onClose={handleCloseSpin} />
 
+      {/* PRODUCTOS CON REFRESH CONTROL */}
       <FlatList
         data={filtered}
         numColumns={2}
         keyExtractor={(item) => item.id_productos.toString()}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         columnWrapperStyle={styles.columnWrapper}
-        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={["#16a34a"]}
+            colors={["#16A34A"]}
+            tintColor="#16A34A"
           />
         }
         renderItem={({ item }) => {
           const rating = item.rating ?? Math.random() * 2 + 3;
-
           return (
-            <TouchableOpacity
-              activeOpacity={0.9}
-              style={styles.cardWrapper}
-              onPress={() =>
-                router.push({
-                  pathname: "/producto/[id]",
-                  params: {
-                    id: item.id_productos,
-                    producto: JSON.stringify(item),
-                  },
-                })
-              }
+            <TouchableOpacity 
+              style={styles.cardWrapper} 
+              onPress={() => router.push({ pathname: "/producto/[id]", params: { id: item.id_productos, producto: JSON.stringify(item) } })}
             >
               <View style={styles.card}>
                 <View style={styles.imageContainer}>
-                  <Image
-                    source={{ uri: item.imagen_url }}
-                    style={styles.productImg}
-                    resizeMode="cover"
-                  />
-
-                  <LinearGradient
-                    colors={["transparent", "rgba(0,0,0,0.6)"]}
-                    style={styles.imageOverlay}
-                  />
-
-                  <TouchableOpacity
-                    style={styles.favorite}
-                    onPress={() => toggleFavorite(item.id_productos)}
-                  >
-                    <Ionicons
-                      name={
-                        favorites.includes(item.id_productos)
-                          ? "heart"
-                          : "heart-outline"
-                      }
-                      size={20}
-                      color={
-                        favorites.includes(item.id_productos)
-                          ? "#ef4444"
-                          : "#fff"
-                      }
-                    />
+                  <Image source={{ uri: item.imagen_url }} style={styles.productImg} resizeMode="cover" />
+                  <TouchableOpacity style={styles.favorite} onPress={() => toggleFavorite(item.id_productos)}>
+                    <Ionicons name={favorites.includes(item.id_productos) ? "heart" : "heart-outline"} size={18} color={favorites.includes(item.id_productos) ? "#EF4444" : "#FFFFFF"} />
                   </TouchableOpacity>
-
-                  {Number(item.precio) < 50 && (
-                    <View style={styles.offerTag}>
-                      <Text style={styles.offerText}>🔥 Oferta</Text>
-                    </View>
+                  {item.precio_anterior && (
+                    <View style={styles.offerTag}><Text style={styles.offerText}>🔥 Oferta</Text></View>
                   )}
                 </View>
-
                 <View style={styles.cardContent}>
-                  <View>
-                    <Text numberOfLines={2} style={styles.productName}>
-                      {item.nombre}
-                    </Text>
-
-                    <View style={styles.ratingRow}>
-                      {renderStars(rating)}
-                      <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
-                    </View>
-
-                    <View style={styles.locationRow}>
-                      <Ionicons
-                        name="location-outline"
-                        size={12}
-                        color="#94a3b8"
-                      />
-                      <Text style={styles.locationText}>Chihuahua, MX</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.priceRow}>
+                  <Text numberOfLines={2} style={styles.productName}>{item.nombre}</Text>
+                  <View style={styles.ratingRow}>{renderStars(rating)}<Text style={styles.ratingText}>{rating.toFixed(1)}</Text></View>
+                  <View style={styles.locationRow}><Ionicons name="location-outline" size={12} color="#94A3B8" /><Text style={styles.locationText}>Chihuahua, México</Text></View>
+                  <View style={styles.bottomRow}>
                     <View style={styles.priceBlock}>
-                      {item.precio_anterior && (
-                        <Text style={styles.oldPrice}>
-                          ${Number(item.precio_anterior).toFixed(2)}
-                        </Text>
-                      )}
-                      <Text style={styles.price}>
-                        ${Number(item.precio).toFixed(2)}
-                      </Text>
+                      {item.precio_anterior && <Text style={styles.oldPrice}>${Number(item.precio_anterior).toFixed(2)}</Text>}
+                      <Text style={styles.price}>${Number(item.precio).toFixed(2)}</Text>
                     </View>
+                    <TouchableOpacity style={styles.cartBtn} onPress={() => handleAddToCart(item)}>
+                      <LinearGradient colors={["#16A34A", "#15803D"]} style={styles.cartGradient}><Ionicons name="bag-add-outline" size={18} color="#fff" /></LinearGradient>
+                    </TouchableOpacity>
                   </View>
                 </View>
-
-                <TouchableOpacity
-                  style={styles.cartBtn}
-                  onPress={() => handleAddToCart(item)}
-                >
-                  <Ionicons name="add" size={22} color="white" />
-                </TouchableOpacity>
               </View>
             </TouchableOpacity>
           );
@@ -458,228 +315,49 @@ const handleCloseSpin = async () => {
   );
 }
 
+// TUS ESTILOS ORIGINALES
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f1f5f9",
-  },
-
-  loading: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  header: {
-    paddingTop: 48,
-    paddingBottom: 16,
-    paddingHorizontal: 18,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
-  },
-
-  logoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  logo: {
-    width: 35,
-    height: 35,
-    marginRight: 10,
-  },
-
-  logoText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-
-  searchBox: {
-    padding: 15,
-  },
-
-  searchWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "white",
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 15,
-    elevation: 4,
-  },
-
-  search: {
-    flex: 1,
-    fontSize: 16,
-    color: "#1e293b",
-  },
-
-  categoriesBar: {
-    paddingVertical: 10,
-    paddingLeft: 10,
-  },
-
-  categoryPill: {
-    backgroundColor: "white",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 10,
-  },
-
-  categoryActive: {
-    backgroundColor: "#16a34a",
-  },
-
-  categoryText: {
-    fontWeight: "600",
-    color: "#1e293b",
-  },
-
-  categoryTextActive: {
-    color: "white",
-  },
-
-  listContent: {
-    paddingHorizontal: 8,
-    paddingBottom: 120,
-  },
-
-  columnWrapper: {
-    justifyContent: "space-between",
-  },
-
-  cardWrapper: {
-    width: "48%",
-    marginBottom: 14,
-  },
-
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 18,
-    overflow: "hidden",
-    elevation: 8,
-    height: 305,
-    position: "relative",
-  },
-
-  imageContainer: {
-    position: "relative",
-  },
-
-  productImg: {
-    width: "100%",
-    height: 150,
-  },
-
-  imageOverlay: {
-    position: "absolute",
-    bottom: 0,
-    width: "100%",
-    height: 60,
-  },
-
-  favorite: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    padding: 6,
-    borderRadius: 50,
-  },
-
-  offerTag: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    backgroundColor: "#ef4444",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-
-  offerText: {
-    color: "#fff",
-    fontSize: 10,
-    fontWeight: "bold",
-  },
-
-  cardContent: {
-    flex: 1,
-    padding: 10,
-    justifyContent: "space-between",
-  },
-
-  productName: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#0f172a",
-    minHeight: 38,
-  },
-
-  starsRow: {
-    flexDirection: "row",
-  },
-
-  ratingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 4,
-  },
-
-  ratingText: {
-    fontSize: 12,
-    marginLeft: 5,
-    color: "#475569",
-  },
-
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 4,
-  },
-
-  locationText: {
-    fontSize: 11,
-    color: "#94a3b8",
-    marginLeft: 4,
-  },
-
-  priceRow: {
-    marginTop: 8,
-  },
-
-  priceBlock: {
-    paddingRight: 48,
-  },
-
-  price: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#16a34a",
-  },
-
-  oldPrice: {
-    fontSize: 13,
-    color: "#94a3b8",
-    textDecorationLine: "line-through",
-    marginBottom: 2,
-  },
-
-  cartBtn: {
-    position: "absolute",
-    bottom: 12,
-    right: 12,
-    backgroundColor: "#16a34a",
-    width: 38,
-    height: 38,
-    borderRadius: 50,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 5,
-  },
+  container: { flex: 1, backgroundColor: "#F8FAFC" },
+  loading: { flex: 1, justifyContent: "center", alignItems: "center" },
+  header: { paddingTop: 50, paddingHorizontal: 15, borderBottomLeftRadius: 30, borderBottomRightRadius: 30, elevation: 12, zIndex: 100 },
+  headerTopRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
+  logoRow: { flexDirection: "row", alignItems: "center" },
+  logoContainer: { width: 50, height: 50, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.15)", justifyContent: "center", alignItems: "center", marginRight: 12 },
+  logo: { width: 30, height: 30 },
+  headerTitle: { color: "#FFFFFF", fontSize: 20, fontWeight: "800" },
+  headerSubtitle: { color: "rgba(255,255,255,0.75)", fontSize: 12 },
+  notificationBtn: { width: 44, height: 44, borderRadius: 14, backgroundColor: "rgba(255,255,255,0.12)", justifyContent: "center", alignItems: "center" },
+  notificationDot: { position: "absolute", top: 10, right: 10, width: 8, height: 8, borderRadius: 4, backgroundColor: "#EF4444" },
+  heroTitle: { color: "#FFFFFF", fontSize: 28, fontWeight: "800", marginBottom: 6 },
+  heroSubtitle: { color: "rgba(255,255,255,0.85)", fontSize: 14, marginBottom: 20 },
+  searchWrapper: { flexDirection: "row", alignItems: "center", backgroundColor: "#FFFFFF", borderRadius: 18, paddingLeft: 16, paddingRight: 8, height: 56, elevation: 6 },
+  search: { flex: 1, marginLeft: 10, color: "#0F172A", fontSize: 15, fontWeight: "500" },
+  filterBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: "#16A34A", justifyContent: "center", alignItems: "center" },
+  categoriesContainer: { marginTop: 18, marginBottom: 6 },
+  categoryChip: { backgroundColor: "#FFFFFF", paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, marginRight: 10, borderWidth: 1, borderColor: "#E2E8F0" },
+  categoryChipActive: { backgroundColor: "#16A34A", borderColor: "#16A34A" },
+  categoryChipText: { color: "#334155", fontWeight: "700", fontSize: 13 },
+  categoryChipTextActive: { color: "#FFFFFF" },
+  listContent: { paddingHorizontal: 12, paddingBottom: 120, paddingTop: 8 },
+  columnWrapper: { justifyContent: "space-between" },
+  cardWrapper: { width: "48%", marginBottom: 16 },
+  card: { backgroundColor: "#FFFFFF", borderRadius: 24, overflow: "hidden", elevation: 8 },
+  imageContainer: { position: "relative" },
+  productImg: { width: "100%", height: 165 },
+  favorite: { position: "absolute", top: 10, right: 10, width: 34, height: 34, borderRadius: 17, backgroundColor: "rgba(15,23,42,0.55)", justifyContent: "center", alignItems: "center" },
+  offerTag: { position: "absolute", top: 10, left: 10, backgroundColor: "#EF4444", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+  offerText: { color: "#FFFFFF", fontSize: 10, fontWeight: "800" },
+  cardContent: { padding: 12 },
+  productName: { fontSize: 14, fontWeight: "800", color: "#0F172A", minHeight: 38 },
+  ratingRow: { flexDirection: "row", alignItems: "center", marginTop: 6 },
+  ratingText: { fontSize: 12, color: "#475569", marginLeft: 6 },
+  locationRow: { flexDirection: "row", alignItems: "center", marginTop: 4 },
+  locationText: { fontSize: 11, color: "#94A3B8", marginLeft: 4 },
+  bottomRow: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginTop: 12 },
+  priceBlock: { flex: 1 },
+  oldPrice: { fontSize: 11, color: "#94A3B8", textDecorationLine: "line-through" },
+  price: { fontSize: 18, fontWeight: "900", color: "#16A34A" },
+  cartBtn: { marginLeft: 8 },
+  cartGradient: { width: 42, height: 42, borderRadius: 14, justifyContent: "center", alignItems: "center" },
+  starsRow: { flexDirection: "row" },
 });
