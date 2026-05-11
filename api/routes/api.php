@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ComentarioController;
 use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\CompraController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RewardController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -32,6 +33,9 @@ Route::apiResource('rancho', RanchoController::class);
 
 
 Route::middleware(['jwt.auth'])->group(function () {
+
+   Route::get('/rewards/me', [RewardController::class, 'me']);
+    Route::post('/rewards/spin', [RewardController::class, 'spin']);
 
    
     Route::apiResource('ganados', GanadoController::class);
