@@ -17,8 +17,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Path, Text as SvgText, TSpan } from "react-native-svg";
 
-import { useDailySpin } from "@/hooks/useDailySpin";
-import { SPIN_REWARDS } from "@/constants/spinConfig";
+import { useDailySpin } from "../hooks/useDailySpin";
+import { SPIN_REWARDS } from "../constants/spinConfig";
 
 const { width } = Dimensions.get("window");
 

@@ -1,238 +1,133 @@
-// ==========================================
-// hooks/useDailySpin.ts
-// SOLUCIÓN: cada usuario tendrá su propia
-// ruleta usando una clave única por correo.
-// ==========================================
-
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { SPIN_REWARDS, SpinReward } from "@/constants/spinConfig";
+import axios from "axios";
 
-interface DailySpinData {
-  lastSpinDate: string | null;
+import { SPIN_REWARDS, SpinReward } from "../constants/spinConfig";
+import { API_URL } from "../constants/api";
+
+interface DailySpinResponse {
   points: number;
-  lastReward: SpinReward | null;
+  reward: {
+    type: string;
+    value: number;
+  };
 }
-
-// ==========================================
-// Normaliza el correo para evitar problemas:
-// Luis@gmail.com y luis@gmail.com serán iguales
-// ==========================================
-const normalizeEmail = (email: string) =>
-  email.trim().toLowerCase();
-
-// ==========================================
-// Clave única por usuario
-// ==========================================
-const getStorageKey = (correo: string) =>
-  `daily_spin_data_${normalizeEmail(correo)}`;
-
-// ==========================================
-// Obtiene el correo del usuario actual
-// ==========================================
-const getCurrentUserEmail = async (): Promise<string | null> => {
-  try {
-    const session = await AsyncStorage.getItem("agroSession");
-
-    if (!session) return null;
-
-    const parsed = JSON.parse(session);
-    const user = parsed?.user;
-
-    const correo =
-      user?.email ||
-      user?.correo ||
-      user?.username ||
-      user?.usuario ||
-      null;
-
-    if (!correo) return null;
-
-    return normalizeEmail(correo);
-  } catch (error) {
-    console.log("Error obteniendo usuario:", error);
-    return null;
-  }
-};
 
 export function useDailySpin() {
   const [loading, setLoading] = useState(true);
-  const [canSpin, setCanSpin] = useState(false);
+  const [canSpin, setCanSpin] = useState(true); // temporal
   const [points, setPoints] = useState(0);
-  const [lastReward, setLastReward] =
-    useState<SpinReward | null>(null);
+  const [lastReward, setLastReward] = useState<SpinReward | null>(null);
 
   useEffect(() => {
     loadSpinData();
   }, []);
 
-  // ==========================================
-  // Cargar datos del usuario actual
-  // ==========================================
+  const getToken = async (): Promise<string | null> => {
+    try {
+      const session = await AsyncStorage.getItem("agroSession");
+      if (!session) return null;
+
+      return JSON.parse(session)?.token || null;
+    } catch (e) {
+      console.log("Token error:", e);
+      return null;
+    }
+  };
+
   const loadSpinData = async () => {
     try {
       setLoading(true);
 
-      const correo = await getCurrentUserEmail();
+      const token = await getToken();
 
-      // Si no hay usuario, reiniciar estados
-      if (!correo) {
-        setPoints(0);
-        setLastReward(null);
+      if (!token) {
         setCanSpin(false);
-        return;
-      }
-
-      const STORAGE_KEY = getStorageKey(correo);
-
-      console.log(
-        "🔑 Cargando datos del usuario:",
-        correo
-      );
-      console.log("📦 Storage Key:", STORAGE_KEY);
-
-      const raw = await AsyncStorage.getItem(
-        STORAGE_KEY
-      );
-
-      // Si el usuario nunca ha girado
-      if (!raw) {
-        const initialData: DailySpinData = {
-          lastSpinDate: null,
-          points: 0,
-          lastReward: null,
-        };
-
-        await AsyncStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(initialData)
-        );
-
         setPoints(0);
         setLastReward(null);
-        setCanSpin(true);
-
-        console.log(
-          "🆕 Se creó almacenamiento nuevo para:",
-          correo
-        );
-
         return;
       }
 
-      const data: DailySpinData = JSON.parse(raw);
-      const today = new Date().toDateString();
-
-      setPoints(data.points || 0);
-      setLastReward(data.lastReward || null);
-      setCanSpin(data.lastSpinDate !== today);
-
-      console.log("📊 Datos cargados:", data);
-      console.log(
-        "🎯 Puede girar:",
-        data.lastSpinDate !== today
+      const res = await axios.get<DailySpinResponse>(
+        `${API_URL}/rewards/me`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          timeout: 10000,
+        }
       );
-    } catch (error) {
-      console.log(
-        "Error loading spin data:",
-        error
-      );
+
+      setPoints(res.data.points);
+
+      // normalizar reward del backend
+      setLastReward({
+        id: 0,
+        label: `${res.data.reward.value}`,
+        type: res.data.reward.type as any,
+        value: res.data.reward.value,
+        weight: 0,
+        color: "#22c55e",
+      });
+
+      setCanSpin(true); // backend aún no manda control de día
+    } catch (error: any) {
+      console.log("❌ ERROR RULETA:", error.message);
+      setCanSpin(false);
     } finally {
       setLoading(false);
     }
   };
 
-  // ==========================================
-  // Selección aleatoria ponderada
-  // ==========================================
   const getRandomReward = (): SpinReward => {
-    const totalWeight = SPIN_REWARDS.reduce(
-      (sum, reward) => sum + reward.weight,
-      0
-    );
+    const total = SPIN_REWARDS.reduce((a, b) => a + b.weight, 0);
 
-    let random = Math.random() * totalWeight;
+    let random = Math.random() * total;
 
-    for (const reward of SPIN_REWARDS) {
-      random -= reward.weight;
-
-      if (random <= 0) {
-        return reward;
-      }
+    for (const r of SPIN_REWARDS) {
+      random -= r.weight;
+      if (random <= 0) return r;
     }
 
     return SPIN_REWARDS[0];
   };
 
-  // ==========================================
-  // Girar la ruleta
-  // ==========================================
   const spin = async (): Promise<SpinReward | null> => {
-    if (!canSpin) return null;
-
     try {
-      const correo = await getCurrentUserEmail();
-
-      if (!correo) return null;
-
-      const STORAGE_KEY = getStorageKey(correo);
+      const token = await getToken();
+      if (!token) return null;
 
       const reward = getRandomReward();
-      const today = new Date().toDateString();
 
-      const newPoints =
-        reward.type === "points"
-          ? points + reward.value
-          : points;
-
-      const newData: DailySpinData = {
-        lastSpinDate: today,
-        points: newPoints,
-        lastReward: reward,
-      };
-
-      // Guardar SOLO para este usuario
-      await AsyncStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(newData)
+      const res = await axios.post(
+        `${API_URL}/rewards/spin`,
+        { reward },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          timeout: 10000,
+        }
       );
 
-      // Actualizar estados
-      setPoints(newPoints);
-      setLastReward(reward);
+      setPoints(res.data.points);
+
+      setLastReward({
+        id: 0,
+        label: `${res.data.reward.value}`,
+        type: res.data.reward.type,
+        value: res.data.reward.value,
+        weight: 0,
+        color: "#22c55e",
+      });
+
       setCanSpin(false);
 
-      console.log(
-        "💾 Datos guardados para:",
-        correo
-      );
-      console.log("📦 Key:", STORAGE_KEY);
-      console.log("🎁 Reward:", reward);
-      console.log("⭐ Points:", newPoints);
-
       return reward;
-    } catch (error) {
-      console.log(
-        "Error spinning wheel:",
-        error
-      );
+    } catch (error: any) {
+      console.log("❌ ERROR SPIN:", error.message);
       return null;
     }
-  };
-
-  // ==========================================
-  // Opcional: limpiar datos del usuario actual
-  // ==========================================
-  const resetCurrentUserSpin = async () => {
-    const correo = await getCurrentUserEmail();
-
-    if (!correo) return;
-
-    const STORAGE_KEY = getStorageKey(correo);
-
-    await AsyncStorage.removeItem(STORAGE_KEY);
-
-    await loadSpinData();
   };
 
   return {
@@ -241,7 +136,5 @@ export function useDailySpin() {
     points,
     lastReward,
     spin,
-    refreshSpin: loadSpinData,
-    resetCurrentUserSpin,
   };
 }
