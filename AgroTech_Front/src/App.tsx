@@ -15,7 +15,7 @@ import Contacto from './views/Contacto'
 import MisPedidos from './views/MisPedidos'
 import AdminRanchos from './views/AdminRanchos'
 import AgroTechSummary from './views/AgroTechSummary'
-import MisPublicaciones from './views/Mispublicaciones'
+import MisPublicaciones from './views/MisPublicaciones'
 
 
 
