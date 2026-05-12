@@ -31,12 +31,12 @@ Route::apiResource('/usuarios', UserController::class);
 Route::apiResource('rancho', RanchoController::class);
 
 
-   Route::get('/rewards/me', [RewardController::class, 'me']);
-    Route::post('/rewards/spin', [RewardController::class, 'spin']);
+ 
 
 Route::middleware(['jwt.auth'])->group(function () {
 
-  
+    Route::get('/rewards/me', [RewardController::class, 'me']);
+    Route::post('/rewards/spin', [RewardController::class, 'spin']);
 
    
     Route::apiResource('ganados', GanadoController::class);

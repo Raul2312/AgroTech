@@ -106,6 +106,10 @@ const ClientProfile = () => {
               <Link to="/mis-pedidos">📦 {!collapsed && "Mis pedidos"}</Link>
             </li>
 
+            <li>
+              <Link to="/mis-productos">📦 {!collapsed && "Publicar Productos"}</Link>
+              </li>
+
           
 
             <li>

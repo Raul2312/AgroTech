@@ -15,6 +15,7 @@ import Contacto from './views/Contacto'
 import MisPedidos from './views/MisPedidos'
 import AdminRanchos from './views/AdminRanchos'
 import AgroTechSummary from './views/AgroTechSummary'
+import MisPublicaciones from './views/MisPublicaciones'
 
 
 
@@ -37,6 +38,7 @@ function App() {
           <Route path="/contacto" element={<Contacto />} />
            <Route path="/mis-pedidos" element={<MisPedidos />} />
            <Route path="/resumen-compra" element={<AgroTechSummary />} />
+           <Route path="/mis-productos" element={<MisPublicaciones />} />
           
   
         </Routes>
