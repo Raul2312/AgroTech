@@ -71,7 +71,7 @@ class RewardController extends Controller
  
         $reward = UserReward::firstOrCreate(
 
-            ['user_id' => $user->id],
+            ['user_id' => $user->id_usuario],
 
             [
 
