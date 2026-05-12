@@ -28,10 +28,10 @@ class RewardController extends Controller
             ], 401);
 
         }
-        return response()->json($user);
+       // return response()->json($user);
         $reward = UserReward::firstOrCreate(
 
-            ['user_id' => $user->id],
+            ['user_id' => $user->id_usuario],
 
             [
 
