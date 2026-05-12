@@ -5,17 +5,28 @@ import axios from "axios";
 import { SPIN_REWARDS, SpinReward } from "../constants/spinConfig";
 import { API_URL } from "../constants/api";
 
-interface DailySpinResponse {
+import { Alert } from "react-native";
+
+interface RewardApiResponse {
   points: number;
   reward: {
-    type: string;
+    type: "points" | "discount" | "shipping";
     value: number;
+    label?: string;
   };
+}
+
+interface RewardMeResponse {
+  points: number;
+  last_spin_date: string | null;
+  last_reward_type: "points" | "discount" | "shipping" | null;
+  last_reward_value: number | null;
+  last_reward_label: string | null;
 }
 
 export function useDailySpin() {
   const [loading, setLoading] = useState(true);
-  const [canSpin, setCanSpin] = useState(true); // temporal
+  const [canSpin, setCanSpin] = useState(true);
   const [points, setPoints] = useState(0);
   const [lastReward, setLastReward] = useState<SpinReward | null>(null);
 
@@ -28,11 +39,41 @@ export function useDailySpin() {
       const session = await AsyncStorage.getItem("agroSession");
       if (!session) return null;
 
-      return JSON.parse(session)?.token || null;
-    } catch (e) {
-      console.log("Token error:", e);
+      const parsed = JSON.parse(session);
+      return parsed?.token || null;
+    } catch (error) {
+      console.log("Token error:", error);
       return null;
     }
+  };
+
+  const buildReward = (
+    type: "points" | "discount" | "shipping",
+    value: number,
+    label?: string | null
+  ): SpinReward => {
+    const match = SPIN_REWARDS.find(
+      (r) => r.type === type && r.value === value
+    );
+
+    if (match) {
+      return match;
+    }
+
+    return {
+      id: 0,
+      label:
+        label ||
+        (type === "points"
+          ? `+${value}`
+          : type === "discount"
+          ? `${value}% OFF`
+          : "FREE"),
+      type,
+      value,
+      weight: 0,
+      color: "#22c55e",
+    };
   };
 
   const loadSpinData = async () => {
@@ -48,48 +89,46 @@ export function useDailySpin() {
         return;
       }
 
-      const res = await axios.get<DailySpinResponse>(
+      const res = await axios.get<RewardMeResponse>(
         `${API_URL}/rewards/me`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            Accept: "application/json",
           },
           timeout: 10000,
         }
       );
 
-      setPoints(res.data.points);
+      setPoints(res.data.points || 0);
 
-      // normalizar reward del backend
-      setLastReward({
-        id: 0,
-        label: `${res.data.reward.value}`,
-        type: res.data.reward.type as any,
-        value: res.data.reward.value,
-        weight: 0,
-        color: "#22c55e",
-      });
+      if (
+        res.data.last_reward_type &&
+        res.data.last_reward_value !== null
+      ) {
+        setLastReward(
+          buildReward(
+            res.data.last_reward_type,
+            res.data.last_reward_value,
+            res.data.last_reward_label
+          )
+        );
+      } else {
+        setLastReward(null);
+      }
 
-      setCanSpin(true); // backend aún no manda control de día
+      // Verificar si ya giró hoy
+      const today = new Date().toISOString().split("T")[0];
+      setCanSpin(res.data.last_spin_date !== today);
     } catch (error: any) {
-      console.log("❌ ERROR RULETA:", error.message);
+      console.log(
+        "❌ ERROR RULETA:",
+        error?.response?.data || error.message
+      );
       setCanSpin(false);
     } finally {
       setLoading(false);
     }
-  };
-
-  const getRandomReward = (): SpinReward => {
-    const total = SPIN_REWARDS.reduce((a, b) => a + b.weight, 0);
-
-    let random = Math.random() * total;
-
-    for (const r of SPIN_REWARDS) {
-      random -= r.weight;
-      if (random <= 0) return r;
-    }
-
-    return SPIN_REWARDS[0];
   };
 
   const spin = async (): Promise<SpinReward | null> => {
@@ -97,35 +136,39 @@ export function useDailySpin() {
       const token = await getToken();
       if (!token) return null;
 
-      const reward = getRandomReward();
-
-      const res = await axios.post(
+      const res = await axios.post<RewardApiResponse>(
         `${API_URL}/rewards/spin`,
-        { reward },
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            Accept: "application/json",
           },
           timeout: 10000,
         }
       );
 
+      const backendReward = buildReward(
+        res.data.reward.type,
+        res.data.reward.value,
+        res.data.reward.label
+      );
+
       setPoints(res.data.points);
-
-      setLastReward({
-        id: 0,
-        label: `${res.data.reward.value}`,
-        type: res.data.reward.type,
-        value: res.data.reward.value,
-        weight: 0,
-        color: "#22c55e",
-      });
-
+      setLastReward(backendReward);
       setCanSpin(false);
 
-      return reward;
+      return backendReward;
     } catch (error: any) {
-      console.log("❌ ERROR SPIN:", error.message);
+      console.log(
+        "❌ ERROR SPIN:",
+        error?.response?.data || error.message
+      );
+
+      if (error?.response?.data?.message) {
+        Alert.alert("Ruleta", error.response.data.message);
+      }
+
       return null;
     }
   };
@@ -136,5 +179,6 @@ export function useDailySpin() {
     points,
     lastReward,
     spin,
+    reload: loadSpinData,
   };
 }
