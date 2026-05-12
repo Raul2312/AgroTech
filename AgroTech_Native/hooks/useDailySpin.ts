@@ -29,7 +29,7 @@ export function useDailySpin() {
   const [canSpin, setCanSpin] = useState(true);
   const [points, setPoints] = useState(0);
   const [lastReward, setLastReward] = useState<SpinReward | null>(null);
-
+const [iduser, setIdUser] = useState(0);
   useEffect(() => {
     loadSpinData();
   }, []);
@@ -40,6 +40,7 @@ export function useDailySpin() {
       if (!session) return null;
 
       const parsed = JSON.parse(session);
+      setIdUser(parsed?.id)
       return parsed?.token || null;
     } catch (error) {
       console.log("Token error:", error);
@@ -61,7 +62,7 @@ export function useDailySpin() {
     }
 
     return {
-      id: 0,
+      id: iduser,
       label:
         label ||
         (type === "points"
@@ -88,7 +89,7 @@ export function useDailySpin() {
         setLastReward(null);
         return;
       }
-
+      console.log(token)
       const res = await axios.get<RewardMeResponse>(
         `${API_URL}/rewards/me`,
         {
@@ -99,7 +100,7 @@ export function useDailySpin() {
           timeout: 10000,
         }
       );
-
+        console.log(res.data,"IDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
       setPoints(res.data.points || 0);
 
       if (
