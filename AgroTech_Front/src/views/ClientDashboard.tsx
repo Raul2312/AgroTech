@@ -93,9 +93,9 @@ const ClientDashboard = () => {
           {!collapsed && <span className="logo-text">AgroTech</span>}
         </div>
         <ul className="menu">
-         <li className="active"><Link to="/areacliente">🏠 {!collapsed && "Dashboard"}</Link></li>
+         
           <li><Link to="/indexscreen">🏠 {!collapsed && "Inicio"}</Link></li>
-          
+          <li className="active"><Link to="/areacliente">🏠 {!collapsed && "Dashboard"}</Link></li>
           <li><Link to="/mis-pedidos">📦 {!collapsed && "Mis pedidos"}</Link></li>
           <li>
               <Link to="/mis-productos">📦 {!collapsed && "Publicar Productos"}</Link>
