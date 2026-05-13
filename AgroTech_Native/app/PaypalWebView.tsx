@@ -1,5 +1,6 @@
-import React, { useRef, useState } from "react";
+// Reemplaza TODO tu archivo PayPalWebView.tsx por este código completo
 
+import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -10,84 +11,106 @@ import {
   StatusBar,
   Alert,
 } from "react-native";
-
 import { WebView } from "react-native-webview";
-
 import {
   useLocalSearchParams,
   useRouter,
   Stack,
 } from "expo-router";
-
 import { LinearGradient } from "expo-linear-gradient";
-
 import { Ionicons } from "@expo/vector-icons";
-
 import { useCart } from "../context/CartContext";
 
 export default function PayPalWebView() {
   const router = useRouter();
-
   const { clearCart } = useCart();
-
   const webViewRef = useRef<WebView>(null);
 
   const { total } = useLocalSearchParams();
-
   const amount = Number(total || 0).toFixed(2);
 
   const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState("Esperando pago...");
 
-  const [status, setStatus] =
-    useState("Esperando pago...");
+  // Evita procesar el pago más de una vez
+  const [paymentProcessed, setPaymentProcessed] = useState(false);
 
-  // ✅ DETECTAR CAMBIOS DE URL PAYPAL
-  const handleNavigation = (navState: any) => {
-    const url = navState.url;
+  // =========================================================
+  // MENSAJES RECIBIDOS DESDE TU HTML (window.ReactNativeWebView.postMessage)
+  // =========================================================
+  const handleMessage = async (event: any) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
 
-    console.log("URL:", url);
+      console.log("📩 Mensaje desde PayPal:", data);
 
-    // ✅ PAGO EXITOSO
-    if (
-      url.includes("success") ||
-      url.includes("completed") ||
-      url.includes("approve")
-    ) {
-      setStatus("Pago completado");
+      // ======================================
+      // ✅ PAGO EXITOSO
+      // ======================================
+      if (
+        data.type === "payment_success" &&
+        !paymentProcessed
+      ) {
+        setPaymentProcessed(true);
+        setStatus("Pago completado");
 
-      clearCart();
+        // Vaciar carrito
+        await clearCart();
 
-      Alert.alert(
-        "Pago exitoso",
-        "✅ Gracias por tu compra",
-        [
-          {
-            text: "Continuar",
-            onPress: () => {
-              router.replace("/carrito");
+        Alert.alert(
+          "Pago exitoso",
+          "✅ Gracias por tu compra",
+          [
+            {
+              text: "Continuar",
+              onPress: () => {
+                router.replace("/carrito");
+              },
             },
-          },
-        ]
-      );
-    }
+          ]
+        );
+      }
 
-    // ❌ CANCELADO
-    if (
-      url.includes("cancel") ||
-      url.includes("failed")
-    ) {
-      setStatus("Pago cancelado");
+      // ======================================
+      // ❌ ERROR
+      // ======================================
+      if (data.type === "payment_error") {
+        setStatus("Error en el pago");
 
-      Alert.alert(
-        "Pago cancelado",
-        "❌ El pago fue cancelado"
+        Alert.alert(
+          "Error",
+          data.error || "Ocurrió un error al procesar el pago."
+        );
+      }
+
+      // ======================================
+      // ❌ CANCELADO
+      // ======================================
+      if (data.type === "payment_cancel") {
+        setStatus("Pago cancelado");
+
+        Alert.alert(
+          "Pago cancelado",
+          "❌ El pago fue cancelado por el usuario."
+        );
+      }
+    } catch (error) {
+      console.log(
+        "❌ Error procesando mensaje del WebView:",
+        error
       );
     }
   };
 
+  // =========================================================
+  // OPCIONAL: SOLO PARA LOGS DE NAVEGACIÓN
+  // =========================================================
+  const handleNavigation = (navState: any) => {
+    console.log("🌐 URL:", navState.url);
+  };
+
   return (
     <>
-      {/* ✅ QUITAR HEADER NATIVO */}
       <Stack.Screen options={{ headerShown: false }} />
 
       <SafeAreaView style={styles.container}>
@@ -98,9 +121,7 @@ export default function PayPalWebView() {
           colors={["#0f172a", "#14532d"]}
           style={styles.header}
         >
-          <TouchableOpacity
-            onPress={() => router.back()}
-          >
+          <TouchableOpacity onPress={() => router.back()}>
             <Ionicons
               name="arrow-back"
               size={26}
@@ -119,7 +140,7 @@ export default function PayPalWebView() {
           />
         </LinearGradient>
 
-        {/* CARD INFO */}
+        {/* TARJETA DE INFORMACIÓN */}
         <View style={styles.infoCard}>
           <View style={styles.infoTop}>
             <View>
@@ -179,17 +200,15 @@ export default function PayPalWebView() {
             originWhitelist={["*"]}
             mixedContentMode="always"
             startInLoadingState={true}
+            scalesPageToFit={false}
+            style={styles.webview}
             onLoadEnd={() => setLoading(false)}
 
-            // ✅ DETECTAR URLS
-            onNavigationStateChange={
-              handleNavigation
-            }
+            // 🔥 ESTE ES EL EVENTO IMPORTANTE
+            onMessage={handleMessage}
 
-            // ✅ EVITAR PROBLEMAS VISUALES
-            scalesPageToFit={false}
-
-            style={styles.webview}
+            // Solo para monitorear URLs
+            onNavigationStateChange={handleNavigation}
           />
         </View>
       </SafeAreaView>
