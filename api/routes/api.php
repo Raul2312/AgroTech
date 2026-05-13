@@ -19,7 +19,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\RewardController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-
+use App\Http\Controllers\Api\PayPallController;
 
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
@@ -56,8 +56,11 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
 
+    Route::get('/payment/{amount}', [PayPallController::class, 'index']);
+    Route::post('/paypal/create-order', [PayPallController::class, 'createOrder']);
+    Route::post('/paypal/capture-order', [PayPallController::class, 'captureOrder']);
 
-    
+        
 
 
 });

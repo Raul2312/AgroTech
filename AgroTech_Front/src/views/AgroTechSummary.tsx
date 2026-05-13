@@ -18,9 +18,6 @@ const AgroTechSummary: React.FC = () => {
 
   // URL base para las imágenes y para la redirección de pago
   const apiUrl = import.meta.env.VITE_API;
-  
-  // Limpiamos la URL para obtener la base del servidor (quitando /api/)
-  const baseWebUrl = apiUrl.replace("/api/", "");
 
   const getImageUrl = (img: string) => {
     if (!img) return "https://via.placeholder.com/150?text=Sin+Imagen";
@@ -49,9 +46,8 @@ const AgroTechSummary: React.FC = () => {
     }
 
     if (method === 'paypal') {
-      // Redirige a la ruta de Laravel configurada en web.php
-      const paymentUrl = `${baseWebUrl}/payment/${total.toFixed(2)}`;
-      window.location.href = paymentUrl;
+      // 🔥 CAMBIO: Ahora navegamos a la ruta interna de PayPalPayment pasándole el total
+      navigate(`/checkout/${total.toFixed(2)}`);
     } else {
       // Placeholder para otros métodos
       alert("El pago directo con tarjeta estará disponible pronto. Por favor usa PayPal.");

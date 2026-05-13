@@ -16,6 +16,7 @@ import MisPedidos from './views/MisPedidos'
 import AdminRanchos from './views/AdminRanchos'
 import AgroTechSummary from './views/AgroTechSummary'
 import MisPublicaciones from './views/MisPublicaciones'
+import PayPalPayment from './views/PayPalPayment'
 
 
 
@@ -39,6 +40,7 @@ function App() {
            <Route path="/mis-pedidos" element={<MisPedidos />} />
            <Route path="/resumen-compra" element={<AgroTechSummary />} />
            <Route path="/mis-productos" element={<MisPublicaciones />} />
+           <Route path="/checkout/:amount" element={<PayPalPayment />} />
           
   
         </Routes>
