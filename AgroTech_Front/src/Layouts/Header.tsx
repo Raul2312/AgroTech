@@ -8,11 +8,7 @@ const Header = () => {
   const navigate = useNavigate(); // Inicializamos el hook de navegación
 
   // Lista de correos de administradores (Extraída de tu Seeder)
-  const adminEmails = [
-    "raulmadridflores202@gmail.com",
-    "sebastiannn231@gmail.com",
-    "22cg0095@itsncg.edu.mx"
-  ];
+
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -31,9 +27,9 @@ const Header = () => {
 
     try {
       const sessionData = JSON.parse(sessionString);
-
+      console.log(sessionData.user?.tipo)
       // Verificamos si el correo está en la lista de admins
-      if (sessionData.email && adminEmails.includes(sessionData.email)) {
+      if (sessionData.user?.tipo == "admin") {
         navigate("/dashboard");
       } else {
         navigate("/areacliente");

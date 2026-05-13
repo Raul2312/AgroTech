@@ -34,11 +34,7 @@ const Login: React.FC = () => {
 
   const [rememberMe, setRememberMe] = useState<boolean>(false);
 
-  const adminEmails: string[] = [
-    "22cg0095@itsncg.edu.mx",
-    "sebastiannn231@gmail.com",
-    "raulmadridflores202@gmail.com"
-  ];
+ 
 
   // AUTO LOGIN: Si ya hay sesión, mandarlo al marketplace
   // AUTO LOGIN CORREGIDO: Verifica el rol antes de redirigir
@@ -52,7 +48,7 @@ const Login: React.FC = () => {
 
         if (userEmail) {
           // Si el email está en la lista de admins, mándalo al dashboard
-          if (adminEmails.includes(userEmail)) {
+          if (sessionData.user?.tipo =="admin") {
             navigate("/dashboard");
           } else {
             // Si no, al marketplace
@@ -93,7 +89,7 @@ const Login: React.FC = () => {
           background: "#162a33",
           color: "#ffffff"
         }).then(() => {
-          if (adminEmails.includes(data.user.email)) navigate("/dashboard");
+          if (sessionData.user?.tipo =="admin") navigate("/dashboard");
           else navigate("/marketplace");
         });
       }
@@ -115,9 +111,7 @@ const Login: React.FC = () => {
 
       if (data.token) {
         const sessionData = { token: data.token, user: data.user };
-        if (rememberMe) {
-            localStorage.setItem("agroSession", JSON.stringify(sessionData));
-        }
+        localStorage.setItem("agroSession", JSON.stringify(sessionData));
         sessionStorage.setItem("agroSession", JSON.stringify(sessionData));
 
         Swal.fire({
@@ -128,7 +122,7 @@ const Login: React.FC = () => {
           background: "#162a33",
           color: "#ffffff"
         }).then(() => {
-          if (adminEmails.includes(data.user.email)) navigate("/dashboard");
+          if (sessionData.user?.tipo =="admin")navigate("/dashboard");
           else navigate("/marketplace");
         });
       }
