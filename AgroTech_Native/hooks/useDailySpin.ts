@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { Alert } from "react-native";
 
 import { SPIN_REWARDS, SpinReward } from "../constants/spinConfig";
 import { API_URL } from "../constants/api";
-
-import { Alert } from "react-native";
 
 interface RewardApiResponse {
   points: number;
@@ -29,18 +28,22 @@ export function useDailySpin() {
   const [canSpin, setCanSpin] = useState(true);
   const [points, setPoints] = useState(0);
   const [lastReward, setLastReward] = useState<SpinReward | null>(null);
-const [iduser, setIdUser] = useState(0);
+
   useEffect(() => {
     loadSpinData();
   }, []);
 
+  /**
+   * Obtiene el token JWT desde AsyncStorage
+   */
   const getToken = async (): Promise<string | null> => {
     try {
       const session = await AsyncStorage.getItem("agroSession");
       if (!session) return null;
 
       const parsed = JSON.parse(session);
-      setIdUser(parsed?.id)
+
+      // El token puede venir en parsed.token
       return parsed?.token || null;
     } catch (error) {
       console.log("Token error:", error);
@@ -48,11 +51,15 @@ const [iduser, setIdUser] = useState(0);
     }
   };
 
+  /**
+   * Convierte la respuesta del backend al formato SpinReward
+   */
   const buildReward = (
     type: "points" | "discount" | "shipping",
     value: number,
     label?: string | null
   ): SpinReward => {
+    // Buscar coincidencia exacta en la configuración local
     const match = SPIN_REWARDS.find(
       (r) => r.type === type && r.value === value
     );
@@ -61,8 +68,9 @@ const [iduser, setIdUser] = useState(0);
       return match;
     }
 
+    // Si no existe, construir dinámicamente
     return {
-      id: iduser,
+      id: Date.now(), // ID único temporal
       label:
         label ||
         (type === "points"
@@ -77,6 +85,9 @@ const [iduser, setIdUser] = useState(0);
     };
   };
 
+  /**
+   * Carga los datos actuales de la ruleta
+   */
   const loadSpinData = async () => {
     try {
       setLoading(true);
@@ -89,7 +100,7 @@ const [iduser, setIdUser] = useState(0);
         setLastReward(null);
         return;
       }
-      console.log(token)
+
       const res = await axios.get<RewardMeResponse>(
         `${API_URL}/rewards/me`,
         {
@@ -100,20 +111,24 @@ const [iduser, setIdUser] = useState(0);
           timeout: 10000,
         }
       );
-        console.log(res.data,"IDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
+
+      console.log("🎯 Reward data:", res.data);
+
+      // Puntos acumulados
       setPoints(res.data.points || 0);
 
+      // Último premio
       if (
         res.data.last_reward_type &&
         res.data.last_reward_value !== null
       ) {
-        setLastReward(
-          buildReward(
-            res.data.last_reward_type,
-            res.data.last_reward_value,
-            res.data.last_reward_label
-          )
+        const reward = buildReward(
+          res.data.last_reward_type,
+          res.data.last_reward_value,
+          res.data.last_reward_label
         );
+
+        setLastReward(reward);
       } else {
         setLastReward(null);
       }
@@ -126,12 +141,16 @@ const [iduser, setIdUser] = useState(0);
         "❌ ERROR RULETA:",
         error?.response?.data || error.message
       );
+
       setCanSpin(false);
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Ejecuta un giro
+   */
   const spin = async (): Promise<SpinReward | null> => {
     try {
       const token = await getToken();
@@ -149,15 +168,46 @@ const [iduser, setIdUser] = useState(0);
         }
       );
 
+      console.log("🎉 Resultado spin:", res.data);
+
       const backendReward = buildReward(
         res.data.reward.type,
         res.data.reward.value,
         res.data.reward.label
       );
 
+      // Actualizar estado
       setPoints(res.data.points);
       setLastReward(backendReward);
       setCanSpin(false);
+
+      // Guardar localmente para que Perfil.tsx pueda leerlo
+      try {
+        const session = await AsyncStorage.getItem("agroSession");
+
+        if (session) {
+          const parsed = JSON.parse(session);
+          const user = parsed.user || {};
+
+          const userEmail =
+            user?.email ||
+            user?.correo ||
+            "guest";
+
+          const spinKey = `daily_spin_data_${userEmail}`;
+
+          await AsyncStorage.setItem(
+            spinKey,
+            JSON.stringify({
+              points: res.data.points,
+              lastReward: backendReward,
+              updatedAt: new Date().toISOString(),
+            })
+          );
+        }
+      } catch (storageError) {
+        console.log("Error guardando spin local:", storageError);
+      }
 
       return backendReward;
     } catch (error: any) {
