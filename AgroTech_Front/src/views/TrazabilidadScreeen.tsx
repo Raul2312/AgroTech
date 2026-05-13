@@ -10,13 +10,17 @@ import ganado1 from "../assets/img/ganado1.jpg";
 import ganado2 from "../assets/img/ganado2.webp";
 
 const TrazabilidadScreen = () => {
-
   const navigate = useNavigate();
   const [userName, setUserName] = useState("USUARIO");
 
   const [user, setUser] = useState<any>(null);
   const [ranchos, setRanchos] = useState<any[]>([]);
   const [ranchoActivo, setRanchoActivo] = useState<any>(null);
+
+  // 🔥 NUEVOS ESTADOS PARA VACAS Y MODAL
+  const [totalVacas, setTotalVacas] = useState(124); // Inicia con 124 por defecto
+  const [showModal, setShowModal] = useState(false);
+  const [nuevoArete, setNuevoArete] = useState("");
 
   // 🔥 VALIDAR SESIÓN
   useEffect(() => {
@@ -39,7 +43,6 @@ const TrazabilidadScreen = () => {
           "USUARIO";
 
         setUserName(nombre.toUpperCase());
-
       } catch (error) {
         console.error("Error leyendo sesión:", error);
         navigate("/login");
@@ -50,14 +53,15 @@ const TrazabilidadScreen = () => {
   // 🔥 CARGAR RANCHOS
   const fetchRanchos = async () => {
     try {
-     const res = await axios.get(`${import.meta.env.VITE_API}rancho?id_usuario=${user?.user?.id_usuario}`);
+      const res = await axios.get(
+        `${import.meta.env.VITE_API}rancho?id_usuario=${user?.user?.id_usuario}`
+      );
 
       setRanchos(res.data);
 
       if (res.data.length > 0) {
         setRanchoActivo(res.data[0]);
       }
-
     } catch (error) {
       console.error("Error cargando ranchos:", error);
     }
@@ -77,13 +81,29 @@ const TrazabilidadScreen = () => {
     }
   };
 
+  // 🔥 FUNCIÓN PARA AGREGAR VACA
+  const handleAgregarVaca = () => {
+    if (nuevoArete.trim() !== "") {
+      setTotalVacas((prev) => prev + 1);
+      alert(`Vaca con arete ${nuevoArete} registrada exitosamente.`);
+      setNuevoArete("");
+      setShowModal(false);
+    } else {
+      alert("Por favor ingrese un número de arete válido.");
+    }
+  };
+
+  // 🔥 CÁLCULO DE MÉTRICAS DINÁMICAS
+  const ranchosActivosCount = ranchos.filter(
+    (r) => r.estatus?.toLowerCase() === "activo"
+  ).length;
+  const hectareas = ranchoActivo ? ranchoActivo.superficie_hectarias : 0;
+
   return (
     <div className="trazabilidad-page">
-
       <Header />
 
       <div className="dashboard">
-
         {/* BIENVENIDA */}
         <div className="top">
           <div>
@@ -93,7 +113,15 @@ const TrazabilidadScreen = () => {
         </div>
 
         {/* 🔥 TABS DE RANCHOS */}
-        <div style={{ marginBottom: "15px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+        <div
+          style={{
+            marginBottom: "15px",
+            display: "flex",
+            gap: "10px",
+            flexWrap: "wrap",
+            marginTop: "15px",
+          }}
+        >
           {ranchos.map((r) => (
             <button
               key={r.id_rancho}
@@ -103,8 +131,12 @@ const TrazabilidadScreen = () => {
                 borderRadius: "20px",
                 border: "none",
                 cursor: "pointer",
-                background: ranchoActivo?.id_rancho === r.id_rancho ? "#22c55e" : "#e5e7eb",
-                color: ranchoActivo?.id_rancho === r.id_rancho ? "#fff" : "#000"
+                background:
+                  ranchoActivo?.id_rancho === r.id_rancho
+                    ? "#22c55e"
+                    : "#e5e7eb",
+                color:
+                  ranchoActivo?.id_rancho === r.id_rancho ? "#fff" : "#000",
               }}
             >
               {r.nombre}
@@ -113,29 +145,34 @@ const TrazabilidadScreen = () => {
         </div>
 
         {/* ALERTA */}
-        <div className="alert">
-          ⚠️ 3 reses necesitan atención sanitaria
-        </div>
+        <div className="alert">⚠️ 3 reses necesitan atención sanitaria</div>
 
-        {/* MÉTRICAS */}
+        {/* 🔥 MÉTRICAS ACTUALIZADAS */}
         <div className="metrics">
-          <div className="metric">124<br /><span>Total de vacas</span></div>
-          <div className="metric">24<br /><span>En monitoreo</span></div>
-          <div className="metric">96%<br /><span>Salud del ganado</span></div>
-          <div className="metric">15<br /><span>Sensores activos</span></div>
+          <div className="metric">
+            {totalVacas}
+            <br />
+            <span>Vacas registradas</span>
+          </div>
+          <div className="metric">
+            {ranchosActivosCount}
+            <br />
+            <span>Ranchos activos</span>
+          </div>
+          <div className="metric">
+            {hectareas} ha
+            <br />
+            <span>Superficie del rancho</span>
+          </div>
         </div>
 
         {/* MAPA + ALERTAS */}
         <div className="grid">
-
           <div className="map">
-
             <div className="map-header">
               <h3>Localización de Ganado</h3>
 
-              <button onClick={abrirMapaCompleto}>
-                Ver Mapa Completo
-              </button>
+              <button onClick={abrirMapaCompleto}>Ver Mapa Completo</button>
             </div>
 
             <div id="mapa-container" className="map-box">
@@ -148,11 +185,10 @@ const TrazabilidadScreen = () => {
                 <p>Cargando mapa...</p>
               )}
             </div>
-
           </div>
 
           <div className="alerts">
-            <h3>Alertas</h3>
+            <h3>Alertas y Acciones</h3>
 
             <div className="alert-item">
               <img src={ganado1} alt="vaca" />
@@ -178,13 +214,49 @@ const TrazabilidadScreen = () => {
               </div>
             </div>
 
-            <button className="btn-main">Ver Ganado</button>
+            {/* 🔥 BOTONES DE ACCIÓN */}
+            <button
+              className="btn-main"
+              onClick={() => setShowModal(true)}
+              style={{ marginBottom: "10px" }}
+            >
+              ➕ Agregar Vaca
+            </button>
+            <button className="btn-main" style={{ background: "#475569" }}>
+              Ver Ganado
+            </button>
           </div>
-
         </div>
-
       </div>
 
+      {/* 🔥 MODAL PARA REGISTRAR VACA */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Registrar Nueva Vaca</h3>
+            <p style={{ marginBottom: "15px", color: "#64748b", fontSize: "14px" }}>
+              Ingresa el número de arete de la vaca.
+            </p>
+            <input
+              type="text"
+              placeholder="Ej. 0856"
+              value={nuevoArete}
+              onChange={(e) => setNuevoArete(e.target.value)}
+            />
+            <div className="modal-buttons">
+              <button onClick={handleAgregarVaca} className="btn-main">
+                Guardar
+              </button>
+              <button
+                onClick={() => setShowModal(false)}
+                className="btn-cancel"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
