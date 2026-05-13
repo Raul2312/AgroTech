@@ -1,3 +1,4 @@
+// ================= IMPORTACIONES =================
 import {
   View,
   Text,
@@ -5,20 +6,22 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  Alert,
 } from "react-native";
 import { useState } from "react";
-import {
-  Stack,
-  useRouter,
-  useLocalSearchParams,
-} from "expo-router";
+import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCart } from "../../context/CartContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// ================= COMPONENTE =================
 export default function PagoScreen() {
   const router = useRouter();
-  const { cart } = useCart();
+
+  // IMPORTANTE: también obtenemos clearCart
+  const { cart, clearCart } = useCart();
+
   const { discount, coupon } = useLocalSearchParams();
 
   const descuento = Number(discount) || 0;
@@ -30,6 +33,7 @@ export default function PagoScreen() {
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
 
+  // ================= CÁLCULOS =================
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -43,6 +47,109 @@ export default function PagoScreen() {
   const envio = subtotal > 0 ? 120 : 0;
   const total = subtotal + envio - descuento;
 
+  // ================= GUARDAR COMPRA =================
+  const guardarCompra = async () => {
+    try {
+      // Leer compras anteriores
+      const comprasGuardadas = await AsyncStorage.getItem("misCompras_");
+      const comprasAnteriores = comprasGuardadas
+        ? JSON.parse(comprasGuardadas)
+        : [];
+
+      // Convertir productos del carrito al formato de compras
+      const nuevasCompras = cart.map((item) => ({
+        id: `${item.id}-${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 8)}`,
+        nombre: item.name,
+        precio: item.price * item.quantity,
+        fecha: new Date().toLocaleDateString("es-MX", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        }),
+        estado: "En camino",
+        imagen: item.image,
+        cantidad: item.quantity,
+      }));
+
+      // Unir compras nuevas con las anteriores
+      const todasLasCompras = [
+        ...nuevasCompras,
+        ...comprasAnteriores,
+      ];
+
+      // Guardar en AsyncStorage
+      await AsyncStorage.setItem(
+        "misCompras",
+        JSON.stringify(todasLasCompras)
+      );
+
+      console.log("✅ Compra guardada correctamente");
+
+      // Vaciar carrito
+      clearCart();
+
+      // Mostrar mensaje
+      Alert.alert(
+        "Pago exitoso",
+        "Tu compra se realizó correctamente.",
+        [
+          {
+            text: "Ver mis compras",
+            onPress: () => {
+              router.replace("/perfil/compras");
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.log("❌ Error al guardar compra:", error);
+      Alert.alert("Error", "No se pudo guardar la compra.");
+    }
+  };
+
+  // ================= CONFIRMAR PAGO =================
+  const confirmarPago = async () => {
+    if (cart.length === 0) {
+      Alert.alert("Carrito vacío", "No hay productos para comprar.");
+      return;
+    }
+
+    // Validación básica para tarjeta
+    if (paymentMethod === "card") {
+      if (
+        !cardName.trim() ||
+        !cardNumber.trim() ||
+        !expiry.trim() ||
+        !cvv.trim()
+      ) {
+        Alert.alert(
+          "Datos incompletos",
+          "Completa todos los datos de la tarjeta."
+        );
+        return;
+      }
+    }
+
+    // Si es PayPal, redirige a tu WebView actual.
+    // La pantalla PaypalWebView deberá llamar a guardarCompra()
+    // cuando el pago se complete.
+    if (paymentMethod === "paypal") {
+      router.push({
+        pathname: "/PaypalWebView",
+        params: {
+          total: total.toString(),
+        },
+      });
+      return;
+    }
+
+    // Tarjeta o pago contra entrega
+    await guardarCompra();
+  };
+
+  // ================= RENDER =================
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -64,6 +171,7 @@ export default function PagoScreen() {
         <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
           <Text style={styles.sectionTitle}>Selecciona cómo pagar</Text>
 
+          {/* TARJETA */}
           <TouchableOpacity
             style={[
               styles.methodCard,
@@ -72,7 +180,11 @@ export default function PagoScreen() {
             onPress={() => setPaymentMethod("card")}
           >
             <View style={styles.methodLeft}>
-              <Ionicons name="card-outline" size={26} color="#16a34a" />
+              <Ionicons
+                name="card-outline"
+                size={26}
+                color="#16a34a"
+              />
 
               <View style={{ flex: 1 }}>
                 <Text style={styles.methodTitle}>
@@ -94,6 +206,7 @@ export default function PagoScreen() {
             )}
           </TouchableOpacity>
 
+          {/* PAYPAL */}
           <TouchableOpacity
             style={[
               styles.methodCard,
@@ -102,7 +215,11 @@ export default function PagoScreen() {
             onPress={() => setPaymentMethod("paypal")}
           >
             <View style={styles.methodLeft}>
-              <Ionicons name="logo-paypal" size={26} color="#2563eb" />
+              <Ionicons
+                name="logo-paypal"
+                size={26}
+                color="#2563eb"
+              />
 
               <View style={{ flex: 1 }}>
                 <Text style={styles.methodTitle}>PayPal</Text>
@@ -122,6 +239,7 @@ export default function PagoScreen() {
             )}
           </TouchableOpacity>
 
+          {/* CONTRA ENTREGA */}
           <TouchableOpacity
             style={[
               styles.methodCard,
@@ -137,7 +255,9 @@ export default function PagoScreen() {
               />
 
               <View style={{ flex: 1 }}>
-                <Text style={styles.methodTitle}>Pago contra entrega</Text>
+                <Text style={styles.methodTitle}>
+                  Pago contra entrega
+                </Text>
 
                 <Text style={styles.methodSubtitle}>
                   Paga al recibir tu pedido
@@ -154,9 +274,12 @@ export default function PagoScreen() {
             )}
           </TouchableOpacity>
 
+          {/* FORMULARIO TARJETA */}
           {paymentMethod === "card" && (
             <View style={styles.formCard}>
-              <Text style={styles.formTitle}>Datos de la tarjeta</Text>
+              <Text style={styles.formTitle}>
+                Datos de la tarjeta
+              </Text>
 
               <TextInput
                 placeholder="Nombre del titular"
@@ -180,7 +303,10 @@ export default function PagoScreen() {
                   placeholder="MM/AA"
                   value={expiry}
                   onChangeText={setExpiry}
-                  style={[styles.input, { flex: 1, marginRight: 10 }]}
+                  style={[
+                    styles.input,
+                    { flex: 1, marginRight: 10 },
+                  ]}
                   placeholderTextColor="#94a3b8"
                 />
 
@@ -196,12 +322,17 @@ export default function PagoScreen() {
             </View>
           )}
 
+          {/* RESUMEN */}
           <View style={styles.summaryCard}>
-            <Text style={styles.summaryTitle}>Resumen del pedido</Text>
+            <Text style={styles.summaryTitle}>
+              Resumen del pedido
+            </Text>
 
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Productos</Text>
-              <Text style={styles.summaryValue}>{totalProducts}</Text>
+              <Text style={styles.summaryValue}>
+                {totalProducts}
+              </Text>
             </View>
 
             <View style={styles.summaryRow}>
@@ -220,7 +351,9 @@ export default function PagoScreen() {
 
             {cuponAplicado !== "" && descuento > 0 && (
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Cupón aplicado</Text>
+                <Text style={styles.summaryLabel}>
+                  Cupón aplicado
+                </Text>
                 <Text style={styles.couponApplied}>
                   {cuponAplicado}
                 </Text>
@@ -229,7 +362,9 @@ export default function PagoScreen() {
 
             {descuento > 0 && (
               <View style={styles.summaryRow}>
-                <Text style={styles.discountText}>Descuento</Text>
+                <Text style={styles.discountText}>
+                  Descuento
+                </Text>
                 <Text style={styles.discountValue}>
                   - ${descuento.toFixed(2)} MXN
                 </Text>
@@ -246,21 +381,20 @@ export default function PagoScreen() {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.payButton} onPress={() => {
-            router.push({
-                  pathname: "/PaypalWebView",
-                  params: {
-                    total: total
-                  },
-                })
-          }}>
+          {/* BOTÓN PAGAR */}
+          <TouchableOpacity
+            style={styles.payButton}
+            onPress={confirmarPago}
+          >
             <Ionicons
               name="lock-closed-outline"
               size={20}
               color="#fff"
               style={{ marginRight: 8 }}
             />
-            <Text style={styles.payButtonText}>Confirmar pago</Text>
+            <Text style={styles.payButtonText}>
+              Confirmar pago
+            </Text>
           </TouchableOpacity>
         </ScrollView>
       </View>

@@ -1,4 +1,6 @@
-// Reemplaza TODO tu archivo PayPalWebView.tsx por este código completo
+// REEMPLAZA COMPLETAMENTE TU ARCHIVO: PayPalWebView.tsx
+// ESTE CÓDIGO GUARDA LA COMPRA EN AsyncStorage ("misCompras"),
+// VACÍA EL CARRITO Y REDIRIGE A /perfil/compras
 
 import React, { useRef, useState } from "react";
 import {
@@ -20,23 +22,73 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useCart } from "../context/CartContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function PayPalWebView() {
   const router = useRouter();
-  const { clearCart } = useCart();
   const webViewRef = useRef<WebView>(null);
+
+  // IMPORTANTE: NECESITAMOS cart Y clearCart
+  const { cart, clearCart } = useCart();
 
   const { total } = useLocalSearchParams();
   const amount = Number(total || 0).toFixed(2);
 
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("Esperando pago...");
-
-  // Evita procesar el pago más de una vez
   const [paymentProcessed, setPaymentProcessed] = useState(false);
 
   // =========================================================
-  // MENSAJES RECIBIDOS DESDE TU HTML (window.ReactNativeWebView.postMessage)
+  // GUARDAR COMPRA EN AsyncStorage
+  // =========================================================
+  const guardarCompra = async () => {
+    try {
+      // Leer compras anteriores
+      const comprasGuardadas =
+        await AsyncStorage.getItem("misCompras_");
+
+      const comprasAnteriores = comprasGuardadas
+        ? JSON.parse(comprasGuardadas)
+        : [];
+
+      // Convertir productos del carrito
+      const nuevasCompras = cart.map((item) => ({
+        id: `${item.id}-${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 8)}`,
+        nombre: item.name,
+        precio: item.price * item.quantity,
+        fecha: new Date().toLocaleDateString("es-MX", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        }),
+        estado: "En camino",
+        imagen: item.image,
+        cantidad: item.quantity,
+      }));
+
+      // Unir con compras anteriores
+      const todasLasCompras = [
+        ...nuevasCompras,
+        ...comprasAnteriores,
+      ];
+
+      // Guardar
+      await AsyncStorage.setItem(
+        "misCompras",
+        JSON.stringify(todasLasCompras)
+      );
+
+      console.log("✅ Compra guardada:", todasLasCompras);
+    } catch (error) {
+      console.log("❌ Error guardando compra:", error);
+      throw error;
+    }
+  };
+
+  // =========================================================
+  // MENSAJES RECIBIDOS DESDE TU HTML
   // =========================================================
   const handleMessage = async (event: any) => {
     try {
@@ -54,17 +106,21 @@ export default function PayPalWebView() {
         setPaymentProcessed(true);
         setStatus("Pago completado");
 
-        // Vaciar carrito
-        await clearCart();
+        // 1. Guardar compra
+        await guardarCompra();
 
+        // 2. Vaciar carrito
+        clearCart();
+
+        // 3. Mostrar confirmación
         Alert.alert(
           "Pago exitoso",
           "✅ Gracias por tu compra",
           [
             {
-              text: "Continuar",
+              text: "Ver mis compras",
               onPress: () => {
-                router.replace("/carrito");
+                router.replace("/perfil/compras");
               },
             },
           ]
@@ -72,19 +128,20 @@ export default function PayPalWebView() {
       }
 
       // ======================================
-      // ❌ ERROR
+      // ❌ ERROR EN EL PAGO
       // ======================================
       if (data.type === "payment_error") {
         setStatus("Error en el pago");
 
         Alert.alert(
           "Error",
-          data.error || "Ocurrió un error al procesar el pago."
+          data.error ||
+            "Ocurrió un error al procesar el pago."
         );
       }
 
       // ======================================
-      // ❌ CANCELADO
+      // ❌ PAGO CANCELADO
       // ======================================
       if (data.type === "payment_cancel") {
         setStatus("Pago cancelado");
@@ -103,12 +160,15 @@ export default function PayPalWebView() {
   };
 
   // =========================================================
-  // OPCIONAL: SOLO PARA LOGS DE NAVEGACIÓN
+  // SOLO PARA VER LAS URLS EN CONSOLA
   // =========================================================
   const handleNavigation = (navState: any) => {
     console.log("🌐 URL:", navState.url);
   };
 
+  // =========================================================
+  // RENDER
+  // =========================================================
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -140,14 +200,13 @@ export default function PayPalWebView() {
           />
         </LinearGradient>
 
-        {/* TARJETA DE INFORMACIÓN */}
+        {/* INFO */}
         <View style={styles.infoCard}>
           <View style={styles.infoTop}>
             <View>
               <Text style={styles.label}>
                 Total a pagar
               </Text>
-
               <Text style={styles.price}>
                 ${amount} MXN
               </Text>
@@ -159,7 +218,6 @@ export default function PayPalWebView() {
                 size={24}
                 color="#2563eb"
               />
-
               <Text style={styles.paypalText}>
                 PayPal
               </Text>
@@ -168,7 +226,6 @@ export default function PayPalWebView() {
 
           <View style={styles.statusRow}>
             <View style={styles.statusDot} />
-
             <Text style={styles.statusText}>
               {status}
             </Text>
@@ -183,7 +240,6 @@ export default function PayPalWebView() {
                 size="large"
                 color="#16a34a"
               />
-
               <Text style={styles.loadingText}>
                 Cargando PayPal...
               </Text>
@@ -203,11 +259,7 @@ export default function PayPalWebView() {
             scalesPageToFit={false}
             style={styles.webview}
             onLoadEnd={() => setLoading(false)}
-
-            // 🔥 ESTE ES EL EVENTO IMPORTANTE
             onMessage={handleMessage}
-
-            // Solo para monitorear URLs
             onNavigationStateChange={handleNavigation}
           />
         </View>
@@ -260,7 +312,7 @@ const styles = StyleSheet.create({
   },
 
   price: {
-    fontSize: 32,
+    fontSize: 26,
     fontWeight: "bold",
     color: "#16a34a",
   },

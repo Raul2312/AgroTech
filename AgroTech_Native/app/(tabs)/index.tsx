@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   priceBlock: { flex: 1 },
   oldPrice: { fontSize: 11, color: "#94A3B8", textDecorationLine: "line-through" },
   price: { fontSize: 18, fontWeight: "900", color: "#16A34A" },
-  cartBtn: { marginLeft: 8 },
+  cartBtn: { marginLeft: 6 },
   cartGradient: { width: 42, height: 42, borderRadius: 14, justifyContent: "center", alignItems: "center" },
   starsRow: { flexDirection: "row" },
 });
