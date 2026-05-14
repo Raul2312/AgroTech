@@ -5,37 +5,33 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Compra;
+use Illuminate\Support\Facades\Auth;
 
 class CompraController extends Controller
 {
-    public function index()
-    {
-        return Compra::all();
+    public function index() {
+        // Filtra automáticamente por el usuario logueado (ID 10)
+        return Compra::where('id_comprador', Auth::id())->latest()->get();
     }
 
     public function store(Request $request)
     {
-        $data = $request->all();
-        $registro = Compra::create($data);
-        return response()->json($registro, 201);
-    }
-
-    public function show($id)
-    {
-        return Compra::findOrFail($id);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $registro = Compra::findOrFail($id);
-        $registro->update($request->all());
-        return response()->json($registro, 200);
-    }
-
-    public function destroy($id)
-    {
-        $registro = Compra::findOrFail($id);
-        $registro->delete();
-        return response()->json(['message' => 'Eliminado correctamente']);
+        try {
+            $data = $request->all();
+            
+            // Forzamos el ID del comprador desde la sesión activa
+            $data['id_comprador'] = Auth::id(); 
+            
+            // Aseguramos valores numéricos para evitar errores de base de datos
+            $data['iva'] = $request->input('iva', 0);
+            $data['total'] = (float)$request->input('total');
+            
+            $registro = Compra::create($data);
+            
+            return response()->json($registro, 201);
+        } catch (\Exception $e) {
+            // Esto devolverá el error exacto en caso de fallo 500
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }
