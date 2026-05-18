@@ -1,0 +1,293 @@
+.daily-spin-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f172a, #1e3a8a, #2563eb);
+  padding: 2rem;
+  color: white;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Título */
+.daily-spin-container h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  font-weight: 800;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Mensaje */
+.daily-spin-message {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  max-width: 500px;
+  opacity: 0.95;
+}
+
+/* Wrapper de ruleta */
+.wheel-wrapper {
+  position: relative;
+  width: 380px;
+  height: 380px;
+  margin-bottom: 2rem;
+}
+
+/* Flecha superior */
+.pointer {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 22px solid transparent;
+  border-right: 22px solid transparent;
+  border-top: 42px solid #facc15;
+  z-index: 10;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+}
+
+/* Ruleta */
+.wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  border: 12px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 0 30px rgba(0, 0, 0, 0.35),
+    inset 0 0 20px rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  transition: transform 5s cubic-bezier(0.17, 0.67, 0.18, 1);
+  background: conic-gradient(
+    #ef4444 0deg 45deg,
+    #f97316 45deg 90deg,
+    #facc15 90deg 135deg,
+    #22c55e 135deg 180deg,
+    #06b6d4 180deg 225deg,
+    #3b82f6 225deg 270deg,
+    #8b5cf6 270deg 315deg,
+    #ec4899 315deg 360deg
+  );
+}
+
+/* Segmentos */
+.segment {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  top: 0;
+  left: 50%;
+  transform-origin: 0% 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Texto de cada premio */
+.segment span {
+  position: absolute;
+  top: 125px;
+  left: -10px;
+  width: 110px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transform-origin: center;
+}
+
+/* Rotación de segmentos */
+.segment-0 {
+  transform: rotate(0deg);
+}
+.segment-0 span {
+  transform: rotate(22.5deg);
+}
+
+.segment-1 {
+  transform: rotate(45deg);
+}
+.segment-1 span {
+  transform: rotate(-22.5deg);
+}
+
+.segment-2 {
+  transform: rotate(90deg);
+}
+.segment-2 span {
+  transform: rotate(-67.5deg);
+}
+
+.segment-3 {
+  transform: rotate(135deg);
+}
+.segment-3 span {
+  transform: rotate(-112.5deg);
+}
+
+.segment-4 {
+  transform: rotate(180deg);
+}
+.segment-4 span {
+  transform: rotate(-157.5deg);
+}
+
+.segment-5 {
+  transform: rotate(225deg);
+}
+.segment-5 span {
+  transform: rotate(-202.5deg);
+}
+
+.segment-6 {
+  transform: rotate(270deg);
+}
+.segment-6 span {
+  transform: rotate(-247.5deg);
+}
+
+.segment-7 {
+  transform: rotate(315deg);
+}
+.segment-7 span {
+  transform: rotate(-292.5deg);
+}
+
+/* Centro de la ruleta */
+.wheel::after {
+  content: "🎰";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90px;
+  height: 90px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: white;
+  color: #1d4ed8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  font-weight: bold;
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.3),
+    inset 0 0 12px rgba(59, 130, 246, 0.2);
+}
+
+/* Botón */
+.spin-button {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  color: white;
+  border: none;
+  padding: 1rem 2.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.35);
+  transition: all 0.3s ease;
+}
+
+.spin-button:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 14px 30px rgba(34, 197, 94, 0.45);
+}
+
+.spin-button:disabled {
+  background: #64748b;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.8;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: white;
+  color: #0f172a;
+  padding: 2.5rem;
+  border-radius: 24px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+  animation: popIn 0.35s ease;
+}
+
+.modal-content h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.modal-content h3 {
+  font-size: 1.8rem;
+  color: #16a34a;
+  margin: 1rem 0;
+}
+
+.modal-content button {
+  margin-top: 1rem;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.9rem 2rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.modal-content button:hover {
+  background: #1d4ed8;
+}
+
+/* Animación modal */
+@keyframes popIn {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .wheel-wrapper {
+    width: 300px;
+    height: 300px;
+  }
+
+  .daily-spin-container h1 {
+    font-size: 2.2rem;
+  }
+
+  .segment span {
+    top: 95px;
+    width: 90px;
+    font-size: 0.6rem;
+  }
+
+  .wheel::after {
+    width: 70px;
+    height: 70px;
+    font-size: 1.8rem;
+  }
+}

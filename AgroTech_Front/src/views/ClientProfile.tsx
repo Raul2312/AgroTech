@@ -3,6 +3,15 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../css/clientProfile.css";
 import logo from "../assets/img/agro.png";
+import { getDailySpinStatus } from "../services/api";
+
+interface RewardData {
+  points: number;
+  last_spin_date: string | null;
+  last_reward_type: string | null;
+  last_reward_value: number | null;
+  last_reward_label: string | null;
+}
 
 const API_URL = import.meta.env.VITE_API;
 
@@ -11,10 +20,121 @@ const ClientProfile = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
   const navigate = useNavigate();
+  const [rewardData, setRewardData] = useState<RewardData | null>(null);
+  const [loadingRewards, setLoadingRewards] = useState(true);
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
+  // Reemplaza COMPLETAMENTE tu función loadRewards() por esta versión
+
+const loadRewards = async () => {
+  try {
+    setLoadingRewards(true);
+
+    // =========================
+    // OBTENER SESIÓN
+    // =========================
+    const session =
+      localStorage.getItem("agroSession") ||
+      sessionStorage.getItem("agroSession");
+
+    if (!session) {
+      setRewardData({
+        points: 0,
+        last_spin_date: null,
+        last_reward_type: null,
+        last_reward_value: null,
+        last_reward_label: "Sin premios",
+      });
+      return;
+    }
+
+    const parsed = JSON.parse(session);
+
+    // Puede venir como session.token o session.access_token
+    const token =
+      parsed?.token ||
+      parsed?.access_token ||
+      parsed?.usuario?.token ||
+      parsed?.user?.token;
+
+    // =========================
+    // SI NO HAY TOKEN
+    // =========================
+    if (!token) {
+      console.warn("⚠️ No se encontró token en la sesión");
+
+      setRewardData({
+        points: 0,
+        last_spin_date: null,
+        last_reward_type: null,
+        last_reward_value: null,
+        last_reward_label: "Sin premios",
+      });
+      return;
+    }
+
+    // =========================
+    // CONSULTAR RECOMPENSAS
+    // =========================
+    const response = await axios.get(`${API_URL}rewards/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+      timeout: 10000,
+    });
+
+    const rewardData = response.data;
+
+    console.log("🎯 Reward data:", rewardData);
+
+    // =========================
+    // NORMALIZAR DATOS
+    // =========================
+    const normalizedData: RewardData = {
+      points: Number(rewardData?.points || 0),
+      last_spin_date: rewardData?.last_spin_date || null,
+      last_reward_type: rewardData?.last_reward_type || null,
+      last_reward_value:
+        rewardData?.last_reward_value !== null &&
+        rewardData?.last_reward_value !== undefined
+          ? Number(rewardData.last_reward_value)
+          : null,
+      last_reward_label:
+        rewardData?.last_reward_label ||
+        (rewardData?.last_reward_type === "points"
+          ? `${rewardData?.last_reward_value} AgroPoints`
+          : rewardData?.last_reward_type === "discount"
+          ? `${rewardData?.last_reward_value}% OFF`
+          : rewardData?.last_reward_type === "shipping"
+          ? "FREE"
+          : "Sin premios"),
+    };
+
+    // =========================
+    // GUARDAR EN EL STATE
+    // =========================
+    setRewardData(normalizedData);
+  } catch (error: any) {
+    console.error(
+      "❌ Error al cargar premios:",
+      error?.response?.data || error.message
+    );
+
+    // Valores por defecto
+    setRewardData({
+      points: 0,
+      last_spin_date: null,
+      last_reward_type: null,
+      last_reward_value: null,
+      last_reward_label: "Sin premios",
+    });
+  } finally {
+    setLoadingRewards(false);
+  }
+};
 
   // 🔥 OBTENER SESIÓN
   const getSession = () => {
@@ -29,10 +149,13 @@ const ClientProfile = () => {
   const userData = sessionUser?.usuario || sessionUser?.user;
 
   useEffect(() => {
-    if (!userData) {
-      navigate("/login");
-    }
-  }, []);
+  if (!userData) {
+    navigate("/login");
+    return;
+  }
+
+  loadRewards();
+}, []);
 
   // 🔥 FORM
   const [form, setForm] = useState({
@@ -184,18 +307,36 @@ const ClientProfile = () => {
 
         {/* STATS */}
         <section className="profile-stats">
+  <div className="profile-stat-card">
+    <span>Estado</span>
+    <h3>{form.estado_cuenta}</h3>
+  </div>
 
-          <div className="profile-stat-card">
-            <span>Estado</span>
-            <h3>{form.estado_cuenta}</h3>
-          </div>
+  <div className="profile-stat-card">
+    <span>Reputación</span>
+    <h3>{form.reputacion}</h3>
+  </div>
 
-          <div className="profile-stat-card">
-            <span>Reputación</span>
-            <h3>{form.reputacion}</h3>
-          </div>
+  <div className="profile-stat-card">
+    <span>🎁 Puntos</span>
+    <h3>
+      {loadingRewards
+        ? "..."
+        : rewardData?.points ?? 0}
+    </h3>
+  </div>
 
-        </section>
+  <div className="profile-stat-card">
+    <span>🏆 Último Premio</span>
+    <h3>
+      {loadingRewards
+        ? "..."
+        : rewardData?.last_reward_label ||
+          "Sin premios"}
+    </h3>
+  </div>
+</section>
+
 
         {/* GRID ESTILO IMAGEN */}
         <section className="profile-grid">
@@ -264,6 +405,61 @@ const ClientProfile = () => {
           </div>
 
         </section>
+
+        <section className="profile-grid">
+  <div className="profile-box">
+    <h3>🎰 Historial de Daily Spin</h3>
+
+    <div className="profile-row">
+      <label>Puntos acumulados</label>
+      <span>
+        {loadingRewards
+          ? "Cargando..."
+          : `${rewardData?.points ?? 0} puntos`}
+      </span>
+    </div>
+
+    <div className="profile-row">
+      <label>Último premio</label>
+      <span>
+        {loadingRewards
+          ? "Cargando..."
+          : rewardData?.last_reward_label ||
+            "Sin premios"}
+      </span>
+    </div>
+
+    <div className="profile-row">
+      <label>Tipo de premio</label>
+      <span>
+        {loadingRewards
+          ? "Cargando..."
+          : rewardData?.last_reward_type ||
+            "N/A"}
+      </span>
+    </div>
+
+    <div className="profile-row">
+      <label>Valor del premio</label>
+      <span>
+        {loadingRewards
+          ? "Cargando..."
+          : rewardData?.last_reward_value ??
+            "N/A"}
+      </span>
+    </div>
+
+    <div className="profile-row">
+      <label>Último giro</label>
+      <span>
+        {loadingRewards
+          ? "Cargando..."
+          : rewardData?.last_spin_date ||
+            "Nunca"}
+      </span>
+    </div>
+  </div>
+</section>
 
         {/* BOTÓN GUARDAR */}
         {editing && (

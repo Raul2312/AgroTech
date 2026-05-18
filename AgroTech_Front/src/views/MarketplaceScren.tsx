@@ -4,6 +4,7 @@ import axios from "axios";
 import "../css/marketplace.css";
 import logo from "../assets/img/agro.png";
 import ProductDetailsModal from "./ProductDetailsModal";
+import DailySpin from "../components/DailySpin";
 
 import {
   FaShoppingCart,
@@ -345,6 +346,12 @@ const Marketplace: React.FC = () => {
           </div>
         </div>
       </section>
+
+          {/* Daily Spin Popup */}
+{(localStorage.getItem("agroSession") ||
+  sessionStorage.getItem("agroSession")) && (
+  <DailySpin />
+)}
 
       <section className="categories">
         <div className="section-header">
