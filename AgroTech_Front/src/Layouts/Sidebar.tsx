@@ -19,6 +19,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, logout }) => {
       </div>
 
       <ul className="menu">
+        <li><Link to="/indexscreen">🏠 {!collapsed && "Inicio"}</Link></li>
+
         <li className={location.pathname === "/dashboard" ? "active" : ""}>
           <Link to="/dashboard">📊 {!collapsed && "Dashboard"}</Link>
         </li>
@@ -32,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, logout }) => {
         </li>
 
         <li className={location.pathname === "/compradores" ? "active" : ""}>
-          <Link to="/compradores">🛒 {!collapsed && "Compradores"}</Link>
+          <Link to="/admin/compradores">🛒 {!collapsed && "Compradores"}</Link>
         </li>
 
         <li className={location.pathname === "/marketplace" ? "active" : ""}>

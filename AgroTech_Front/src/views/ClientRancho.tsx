@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../css/rancho.css";
@@ -6,30 +6,31 @@ import logo from "../assets/img/agro.png";
 
 const API_URL = import.meta.env.VITE_API;
 
+interface Rancho {
+  id_rancho: number | string;
+  nombre: string;
+  ubicacion: string;
+  superficie_hectarias: number | string;
+  telefono: string;
+  correo: string;
+  estatus: string;
+  tipo_rancho: string;
+  id_usuario: number;
+}
+
 const ClientRancho = () => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const [ranchos, setRanchos] = useState<Rancho[]>([]);
 
-  const logout = () => {
-    localStorage.removeItem("agroSession");
-    sessionStorage.removeItem("agroSession");
-    navigate("/login");
+  const toggleSidebar = () => {
+    setCollapsed(!collapsed);
   };
 
-  const getUser = () => {
-    const session = localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession");
-    return session ? JSON.parse(session) : null;
-  };
-
-  const user = getUser();
-
-  useEffect(() => {
-    if (!user) {
-      navigate("/login");
-    }
-  }, []);
-
-  const [ranchos, setRanchos] = useState<any[]>([]);
+  // Obtener datos de sesión unificados
+  const sessionStr = localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession");
+  const sessionData = sessionStr ? JSON.parse(sessionStr) : null;
+  const userData = sessionData?.user || sessionData?.usuario;
 
   const [form, setForm] = useState({
     nombre: "",
@@ -41,46 +42,65 @@ const ClientRancho = () => {
     correo: "",
     tipo_rancho: "Ganadero",
     estatus: "Activo",
-    id_usuario: user?.user.id_usuario || 0
+    id_usuario: userData?.id_usuario || 0
   });
 
-  const handleChange = (e: any) => {
+  const logout = () => {
+    localStorage.removeItem("agroSession");
+    sessionStorage.removeItem("agroSession");
+    navigate("/login");
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value
     });
   };
 
-  const fetchRanchos = async () => {
+  // Función para traer ranchos usando useCallback para evitar re-renders infinitos
+  const fetchRanchos = useCallback(async () => {
+    if (!userData?.id_usuario) return;
     try {
-      const res = await axios.get(`${API_URL}rancho`);
+      // 🔥 Se envía el id_usuario en la URL como parámetro de consulta
+      const res = await axios.get(`${API_URL}rancho?id_usuario=${userData.id_usuario}`);
+      
+      // Filtro de seguridad doble (por si la API devuelve todos los ranchos)
       const propios = res.data.filter(
-        (r: any) => r.id_usuario === user?.user.id_usuario
+        (r: Rancho) => String(r.id_usuario) === String(userData.id_usuario)
       );
       setRanchos(propios);
     } catch (error) {
       console.error("Error cargando ranchos:", error);
     }
-  };
+  }, [userData?.id_usuario]);
 
   useEffect(() => {
-    if (user) {
+    if (!userData) {
+      navigate("/login");
+    } else {
       fetchRanchos();
     }
-  }, []);
+  }, [userData, navigate, fetchRanchos]);
 
   const handleSubmit = async () => {
     try {
-      if (!user) {
+      if (!userData) {
         navigate("/login");
         return;
       }
-      await axios.post(`${API_URL}rancho` ,{
+      
+      if (!form.nombre || !form.ubicacion) {
+        alert("Por favor completa los campos principales del rancho.");
+        return;
+      }
+
+      await axios.post(`${API_URL}rancho`, {
         ...form,
-        latitud: parseFloat(form.latitud),
-        longitud: parseFloat(form.longitud),
-        superficie_hectarias: parseFloat(form.superficie_hectarias),
-        id_usuario: user.user.id_usuario,
+        latitud: parseFloat(form.latitud) || 0,
+        longitud: parseFloat(form.longitud) || 0,
+        superficie_hectarias: parseFloat(form.superficie_hectarias) || 0,
+        id_usuario: userData.id_usuario,
         fecha_registro: new Date().toISOString().split("T")[0]
       });
 
@@ -96,7 +116,7 @@ const ClientRancho = () => {
         correo: "",
         tipo_rancho: "Ganadero",
         estatus: "Activo",
-        id_usuario: user.user.id_usuario
+        id_usuario: userData.id_usuario
       });
 
       fetchRanchos();
@@ -108,11 +128,11 @@ const ClientRancho = () => {
   };
 
   return (
-    <div className="layout">
+    <div className="client-rancho">
       {/* SIDEBAR */}
-      <aside className={`sidebar ${collapsed ? "collapsed":""}`}>
-        <div className="logo-container" onClick={() => setCollapsed(!collapsed)}>
-          <img src={logo} className="logo-img" alt="logo"/>
+      <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
+        <div className="logo-container">
+          <img src={logo} className="logo-img" alt="logo" />
           {!collapsed && <span className="logo-text">AgroTech</span>}
         </div>
 
@@ -120,16 +140,13 @@ const ClientRancho = () => {
           <li><Link to="/indexscreen">🏠 {!collapsed && "Inicio"}</Link></li>
           <li><Link to="/areaCliente">📊 {!collapsed && "Dashboard"}</Link></li>
           <li><Link to="/mis-pedidos">📦 {!collapsed && "Mis pedidos"}</Link></li>
-        <li>
-              <Link to="/mis-productos">📦 {!collapsed && "Publicar Productos"}</Link>
-              </li> 
+          <li><Link to="/mis-productos">📦 {!collapsed && "Publicar Productos"}</Link></li> 
           <li><Link to="/marketplace">🛒 {!collapsed && "Marketplace"}</Link></li>
-         
           <li><Link to="/perfil">👤 {!collapsed && "Mi perfil"}</Link></li>
           <li className="active"><Link to="/rancho">🌱 {!collapsed && "Rancho"}</Link></li>
           <li><Link to="/trazabilidad">📍 {!collapsed && "Trazabilidad"}</Link></li>
 
-          <li className="logout" style={{marginTop: 'auto'}}>
+          <li className="logout">
             <button onClick={logout}>
               ❌ {!collapsed && "Cerrar sesión"}
             </button>
@@ -138,10 +155,28 @@ const ClientRancho = () => {
       </aside>
 
       {/* CONTENIDO PRINCIPAL */}
-      <main className="main">
-        {/* PANEL REGISTRO */}
-        <div className="panel">
-          <h2>🌱 Registrar Nuevo Rancho</h2>
+      <div className={`main ${collapsed ? "expanded" : ""}`}>
+        {/* HEADER CON EL DISEÑO DEL PERFIL */}
+        <header className="header">
+          <div className="left-header">
+            <button className="menu-btn" onClick={toggleSidebar}>
+              ☰
+            </button>
+            <h2>Gestión de Ranchos</h2>
+          </div>
+
+          <div className="user-info">
+            <div className="notification">
+              🔔<span>2</span>
+            </div>
+            <span className="user-display-name">{userData?.nombre || "Usuario"} {userData?.apellido || ""}</span>
+            <img src={logo} className="nav-avatar" alt="user" />
+          </div>
+        </header>
+
+        {/* PANEL REGISTRO COMO CONTENEDOR BOX */}
+        <div className="rancho-box">
+          <h3>🌱 Registrar Nuevo Rancho</h3>
           <div className="form-grid">
             <input name="nombre" value={form.nombre} placeholder="Nombre del rancho" onChange={handleChange} />
             <input name="ubicacion" value={form.ubicacion} placeholder="Ubicación (Ciudad/Estado)" onChange={handleChange} />
@@ -174,30 +209,30 @@ const ClientRancho = () => {
         </div>
 
         {/* PANEL LISTA */}
-        <div className="panel">
-          <h2>📂 Mis Ranchos Registrados</h2>
+        <div className="rancho-box">
+          <h3>📂 Mis Ranchos Registrados ({ranchos.length})</h3>
           <div className="cards-container">
             {ranchos.map((r) => (
               <div className="rancho-card" key={r.id_rancho}>
                 <h3>{r.nombre}</h3>
                 <p>📍 {r.ubicacion}</p>
                 <p>📐 {r.superficie_hectarias} Hectáreas</p>
-                <p>📞 {r.telefono}</p>
-                <p>📧 {r.correo}</p>
-                <span className={`status-badge ${r.estatus === 'Activo' ? 'status-active' : 'status-inactive'}`}>
+                <p>📞 {r.telefono || "Sin teléfono"}</p>
+                <p>📧 {r.correo || "Sin correo"}</p>
+                <span className={`status-badge ${r.estatus?.toLowerCase() === 'activo' ? 'status-active' : 'status-inactive'}`}>
                   {r.estatus}
                 </span>
               </div>
             ))}
 
             {ranchos.length === 0 && (
-              <p style={{ color: '#94a3b8', gridColumn: '1/-1', textAlign: 'center', padding: '20px' }}>
+              <p style={{ color: '#94a3b8', gridColumn: '1/-1', textAlign: 'center', padding: '20px', margin: 0 }}>
                 No tienes ranchos registrados actualmente.
               </p>
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };

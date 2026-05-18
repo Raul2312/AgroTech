@@ -4,12 +4,13 @@ import axios from "axios";
 import "../css/clientDashboard.css";
 import logo from "../assets/img/agro.png";
 
-// Interface para el historial (Base de Datos)
+// Interface para el historial (Base de Datos / Local temporal)
 interface Pedido {
-  id_pedido: number;
+  id_pedido: number | string; // Modificado para soportar temporalmente el string hash de PayPal
   producto_nombre: string;
-  estado: "Enviado" | "Procesando" | "Entregado";
+  estado: "Enviado" | "Procesando" | "Entregado" | "Completado"; 
   fecha: string;
+  monto?: string | number; // NUEVO: Campo opcional para almacenar el monto de la compra
 }
 
 // Interface para el carrito (LocalStorage - Sincronizado con Marketplace)
@@ -39,9 +40,23 @@ const MisPedidos = () => {
     const fetchHistorial = async () => {
       try {
         const res = await axios.get(`${apiUrl}mis-pedidos`);
-        setPedidos(res.data);
+        const apiPedidos = res.data;
+        
+        // Recuperar pedidos completados localmente que aún no se reflejan o para asegurar inmediatez
+        const pedidosLocales = JSON.parse(localStorage.getItem("agroPedidosRecientes") || "[]");
+        
+        // Filtramos duplicados por si la API ya registró el pedido en una recarga posterior
+        const filtradosLocales = pedidosLocales.filter((lp: Pedido) => 
+          !apiPedidos.some((ap: Pedido) => String(ap.id_pedido) === String(lp.id_pedido))
+        );
+
+        // Combinamos poniendo los recientes locales primero
+        setPedidos([...filtradosLocales, ...apiPedidos]);
       } catch (err) {
         console.error("Error cargando historial:", err);
+        // Si falla la API, mostramos al menos los locales recientes para no dejar en blanco
+        const pedidosLocales = JSON.parse(localStorage.getItem("agroPedidosRecientes") || "[]");
+        setPedidos(pedidosLocales);
       }
     };
 
@@ -138,6 +153,7 @@ const MisPedidos = () => {
                 <tr>
                   <th>ID</th>
                   <th>Producto</th>
+                  <th>Monto</th>
                   <th>Estado</th>
                   <th>Fecha</th>
                 </tr>
@@ -145,8 +161,9 @@ const MisPedidos = () => {
               <tbody>
                 {pedidos.length > 0 ? pedidos.map((p) => (
                   <tr key={p.id_pedido}>
-                    <td>#{p.id_pedido}</td>
+                    <td>{typeof p.id_pedido === 'number' ? `#${p.id_pedido}` : p.id_pedido}</td>
                     <td>{p.producto_nombre}</td>
+                    <td>{p.monto ? `$${p.monto} MXN` : "—"}</td>
                     <td>
                       <span className={`badge ${p.estado === "Enviado" ? "shipped" : p.estado === "Procesando" ? "pending" : "delivered"}`}>
                         {p.estado}
@@ -155,7 +172,7 @@ const MisPedidos = () => {
                     <td>{p.fecha}</td>
                   </tr>
                 )) : (
-                  <tr><td colSpan={4} style={{textAlign: 'center'}}>No tienes pedidos anteriores.</td></tr>
+                  <tr><td colSpan={5} style={{textAlign: 'center'}}>No tienes pedidos anteriores.</td></tr>
                 )}
               </tbody>
             </table>

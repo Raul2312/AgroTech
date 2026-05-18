@@ -1,30 +1,33 @@
 /* Se ajustó el padding-top para eliminar el hueco del header (de 120px bajó a 100px) */
 .dashboard {
   padding: 100px 50px 40px; 
-  background: #f4f7fa;
+  background: #0b1221; /* Cambiado a fondo oscuro general */
   min-height: 100vh;
+  color: white;
 }
 
 /* ================= HEADER TEXT ================= */
 .top h2 {
   font-size: 28px;
   font-weight: 700;
-  color: #0f172a;
+  color: white; /* Cambiado a blanco */
 }
 
 .top p {
-  color: #64748b;
+  color: #94a3b8; /* Cambiado a gris azulado claro */
   margin-top: 5px;
 }
 
 /* ================= ALERT ================= */
 .alert {
-  background: linear-gradient(135deg, #fef9c3, #fde68a);
+  background: rgba(245, 158, 11, 0.1); /* Fondo ámbar sutil translúcido */
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  color: #f59e0b; /* Texto ámbar */
   padding: 16px 20px;
   border-radius: 14px;
   margin: 25px 0;
   font-weight: 500;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 /* ================= METRICS ================= */
@@ -36,27 +39,28 @@
 }
 
 .metric {
-  background: white;
+  background: #111a2e; /* Contenedor oscuro */
+  border: 1px solid rgba(255, 255, 255, 0.05);
   padding: 25px;
   border-radius: 18px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
   text-align: center;
   transition: 0.3s;
   font-size: 26px;
   font-weight: 700;
-  color: #14532d;
+  color: #22c55e; /* Verde brillante para resaltar valores */
 }
 
 .metric:hover {
   transform: translateY(-6px);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
 }
 
 .metric span {
   display: block;
   margin-top: 6px;
   font-size: 14px;
-  color: #64748b;
+  color: #94a3b8; /* Gris azulado */
 }
 
 /* ================= GRID ================= */
@@ -69,10 +73,11 @@
 
 /* ================= MAP ================= */
 .map {
-  background: white;
+  background: #111a2e; /* Contenedor oscuro */
+  border: 1px solid rgba(255, 255, 255, 0.05);
   padding: 20px;
   border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 .map-header {
@@ -85,40 +90,50 @@
 .map-header h3 {
   font-size: 18px;
   font-weight: 600;
+  color: white;
 }
 
 .map-header button {
-  background: #ecfdf5;
-  border: none;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
   padding: 8px 14px;
   border-radius: 10px;
-  color: #14532d;
+  color: #22c55e;
   cursor: pointer;
   font-weight: 500;
+  transition: 0.3s;
+}
+
+.map-header button:hover {
+  background: #22c55e;
+  color: white;
 }
 
 .map-box {
-  height: 400px; /* Asegura un buen tamaño */
+  height: 400px;
   border-radius: 15px;
-  background: linear-gradient(135deg, #d1fae5, #bbf7d0);
+  background: #0b1221; /* Fondo del cargador del mapa oscuro */
+  border: 1px solid #1e293b;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  color: #14532d;
+  color: #94a3b8;
   overflow: hidden;
 }
 
 /* ================= ALERTS ================= */
 .alerts {
-  background: white;
+  background: #111a2e; /* Contenedor oscuro */
+  border: 1px solid rgba(255, 255, 255, 0.05);
   padding: 20px;
   border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 .alerts h3 {
   margin-bottom: 15px;
+  color: white;
 }
 
 .alert-item {
@@ -129,10 +144,12 @@
   border-radius: 12px;
   transition: 0.3s;
   margin-bottom: 10px;
+  border: 1px solid transparent;
 }
 
 .alert-item:hover {
-  background: #f1f5f9;
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
 .alert-item img {
@@ -143,7 +160,7 @@
 }
 
 .alert-item strong {
-  color: #0f172a;
+  color: white; /* Cambiado a blanco */
 }
 
 .alert-item p {
@@ -154,10 +171,10 @@
 
 /* ================= GANADO ================= */
 .ganado {
-  background: white;
+  background: #111a2e;
   padding: 20px;
   border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .cards {
@@ -167,16 +184,17 @@
 }
 
 .card {
-  background: white;
+  background: #1e293b; /* Tarjeta interna más clara para contraste */
   border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
   transition: 0.3s;
 }
 
 .card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
 }
 
 .card img {
@@ -187,35 +205,42 @@
 
 .card h4 {
   margin: 10px;
+  color: white;
 }
 
 .card p {
   margin: 0 10px;
-  color: #64748b;
+  color: #94a3b8;
   font-size: 14px;
 }
 
 .card button {
   margin: 12px;
-  background: linear-gradient(135deg, #14532d, #22c55e);
+  background: #22c55e;
   color: white;
   border: none;
   padding: 10px;
   border-radius: 12px;
   cursor: pointer;
   font-weight: 500;
+  transition: 0.3s;
+}
+
+.card button:hover {
+  background: #16a34a;
 }
 
 /* ================= ACTIVITY ================= */
 .activity {
-  background: white;
+  background: #111a2e;
   padding: 20px;
   border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .activity h3 {
   margin-bottom: 15px;
+  color: white;
 }
 
 .activity ul {
@@ -228,13 +253,16 @@
   padding: 10px;
   border-radius: 10px;
   margin-bottom: 8px;
-  background: #f8fafc;
+  background: #0b1221;
+  border: 1px solid rgba(255, 255, 255, 0.03);
   font-size: 14px;
+  color: #94a3b8;
 }
 
+/* BOTONES DE ACCIÓN PRINCIPALES */
 .btn-main {
   width: 100%;
-  background: linear-gradient(135deg, #14532d, #22c55e);
+  background: #22c55e; /* Color sólido verde AgroTech */
   color: white;
   border: none;
   padding: 12px;
@@ -245,17 +273,18 @@
 }
 
 .btn-main:hover {
-  transform: scale(1.03);
+  background: #16a34a;
+  transform: scale(1.02);
 }
 
-/* 🔥 ESTILOS NUEVOS PARA EL MODAL DE AGREGAR VACA */
+/* 🔥 ESTILOS ADAPTADOS PARA EL MODAL DE AGREGAR VACA */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7); /* Oscurecido extra */
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -264,16 +293,17 @@
 }
 
 .modal-content {
-  background: white;
+  background: #111a2e; /* Modal en color oscuro */
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 30px;
   border-radius: 20px;
   width: 320px;
   text-align: center;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
 .modal-content h3 {
-  color: #0f172a;
+  color: white;
   margin-top: 0;
 }
 
@@ -281,7 +311,9 @@
   width: 100%;
   padding: 12px;
   margin-bottom: 20px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #1e293b;
+  background: #0b1221; /* Input oscuro */
+  color: white;
   border-radius: 10px;
   font-size: 16px;
   box-sizing: border-box;
@@ -299,9 +331,9 @@
 
 .btn-cancel {
   width: 100%;
-  background: #ef4444;
-  color: white;
-  border: none;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
   padding: 12px;
   border-radius: 14px;
   cursor: pointer;
@@ -310,8 +342,9 @@
 }
 
 .btn-cancel:hover {
-  background: #dc2626;
-  transform: scale(1.03);
+  background: #ef4444;
+  color: white;
+  transform: scale(1.02);
 }
 
 /* 🔥 ESCRITORIO */
@@ -343,11 +376,11 @@
     top: 60px;
     left: 0;
     width: 100%;
-    background: white;
+    background: #0f172a;
     z-index: 1000;
   }
   .dashboard {
-    padding: 110px 20px 30px; /* Reducimos padding lateral en móvil */
+    padding: 110px 20px 30px;
   }
 }
 
@@ -371,7 +404,7 @@
   display: block;
 }
 
-/* 🔥 OPCIONAL (MEJORA HEADER) */
+/* 🔥 HEADER GRADIENTE */
 .header {
   position: fixed;
   top: 0;
@@ -382,7 +415,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 7%;
-  background: linear-gradient(135deg, #081426 0%, #0d1f3c 25%, #12335d 60%, #0f8f42 100%);
+  background: linear-gradient(90deg, #071724 0%, #0c3327 100%); /* Sincronizado con perfil */
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);

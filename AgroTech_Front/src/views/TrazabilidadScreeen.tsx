@@ -104,7 +104,7 @@ const TrazabilidadScreen = () => {
       <Header />
 
       <div className="dashboard">
-        {/* BIENVENIDA */}
+        {/* BIENVENIDA MANTENIENDO EL NOMBRE DEL USUARIO 🔥 */}
         <div className="top">
           <div>
             <h2>Bienvenido, {userName}</h2>
@@ -134,9 +134,9 @@ const TrazabilidadScreen = () => {
                 background:
                   ranchoActivo?.id_rancho === r.id_rancho
                     ? "#22c55e"
-                    : "#e5e7eb",
+                    : "#1e293b",
                 color:
-                  ranchoActivo?.id_rancho === r.id_rancho ? "#fff" : "#000",
+                  ranchoActivo?.id_rancho === r.id_rancho ? "#fff" : "#94a3b8",
               }}
             >
               {r.nombre}
@@ -193,7 +193,7 @@ const TrazabilidadScreen = () => {
             <div className="alert-item">
               <img src={ganado1} alt="vaca" />
               <div>
-                <strong>Vaca 0427</strong>
+                export <strong>Vaca 0427</strong>
                 <p>Hace 10 min</p>
               </div>
             </div>
@@ -222,7 +222,7 @@ const TrazabilidadScreen = () => {
             >
               ➕ Agregar Vaca
             </button>
-            <button className="btn-main" style={{ background: "#475569" }}>
+            <button className="btn-main" style={{ background: "#334155" }}>
               Ver Ganado
             </button>
           </div>
@@ -234,7 +234,7 @@ const TrazabilidadScreen = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>Registrar Nueva Vaca</h3>
-            <p style={{ marginBottom: "15px", color: "#64748b", fontSize: "14px" }}>
+            <p style={{ marginBottom: "15px", color: "#94a3b8", fontSize: "14px" }}>
               Ingresa el número de arete de la vaca.
             </p>
             <input

@@ -153,6 +153,21 @@ const PayPalPayment: React.FC = () => {
                       // 1. Guardamos en la base de datos ANTES de borrar el carrito
                       await registrarCompraEnBD(data.orderID); 
                       
+                      // Resguardar datos del carrito en localStorage para visualización inmediata en MisPedidos
+                      const cart = JSON.parse(localStorage.getItem("agroCart") || "[]");
+                      const productName = cart.length > 0 ? cart[0].name : "Producto Marketplace";
+                      
+                      const nuevoPedidoLocal = {
+                        id_pedido: data.orderID, // Guardamos el hash/string devuelto por PayPal
+                        producto_nombre: productName,
+                        estado: "Completado", // MODIFICADO: De "Procesando" a "Completado"
+                        fecha: new Date().toLocaleDateString('es-MX'),
+                        monto: amount // NUEVO: Añadimos el monto dinámico de la compra
+                      };
+                      
+                      const localesExistentes = JSON.parse(localStorage.getItem("agroPedidosRecientes") || "[]");
+                      localStorage.setItem("agroPedidosRecientes", JSON.stringify([nuevoPedidoLocal, ...localesExistentes]));
+
                       // 2. Borramos el carrito del LocalStorage
                       localStorage.removeItem("agroCart");
                       
