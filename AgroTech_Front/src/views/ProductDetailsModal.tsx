@@ -18,7 +18,7 @@ type Props = {
   product: Producto;
   onClose: () => void;
   addToCart: (
-    id_productos:number,
+    id_productos: number,
     name: string,
     price: string | number,
     image: string,
@@ -26,10 +26,24 @@ type Props = {
   ) => void;
 };
 
+// Misma URL del Marketplace
+const apiUrl = import.meta.env.VITE_API;
+
+// Misma función que ya funciona en Marketplace
 const getImageUrl = (img: string) => {
-  if (!img) return "https://via.placeholder.com/250?text=Sin+Imagen";
-  if (img.startsWith("http")) return img;
-  return `http://127.0.0.1:8000/products/${img}`;
+  if (!img) {
+    return "https://via.placeholder.com/250?text=Sin+Imagen";
+  }
+
+  // Si ya es una URL completa
+  if (img.startsWith("http")) {
+    return img;
+  }
+
+  // Convierte:
+  // http://127.0.0.1:8000/api/  -> http://127.0.0.1:8000/
+  // y agrega products/archivo.jpg
+  return apiUrl.replace("api/", "") + `products/${img}`;
 };
 
 const ProductDetailsModal: React.FC<Props> = ({
@@ -41,84 +55,108 @@ const ProductDetailsModal: React.FC<Props> = ({
 
   return (
     <>
+      {/* Fondo oscuro */}
       <div className="details-overlay" onClick={onClose}></div>
 
+      {/* Modal */}
       <div className="premium-modal">
+        {/* Botón cerrar */}
         <button className="close-btn" onClick={onClose}>
           ✕
         </button>
 
         <div className="premium-content">
-          {/* IMAGEN */}
+          {/* Imagen del producto */}
           <div className="image-section">
             <img
               className="main-image"
               src={getImageUrl(product.imagen)}
               alt={product.nombre}
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src =
+                  "https://via.placeholder.com/250?text=Sin+Imagen";
+              }}
             />
           </div>
 
+          {/* Información */}
           <div className="info-section">
             <h1>{product.nombre}</h1>
 
-            {/* MARCA */}
+            {/* Marca */}
             <div className="field">
               <span className="label">Marca</span>
               <p className="value">AgroTech</p>
             </div>
 
-            {/* PRECIO */}
+            {/* Precio */}
             <div className="field">
               <span className="label">Precio</span>
               <p className="price">
-                ${Number(product.precio).toFixed(2)} {product.moneda}
+                ${Number(product.precio).toFixed(2)}{" "}
+                {product.moneda || "MXN"}
               </p>
             </div>
 
-            {/* DESCRIPCIÓN */}
+            {/* Descripción */}
             <div className="field">
               <span className="label">Descripción</span>
-              <p className="value">{product.descripcion}</p>
+              <p className="value">
+                {product.descripcion || "Sin descripción disponible."}
+              </p>
             </div>
 
-            {/* STOCK */}
+            {/* Stock */}
             <div className="field">
               <span className="label">Stock disponible</span>
               <p className="value">{product.stock}</p>
             </div>
 
-            {/* FECHA */}
+            {/* Fecha */}
             <div className="field">
               <span className="label">Fecha de publicación</span>
               <p className="value">{product.fecha_publicacion}</p>
             </div>
 
-            {/* ESTADO */}
+            {/* Estado */}
             <div className="field">
               <span className="label">Estado</span>
               <p className="value">{product.estado}</p>
             </div>
 
-            {/* CANTIDAD */}
+            {/* Cantidad */}
             <div className="field">
               <span className="label">Cantidad</span>
+
               <div className="quantity-selector">
-                <button onClick={() => setQuantity(Math.max(quantity - 1, 1))}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setQuantity((prev) => Math.max(prev - 1, 1))
+                  }
+                >
                   −
                 </button>
 
                 <span>{quantity}</span>
 
-                <button onClick={() => setQuantity(quantity + 1)}>+</button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setQuantity((prev) => prev + 1)
+                  }
+                >
+                  +
+                </button>
               </div>
             </div>
 
-            {/* BOTÓN */}
+            {/* Botón agregar al carrito */}
             <button
               className="add-cart-btn"
               onClick={() => {
                 addToCart(
-                 product.id_productos,
+                  product.id_productos,
                   product.nombre,
                   product.precio,
                   product.imagen,

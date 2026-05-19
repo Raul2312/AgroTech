@@ -1,26 +1,45 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap');
 
-* {
+/* ==========================================================================
+   CONTENEDOR RAÍZ (Reemplaza los estilos globales de Body, * y :root)
+   ========================================================================== */
+.marketplace-page {
+  /* Variables encapsuladas */
+  --primary-green: #18c45c;
+  --secondary-green: #0f8f42;
+  --dark-green: #0b5d2a;
+  --primary-blue: #0d1f3c;
+  --secondary-blue: #16355f;
+  --light-bg: #f4f7f9;
+  --card-bg: rgba(255,255,255,0.92);
+  --shadow: 0 15px 35px rgba(0,0,0,0.12);
+  --premium-gradient: linear-gradient(135deg, #0d1f3c 0%, #16355f 45%, #18c45c 100%);
+  --green-gradient: linear-gradient(135deg, #18c45c 0%, #0f8f42 100%);
+
+  /* Estilos del contenedor */
+  width: 100%;
+  overflow-x: hidden;
+  background: #f4f7fb;
+  color: #1e293b;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Reset local para asegurar consistencia dentro del marketplace */
+.marketplace-page *, 
+.marketplace-page *::before, 
+.marketplace-page *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-family: 'Inter', sans-serif;
 }
 
-body {
-  background: #f4f7fb;
-  color: #1e293b;
-}
-
-.marketplace-page {
-  width: 100%;
-  overflow-x: hidden;
-}
-
-.marketplace-header {
+/* ==========================================================================
+   HEADER / NAVEGACIÓN
+   ========================================================================== */
+.marketplace-page .marketplace-header {
   backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(255,255,255,0.08);
-
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -28,39 +47,39 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 18px 40px;
-  background: linear-gradient(135deg, #081426 0%, #0d1f3c 40%, #0f8f42 100%);
+  background: linear-gradient(135deg, #081426 0%, #0d1f3c 25%, #12335d 60%, #0f8f42 100%);
   box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
 
-.logo-section {
+.marketplace-page .logo-section {
   display: flex;
   align-items: center;
   gap: 15px;
 }
 
-.logo-section img {
+.marketplace-page .logo-section img {
   width: 70px;
   height: 70px;
   object-fit: contain;
 }
 
-.logo-section h1 {
+.marketplace-page .logo-section h1 {
   color: #fff;
   font-size: 1.4rem;
   font-weight: 800;
 }
 
-.logo-section span {
+.marketplace-page .logo-section span {
   color: rgba(255,255,255,0.7);
   font-size: 0.9rem;
 }
 
-.main-nav {
+.marketplace-page .main-nav {
   display: flex;
   gap: 30px;
 }
 
-.main-nav a {
+.marketplace-page .main-nav a {
   color: #fff;
   text-decoration: none;
   font-weight: 600;
@@ -68,17 +87,17 @@ body {
   cursor: pointer;
 }
 
-.main-nav a:hover {
+.marketplace-page .main-nav a:hover {
   color: #22c55e;
 }
 
-.header-actions {
+.marketplace-page .header-actions {
   display: flex;
   align-items: center;
   gap: 15px;
 }
 
-.profile-btn {
+.marketplace-page .profile-btn {
   border: none;
   background: rgba(255,255,255,0.1);
   color: #fff;
@@ -90,7 +109,7 @@ body {
   cursor: pointer;
 }
 
-.cart-icon {
+.marketplace-page .cart-icon {
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -104,7 +123,7 @@ body {
   font-size: 1.2rem;
 }
 
-.cart-icon span {
+.marketplace-page .cart-icon span {
   position: absolute;
   top: -5px;
   right: -5px;
@@ -120,43 +139,46 @@ body {
   justify-content: center;
 }
 
-.menu-toggle {
+.marketplace-page .menu-toggle {
   display: none;
   color: #fff;
   font-size: 1.5rem;
   cursor: pointer;
 }
 
-.hero {
+/* ==========================================================================
+   HERO SECTION & SECCIONES PRINCIPALES
+   ========================================================================== */
+.marketplace-page .hero {
   overflow: hidden;
-
   position: relative;
   min-height: 90vh;
-  background: url('/src/assets/img/fondo-marketplace.jpg') center/cover no-repeat;
+  background: linear-gradient(rgba(7, 20, 40, 0.72), rgba(7, 20, 40, 0.78)), url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1600&q=80');
+  background-size: cover;
+  background-position: center;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 80px 30px;
 }
 
-.hero-overlay {
+.marketplace-page .hero-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, rgba(2,8,20,0.88), rgba(5,15,30,0.72), rgba(8,70,40,0.45));
 }
 
-.hero-content {
+.marketplace-page .hero-content {
   position: relative;
   z-index: 2;
   max-width: 1100px;
   text-align: center;
 }
 
-.hero-badge {
+.marketplace-page .hero-badge {
   border: 1px solid rgba(255,255,255,0.15);
   backdrop-filter: blur(18px);
   box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -167,44 +189,45 @@ body {
   margin-bottom: 25px;
 }
 
-.hero-content h1 {
+.marketplace-page .hero-content h1 {
   text-shadow: 0 10px 30px rgba(0,0,0,0.35);
   letter-spacing: -2px;
-
   font-size: 4rem;
-  color: #fff;
   font-weight: 900;
   line-height: 1.1;
   margin-bottom: 20px;
+  background: linear-gradient(90deg, #ffffff, #d8ffe9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.hero-content p {
+.marketplace-page .hero-content p {
   color: rgba(255,255,255,0.85);
   font-size: 1.1rem;
   max-width: 800px;
   margin: 0 auto 35px;
 }
 
-.search-wrapper {
-  border: 1px solid rgba(255,255,255,0.15);
-
-  background: #fff;
+/* buscador */
+.marketplace-page .search-wrapper {
+  background: rgba(255,255,255,0.96);
+  border: 2px solid rgba(24,196,92,0.15);
   border-radius: 999px;
   display: flex;
   align-items: center;
   overflow: hidden;
   max-width: 850px;
   margin: auto;
-  box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
 }
 
-.search-icon {
+.marketplace-page .search-icon {
   padding: 0 20px;
   color: #64748b;
   font-size: 1.2rem;
 }
 
-.search-input {
+.marketplace-page .search-input {
   flex: 1;
   border: none;
   outline: none;
@@ -212,16 +235,23 @@ body {
   font-size: 1rem;
 }
 
-.search-button {
+.marketplace-page .search-button {
   border: none;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
+  background: var(--green-gradient);
   color: #fff;
   padding: 22px 35px;
   font-weight: bold;
   cursor: pointer;
+  box-shadow: 0 10px 20px rgba(24,196,92,0.25);
 }
 
-.hero-features {
+.marketplace-page .search-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 25px rgba(24,196,92,0.35);
+}
+
+/* Features & Benefits */
+.marketplace-page .hero-features {
   display: flex;
   justify-content: center;
   gap: 20px;
@@ -229,23 +259,21 @@ body {
   flex-wrap: wrap;
 }
 
-.hero-feature-card,
-.benefit-card {
-  border: 1px solid rgba(15,143,66,0.08);
+.marketplace-page .hero-feature-card,
+.marketplace-page .benefit-card {
+  border: 1px solid rgba(255,255,255,0.15);
   transition: 0.35s ease;
-
   background: rgba(255,255,255,0.1);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.15);
   color: #fff;
-  border-radius: 20px;
+  border-radius: 24px;
   padding: 18px 22px;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.benefits-section {
+.marketplace-page .benefits-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
@@ -255,47 +283,51 @@ body {
   z-index: 10;
 }
 
-.benefit-card {
+.marketplace-page .benefits-section .benefit-card {
   background: #fff;
   color: #1e293b;
   box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+  border: 1px solid rgba(24, 196, 92, 0.08);
 }
 
-.benefit-card svg {
+.marketplace-page .benefit-card svg {
   font-size: 2rem;
   color: #22c55e;
 }
 
-.categories,
-.products {
+/* ==========================================================================
+   CATEGORÍAS Y PRODUCTOS
+   ========================================================================== */
+.marketplace-page .categories,
+.marketplace-page .products {
   padding: 80px 40px;
 }
 
-.section-header {
+.marketplace-page .section-header {
   text-align: center;
   margin-bottom: 40px;
 }
 
-.section-header h2 {
+.marketplace-page .section-header h2 {
   font-size: 2.8rem;
   color: #0f172a;
   margin-bottom: 10px;
 }
 
-.section-header p {
+.marketplace-page .section-header p {
   color: #64748b;
 }
 
-.category-grid {
+.marketplace-page .category-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
   justify-content: center;
 }
 
-.category-card {
+.marketplace-page .category-card {
   padding: 14px 24px;
-  border-radius: 999px;
+  border-radius: 24px;
   background: #fff;
   border: 1px solid #e2e8f0;
   cursor: pointer;
@@ -303,53 +335,57 @@ body {
   transition: 0.3s;
 }
 
-.category-card:hover,
-.category-card.active {
-  background: #22c55e;
-  color: #fff;
+.marketplace-page .category-card:hover,
+.marketplace-page .category-card.active {
+  background: var(--premium-gradient);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 15px 25px rgba(13,31,60,0.18);
 }
 
-.product-grid {
+/* Grid de Productos y Tarjetas */
+.marketplace-page .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 30px;
 }
 
-.product-card {
+.marketplace-page .product-card {
   position: relative;
-  border: 1px solid rgba(15,143,66,0.08);
-
-  background: #fff;
-  border-radius: 28px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 35px;
+  padding: 12px;
+  border: 1px solid rgba(24, 196, 92, 0.1);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.05);
   overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
   transition: 0.35s;
   cursor: pointer;
 }
 
-.product-card:hover {
-  box-shadow: 0 30px 60px rgba(15,31,60,0.18);
-
-  transform: translateY(-12px) scale(1.015);
+.marketplace-page .product-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 45px rgba(13,31,60,0.18);
 }
 
-.product-image-wrapper {
+.marketplace-page .product-image-wrapper {
   position: relative;
+  border-radius: 25px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #eefaf2, #f5f9ff);
 }
 
-.product-image-wrapper img {
+.marketplace-page .product-image-wrapper img {
   transition: transform 0.5s ease;
-
   width: 100%;
   height: 260px;
   object-fit: cover;
 }
 
-.product-badge {
+.marketplace-page .product-badge {
   position: absolute;
   top: 15px;
   left: 15px;
-  background: #22c55e;
+  background: var(--green-gradient);
   color: #fff;
   padding: 8px 14px;
   border-radius: 999px;
@@ -357,24 +393,23 @@ body {
   font-weight: bold;
 }
 
-.product-info {
+.marketplace-page .product-info {
   position: relative;
-
   padding: 24px;
 }
 
-.brand {
+.marketplace-page .brand {
   color: #64748b;
   margin-bottom: 10px;
 }
 
-.product-info h3 {
+.marketplace-page .product-info h3 {
   font-size: 1.5rem;
   margin-bottom: 12px;
 }
 
-.rating,
-.product-rating {
+.marketplace-page .rating,
+.marketplace-page .product-rating {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -382,59 +417,59 @@ body {
   margin-bottom: 15px;
 }
 
-.product-description {
+.marketplace-page .product-description {
   color: #64748b;
   margin-bottom: 20px;
   min-height: 50px;
 }
 
-.price-row {
+.marketplace-page .price-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 15px;
 }
 
-.price {
+.marketplace-page .price {
   text-shadow: 0 5px 20px rgba(34,197,94,0.18);
-
   font-size: 2rem;
   font-weight: 900;
   color: #16a34a;
 }
 
-.stock-badge {
+.marketplace-page .stock-badge {
   padding: 8px 12px;
   border-radius: 999px;
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--green-gradient);
+  color: white;
   font-size: 0.8rem;
   font-weight: bold;
 }
 
-.shipping {
+.marketplace-page .shipping {
   color: #16a34a;
   font-weight: 700;
   margin-bottom: 20px;
 }
 
-.product-actions {
+.marketplace-page .product-actions {
   display: flex;
   gap: 12px;
 }
 
-.details-btn,
-.buy-btn,
-.add-cart-btn,
-.close-btn:hover {
+/* Botones de acción */
+.marketplace-page .details-btn,
+.marketplace-page .buy-btn,
+.marketplace-page .add-cart-btn,
+.marketplace-page .close-btn:hover {
   transform: scale(1.08);
 }
 
-.add-cart-btn,
-.checkout-btn,
-.cart-footer button,
-.coupon-section button,
-.ad-content button {
+.marketplace-page .add-cart-btn,
+.marketplace-page .checkout-btn,
+.marketplace-page .cart-footer button,
+.marketplace-page .coupon-section button,
+.marketplace-page .ad-content button {
   border: none;
   border-radius: 14px;
   cursor: pointer;
@@ -442,36 +477,59 @@ body {
   transition: 0.3s;
 }
 
-.details-btn {
+.marketplace-page .details-btn {
   border: 1px solid #dbe5f0;
-
   flex: 1;
   background: #f1f5f9;
   padding: 14px;
 }
 
-.buy-btn,
-.add-cart-btn,
-.checkout-btn,
-.ad-content button {
+.marketplace-page .buy-btn,
+.marketplace-page .add-cart-btn,
+.marketplace-page .checkout-btn,
+.marketplace-page .ad-content button {
   position: relative;
   overflow: hidden;
-
   flex: 1;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
+  background: var(--green-gradient);
   color: #fff;
   padding: 14px;
+  box-shadow: 0 10px 20px rgba(24,196,92,0.25);
 }
 
-.ad-section {
+.marketplace-page .buy-btn:hover,
+.marketplace-page .add-cart-btn:hover,
+.marketplace-page .checkout-btn:hover,
+.marketplace-page .ad-content button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 25px rgba(24,196,92,0.35);
+}
+
+/* Componentes especiales Pill */
+.marketplace-page .pill {
+  border-radius: 999px !important;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.marketplace-page .pill:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* ==========================================================================
+   PUBLICIDAD & PIE DE PÁGINA
+   ========================================================================== */
+.marketplace-page .ad-section {
   padding: 80px 40px;
 }
 
-.ad-content {
+.marketplace-page .ad-content {
   position: relative;
   overflow: hidden;
   box-shadow: 0 30px 80px rgba(15,23,42,0.35);
-
   background: linear-gradient(135deg, #0f172a, #1e3a5f);
   color: #fff;
   padding: 60px;
@@ -479,10 +537,9 @@ body {
   text-align: center;
 }
 
-.footer {
+.marketplace-page .footer {
   border-top: 1px solid rgba(255,255,255,0.08);
-
-  background: linear-gradient(135deg, #081426, #0d1f3c);
+  background: linear-gradient(90deg, #0d1f3c 0%, #16355f 55%, #0f8f42 100%);
   color: #fff;
   padding: 40px;
   display: flex;
@@ -490,81 +547,198 @@ body {
   flex-wrap: wrap;
 }
 
-.cart-overlay,
-.details-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(6px);
-  z-index: 999;
-
+/* ==========================================================================
+   SIDEBAR CARRITO & OVERLAYS
+   ========================================================================== */
+.marketplace-page .cart-overlay,
+.marketplace-page .details-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
   z-index: 999;
 }
 
-.cart {
+.marketplace-page .cart,
+.marketplace-page .cart-sidebar {
   position: fixed;
   top: 0;
   right: -500px;
-  width: 450px;
+  width: 420px;
   height: 100vh;
-  background: #fff;
-  z-index: 1000;
-  transition: 0.4s;
+  z-index: 2000;
+  transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
+  background: linear-gradient(180deg, #ffffff 0%, #f4f7f9 100%);
+  box-shadow: -10px 0 50px rgba(0,0,0,0.15);
 }
 
-.cart.active {
+.marketplace-page .cart.active,
+.marketplace-page .cart-sidebar.active {
   right: 0;
 }
 
-.cart-header,
-.cart-footer {
+.marketplace-page .cart-header {
   padding: 25px;
   border-bottom: 1px solid #e2e8f0;
+  background: var(--premium-gradient);
+  color: white;
 }
 
-.cart-body {
+.marketplace-page .cart-body {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
 }
 
-.cart-item {
+/* Items del carrito antiguos y modernos normalizados */
+.marketplace-page .cart-item,
+.marketplace-page .cart-item-modern {
   display: flex;
   gap: 15px;
-  margin-bottom: 20px;
+  padding: 20px;
+  border-bottom: 1px solid #f1f5f9;
+  align-items: center;
 }
 
-.cart-item img {
-  width: 90px;
-  height: 90px;
+.marketplace-page .cart-item img,
+.marketplace-page .cart-item-modern img {
+  width: 75px;
+  height: 75px;
+  border-radius: 18px;
   object-fit: cover;
-  border-radius: 14px;
 }
 
-.quantity-controls,
-.quantity-selector {
+.marketplace-page .quantity-controls,
+.marketplace-page .quantity-selector,
+.marketplace-page .qty-pill {
   display: flex;
+  background: #f1f5f9;
+  border-radius: 999px;
+  padding: 4px 12px;
   align-items: center;
   gap: 10px;
   margin-top: 10px;
 }
 
-.quantity-controls button,
-.quantity-selector button {
-  width: 35px;
-  height: 35px;
+.marketplace-page .quantity-controls button,
+.marketplace-page .quantity-selector button,
+.marketplace-page .qty-pill button {
+  background: none;
   border: none;
-  border-radius: 10px;
-  background: #e2e8f0;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #16a34a;
+}
+
+.marketplace-page .trash-btn {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  padding: 8px;
+  border-radius: 12px;
   cursor: pointer;
 }
 
-.premium-modal {
+/* Footer del Carrito y resumen de compra */
+.marketplace-page .cart-footer,
+.marketplace-page .cart-footer-modern {
+  padding: 25px;
+  background: #ffffff;
+  border-top: 1px solid #f1f5f9;
+  border-radius: 30px 30px 0 0;
+  box-shadow: 0 -10px 25px rgba(0,0,0,0.03);
+}
+
+.marketplace-page .summary-details {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid #edf2f7;
+}
+
+.marketplace-page .summary-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #64748b;
+}
+
+.marketplace-page .summary-line span:last-child {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.marketplace-page .summary-line.total {
+  margin-top: 8px;
+  padding-top: 15px;
+  border-top: 2px dashed #cbd5e1;
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #0d1f3c;
+}
+
+.marketplace-page .summary-line.total span:last-child {
+  color: #16a34a;
+  text-shadow: 0 4px 10px rgba(22, 163, 74, 0.15);
+}
+
+.marketplace-page .coupon-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.marketplace-page .coupon-row input {
+  flex: 1;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  outline: none;
+  font-size: 0.9rem;
+  transition: 0.3s;
+}
+
+.marketplace-page .coupon-row input:focus {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.marketplace-page .coupon-row button {
+  padding: 10px 20px;
+  background: #1e293b;
+  color: white;
+  font-size: 0.85rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+}
+
+.marketplace-page .checkout-btn.pill {
+  width: 100%;
+  padding: 20px !important;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 20px;
+  background: var(--green-gradient);
+  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.25);
+}
+
+.marketplace-page .checkout-btn.pill:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(22, 163, 74, 0.35);
+}
+
+/* ==========================================================================
+   MODAL PREMIUM DETALLES
+   ========================================================================== */
+.marketplace-page .premium-modal {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -572,71 +746,66 @@ body {
   width: 92%;
   max-width: 1180px;
   max-height: 92vh;
-  background: #fff;
+  background: rgba(255,255,255,0.98);
   border-radius: 30px;
   z-index: 1001;
-  overflow: hidden;
   overflow-y: auto;
-  box-shadow: 0 40px 100px rgba(0,0,0,0.35);
-  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.28);
+  border: 1px solid rgba(255,255,255,0.5);
 }
 
-.premium-content {
+.marketplace-page .premium-content {
   position: relative;
   z-index: 2;
-
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
 
-.image-section,
-.info-section {
+.marketplace-page .image-section,
+.marketplace-page .info-section {
   padding: 40px;
 }
 
-.image-wrapper {
-  box-shadow: inset 0 0 0 1px rgba(15,143,66,0.08);
-
-  background: #f8fafc;
+.marketplace-page .image-wrapper {
+  background: linear-gradient(135deg, #eefaf2 0%, #e7f0ff 100%);
   border-radius: 24px;
   overflow: hidden;
   position: relative;
 }
 
-.main-image {
+.marketplace-page .main-image {
   width: 100%;
   height: 450px;
   object-fit: cover;
 }
 
-.image-features {
+.marketplace-page .image-features {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 15px;
   margin-top: 20px;
 }
 
-.feature-box,
-.field-card,
-.detail-box {
-  border: 1px solid rgba(15,143,66,0.08);
-  transition: 0.3s ease;
-
+.marketplace-page .feature-box,
+.marketplace-page .field-card,
+.marketplace-page .detail-box {
   background: #f8fafc;
-  border-radius: 18px;
+  border-radius: 24px;
   padding: 18px;
+  border: 1px solid rgba(24, 196, 92, 0.08);
+  transition: 0.3s ease;
 }
 
-.details-grid {
+.marketplace-page .details-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 15px;
   margin-top: 20px;
 }
 
-.brand-tag,
-.stock-status,
-.product-state {
+.marketplace-page .brand-tag,
+.marketplace-page .stock-status,
+.marketplace-page .product-state {
   display: inline-block;
   padding: 8px 14px;
   border-radius: 999px;
@@ -644,24 +813,20 @@ body {
   font-weight: bold;
 }
 
-.brand-tag {
-  background: #dcfce7;
-  color: #15803d;
+.marketplace-page .brand-tag,
+.marketplace-page .stock-status.in-stock,
+.marketplace-page .product-state.active {
+  background: var(--green-gradient);
+  color: white;
 }
 
-.stock-status.in-stock,
-.product-state.active {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.stock-status.out-stock,
-.product-state.inactive {
+.marketplace-page .stock-status.out-stock,
+.marketplace-page .product-state.inactive {
   background: #fee2e2;
   color: #dc2626;
 }
 
-.close-btn {
+.marketplace-page .close-btn {
   position: absolute;
   top: 18px;
   right: 18px;
@@ -677,23 +842,37 @@ body {
   transition: 0.3s ease;
 }
 
+/* ==========================================================================
+   MEDIA QUERIES (RESPONSIVE SEGURO)
+   ========================================================================== */
+@media (max-width: 992px) {
+  .marketplace-page .hero-content h1 {
+    font-size: 2.4rem;
+    line-height: 1.2;
+  }
+
+  .marketplace-page .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .marketplace-page .premium-content {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 900px) {
-  .premium-modal {
+  .marketplace-page .premium-modal {
     width: 95%;
     max-height: 90vh;
     border-radius: 24px;
   }
 
-  .image-section,
-  .info-section {
+  .marketplace-page .image-section,
+  .marketplace-page .info-section {
     padding: 25px;
   }
 
-  .premium-content {
-    grid-template-columns: 1fr;
-  }
-
-  .main-nav {
+  .marketplace-page .main-nav {
     position: absolute;
     top: 90px;
     right: 20px;
@@ -704,405 +883,57 @@ body {
     display: none;
   }
 
-  .main-nav.active {
+  .marketplace-page .main-nav.active {
     display: flex;
   }
 
-  .menu-toggle {
+  .marketplace-page .menu-toggle {
     display: block;
   }
 
-  .hero-content h1 {
-    font-size: 2.5rem;
-  }
-
-  .search-wrapper {
+  .marketplace-page .search-wrapper {
     flex-direction: column;
     border-radius: 24px;
   }
 
-  .search-button {
+  .marketplace-page .search-button {
     width: 100%;
   }
-
-  .cart {
-    width: 100%;
-  }
-}
-
-/* PREMIUM AGROTECH COLORS */
-:root {
---primary-green: #18c45c;
---secondary-green: #0f8f42;
---dark-green: #0b5d2a;
---primary-blue: #0d1f3c;
---secondary-blue: #16355f;
---light-bg: #f4f7f9;
---card-bg: rgba(255,255,255,0.92);
---shadow: 0 15px 35px rgba(0,0,0,0.12);
---premium-gradient: linear-gradient(135deg, #0d1f3c 0%, #16355f 45%, #18c45c 100%);
---green-gradient: linear-gradient(135deg, #18c45c 0%, #0f8f42 100%);
-}
-
-.marketplace-header {
-background: linear-gradient(135deg, #081426 0%, #0d1f3c 25%, #12335d 60%, #0f8f42 100%);
-box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-backdrop-filter: blur(18px);
-}
-
-.hero {
-background:
-linear-gradient(rgba(7, 20, 40, 0.72), rgba(7, 20, 40, 0.78)),
-url('[https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1600&q=80](https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1600&q=80)');
-background-size: cover;
-background-position: center;
-position: relative;
-}
-
-.hero-content h1 {
-background: linear-gradient(90deg, #ffffff, #d8ffe9);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-}
-
-.search-wrapper {
-background: rgba(255,255,255,0.96);
-border: 2px solid rgba(24,196,92,0.15);
-box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-}
-
-.search-button,
-.buy-btn,
-.add-cart-btn,
-.checkout-btn,
-.ad-content button {
-background: var(--green-gradient);
-box-shadow: 0 10px 20px rgba(24,196,92,0.25);
-}
-
-.search-button:hover,
-.buy-btn:hover,
-.add-cart-btn:hover,
-.checkout-btn:hover,
-.ad-content button:hover {
-transform: translateY(-2px);
-box-shadow: 0 15px 25px rgba(24,196,92,0.35);
-}
-
-.product-card {
-background: rgba(255,255,255,0.95);
-border: 1px solid rgba(24,196,92,0.08);
-box-shadow: 0 15px 35px rgba(0,0,0,0.08);
-}
-
-.product-card:hover {
-transform: translateY(-10px);
-box-shadow: 0 25px 45px rgba(13,31,60,0.18);
-}
-
-.product-image-wrapper {
-background: linear-gradient(135deg, #eefaf2, #f5f9ff);
-}
-
-.product-badge,
-.stock-badge,
-.brand-tag,
-.stock-status.in-stock,
-.product-state.active {
-background: var(--green-gradient);
-color: white;
-}
-
-.category-card.active,
-.category-card:hover {
-background: var(--premium-gradient);
-color: white;
-border-color: transparent;
-box-shadow: 0 15px 25px rgba(13,31,60,0.18);
-}
-
-.benefit-card,
-.category-card,
-.product-card,
-.detail-box,
-.field-card,
-.feature-box {
-border-radius: 24px;
-}
-
-.cart {
-background: linear-gradient(180deg, #ffffff 0%, #f4f7f9 100%);
-box-shadow: -10px 0 40px rgba(0,0,0,0.18);
-}
-
-.cart-header {
-background: var(--premium-gradient);
-color: white;
-}
-
-.premium-modal {
-background: rgba(255,255,255,0.98);
-border: 1px solid rgba(255,255,255,0.5);
-box-shadow: 0 30px 80px rgba(0,0,0,0.28);
-}
-
-.image-wrapper {
-background: linear-gradient(135deg, #eefaf2 0%, #e7f0ff 100%);
-}
-
-.footer {
-background: linear-gradient(90deg, #0d1f3c 0%, #16355f 55%, #0f8f42 100%);
-}
-
-@media (max-width: 992px) {
-.hero-content h1 {
-font-size: 2.4rem;
-line-height: 1.2;
-}
-
-.product-grid {
-grid-template-columns: repeat(2, 1fr);
-}
-
-.premium-content {
-grid-template-columns: 1fr;
-}
 }
 
 @media (max-width: 768px) {
-.marketplace-header {
-flex-wrap: wrap;
-padding: 16px;
-}
+  .marketplace-page .marketplace-header {
+    flex-wrap: wrap;
+    padding: 16px;
+  }
 
-.main-nav {
-width: 100%;
-flex-direction: column;
-background: #102542;
-border-radius: 18px;
-margin-top: 12px;
-padding: 15px;
-}
+  .marketplace-page .main-nav {
+    width: 100%;
+    flex-direction: column;
+    background: #102542;
+    border-radius: 18px;
+    margin-top: 12px;
+    padding: 15px;
+  }
 
-.hero-content h1 {
-font-size: 2rem;
-}
+  .marketplace-page .hero-content h1 {
+    font-size: 2rem;
+  }
 
-.hero-features,
-.benefits-section,
-.category-grid,
-.product-grid {
-grid-template-columns: 1fr;
-}
+  .marketplace-page .hero-features,
+  .marketplace-page .benefits-section,
+  .marketplace-page .category-grid,
+  .marketplace-page .product-grid {
+    grid-template-columns: 1fr;
+  }
 
-.cart {
-width: 100%;
-}
+  .marketplace-page .cart,
+  .marketplace-page .cart-sidebar {
+    width: 100%;
+  }
 
-.premium-modal {
-width: 95%;
-max-height: 92vh;
-}
-}
-/* BOTONES REDONDEADOS (PILL) */
-.pill {
-  border-radius: 999px !important;
-  transition: transform 0.2s, box-shadow 0.2s;
-  border: none;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.pill:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-}
-
-/* TARJETAS MEJORADAS */
-.product-card {
-  border-radius: 35px !important; /* Más redondeadas */
-  padding: 12px;
-  background: #ffffff;
-  border: 1px solid rgba(24, 196, 92, 0.1);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.05) !important;
-}
-
-.product-image-wrapper {
-  border-radius: 25px !important;
-  overflow: hidden;
-}
-
-/* DISEÑO DEL CARRITO SIDEBAR */
-.cart-sidebar {
-  position: fixed;
-  top: 0;
-  right: -500px;
-  width: 420px;
-  height: 100vh;
-  background: #fff;
-  z-index: 2000;
-  transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  box-shadow: -10px 0 50px rgba(0,0,0,0.15);
-}
-
-.cart-sidebar.active {
-  right: 0;
-}
-
-.cart-item-modern {
-  display: flex;
-  gap: 15px;
-  padding: 20px;
-  border-bottom: 1px solid #f1f5f9;
-  align-items: center;
-}
-
-.cart-item-modern img {
-  width: 75px;
-  height: 75px;
-  border-radius: 18px;
-  object-fit: cover;
-}
-
-.qty-pill {
-  display: flex;
-  background: #f1f5f9;
-  border-radius: 999px;
-  padding: 4px 12px;
-  align-items: center;
-  gap: 10px;
-}
-
-.qty-pill button {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  color: #16a34a;
-}
-
-.trash-btn {
-  background: #fee2e2;
-  color: #dc2626;
-  border: none;
-  padding: 8px;
-  border-radius: 12px;
-  cursor: pointer;
-}
-
-.cart-footer-modern {
-  padding: 30px;
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-}
-
-.summary-line.total {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #0d1f3c;
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 2px dashed #cbd5e1;
-}
-
-.checkout-btn.pill {
-  width: 100%;
-  padding: 18px !important;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  color: white;
-  margin-top: 20px;
-}
-
-/* DISEÑO DEL RESUMEN DEL CARRITO MEJORADO */
-.cart-footer-modern {
-  padding: 25px;
-  background: #ffffff;
-  border-top: 1px solid #f1f5f9;
-  border-radius: 30px 30px 0 0;
-  box-shadow: 0 -10px 25px rgba(0,0,0,0.03);
-}
-
-.summary-details {
-  background: #f8fafc;
-  padding: 20px;
-  border-radius: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  border: 1px solid #edf2f7;
-}
-
-.summary-line {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.95rem;
-  color: #64748b; /* Color gris suave para subtotal/envío */
-}
-
-.summary-line span:last-child {
-  font-weight: 700;
-  color: #1e293b;
-}
-
-.summary-line.total {
-  margin-top: 8px;
-  padding-top: 15px;
-  border-top: 2px dashed #cbd5e1;
-  font-size: 1.3rem;
-  font-weight: 900;
-  color: #0d1f3c; /* Azul oscuro premium */
-}
-
-.summary-line.total span:last-child {
-  color: #16a34a; /* Verde para el precio total */
-  text-shadow: 0 4px 10px rgba(22, 163, 74, 0.15);
-}
-
-/* Mejora al input de cupón para que combine con el diseño */
-.coupon-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.coupon-row input {
-  flex: 1;
-  padding: 12px 18px;
-  border-radius: 999px;
-  border: 1px solid #e2e8f0;
-  outline: none;
-  font-size: 0.9rem;
-  transition: 0.3s;
-}
-
-.coupon-row input:focus {
-  border-color: #22c55e;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
-}
-
-.coupon-row button {
-  padding: 10px 20px;
-  background: #1e293b;
-  color: white;
-  font-size: 0.85rem;
-}
-
-/* Botón de finalizar compra con efecto de elevación */
-.checkout-btn.pill {
-  width: 100%;
-  padding: 20px !important;
-  font-size: 1.1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 20px;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.25);
-}
-
-.checkout-btn.pill:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 30px rgba(22, 163, 74, 0.35);
+  .marketplace-page .premium-modal {
+    width: 95%;
+    max-height: 92vh;
+  }
 }
