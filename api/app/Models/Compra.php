@@ -7,13 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Compra extends Model
 {
     protected $table = 'compras';
-    
-    // Indicamos que la llave primaria es el ID de PayPal
-    protected $primaryKey = 'id_transaccion'; 
-
-    // Desactivamos el incremento automático porque es un string
-    public $incrementing = false; 
-    protected $keyType = 'string'; 
+    protected $primaryKey = 'id_compra';
 
     protected $fillable = [
         'id_transaccion',
@@ -24,7 +18,11 @@ class Compra extends Model
         'iva'
     ];
 
-    public function producto() {
-        return $this->belongsTo(Producto::class, 'id_producto');
+    // Esta es la parte clave para que jale el nombre del producto
+    public function producto()
+    {
+        // El 2do parámetro es la llave foránea en esta tabla (compras)
+        // El 3er parámetro es la llave primaria en la tabla destino (productos)
+        return $this->belongsTo(Producto::class, 'id_producto', 'id_productos');
     }
 }

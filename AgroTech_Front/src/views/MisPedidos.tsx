@@ -4,13 +4,17 @@ import axios from "axios";
 import "../css/clientDashboard.css";
 import logo from "../assets/img/agro.png";
 
-// Interface para el historial (Base de Datos / Local temporal)
+// Interface adaptada a tu migración de Laravel
 interface Pedido {
-  id_pedido: number | string; // Modificado para soportar temporalmente el string hash de PayPal
-  producto_nombre: string;
-  estado: "Enviado" | "Procesando" | "Entregado" | "Completado"; 
-  fecha: string;
-  monto?: string | number; // NUEVO: Campo opcional para almacenar el monto de la compra
+  id_compra: number;
+  id_transaccion: string | number;
+  id_producto: number;
+  total: string | number;
+  created_at?: string;
+  producto?: {
+    nombre?: string;
+  };
+  estado?: string;
 }
 
 // Interface para el carrito (LocalStorage - Sincronizado con Marketplace)
@@ -28,8 +32,9 @@ const MisPedidos = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [userId, setUserId] = useState<any>(null);
 
-  // Función para obtener la URL de la imagen (Igual que en Marketplace)
+  // Función para obtener la URL de la imagen
   const getImageUrl = (img: string) => {
     if (!img) return "https://via.placeholder.com/150?text=Sin+Imagen";
     if (img.startsWith("http")) return img;
@@ -37,30 +42,39 @@ const MisPedidos = () => {
   };
 
   useEffect(() => {
-    const fetchHistorial = async () => {
-      try {
-        const res = await axios.get(`${apiUrl}mis-pedidos`);
-        const apiPedidos = res.data;
-        
-        // Recuperar pedidos completados localmente que aún no se reflejan o para asegurar inmediatez
-        const pedidosLocales = JSON.parse(localStorage.getItem("agroPedidosRecientes") || "[]");
-        
-        // Filtramos duplicados por si la API ya registró el pedido en una recarga posterior
-        const filtradosLocales = pedidosLocales.filter((lp: Pedido) => 
-          !apiPedidos.some((ap: Pedido) => String(ap.id_pedido) === String(lp.id_pedido))
-        );
+    // 1. Extraer la sesión del usuario para obtener el ID y el Token
+    const sessionStr = localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession");
+    let currentUserId = null;
+    let token = "";
 
-        // Combinamos poniendo los recientes locales primero
-        setPedidos([...filtradosLocales, ...apiPedidos]);
+    if (sessionStr) {
+      try {
+        const userData = JSON.parse(sessionStr);
+        currentUserId = userData?.user?.id_usuario || userData?.user?.id || userData?.id_usuario;
+        token = userData?.token || "";
+        setUserId(currentUserId);
+      } catch (error) {
+        console.error("Error leyendo sesión:", error);
+      }
+    }
+
+    const fetchHistorial = async () => {
+      if (!currentUserId) return; // Si no hay usuario, cancelamos la petición
+
+      try {
+        // 2. Mandamos la petición con el token de autorización y el ID del usuario
+        const config = {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        };
+        
+        const res = await axios.get(`${apiUrl}compras?id_usuario=${currentUserId}`, config);
+        setPedidos(res.data);
       } catch (err) {
-        console.error("Error cargando historial:", err);
-        // Si falla la API, mostramos al menos los locales recientes para no dejar en blanco
-        const pedidosLocales = JSON.parse(localStorage.getItem("agroPedidosRecientes") || "[]");
-        setPedidos(pedidosLocales);
+        console.error("Error cargando historial desde la BD:", err);
       }
     };
 
-    // CORRECCIÓN: Leer la clave "agroCart" que es la que usa el Marketplace
+    // Leer el carrito del localStorage
     const savedCart = JSON.parse(localStorage.getItem("agroCart") || "[]");
     setCartItems(savedCart);
     
@@ -81,7 +95,7 @@ const MisPedidos = () => {
     localStorage.setItem("agroCart", JSON.stringify(updatedCart));
   };
 
-  // Cálculos dinámicos basados en agroCart
+  // Cálculos dinámicos basados en el carrito
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const envio = subtotal > 300 ? 0 : subtotal === 0 ? 0 : 150;
   const total = subtotal + envio;
@@ -96,13 +110,9 @@ const MisPedidos = () => {
         <ul className="menu">
           <li><Link to="/indexscreen">🏠 {!collapsed && "Inicio"}</Link></li>
           <li><Link to="/areacliente">🏠 {!collapsed && "Dashboard"}</Link></li>
-          
           <li className="active"><Link to="/mis-pedidos">📦 {!collapsed && "Mis pedidos"}</Link></li>
-          <li>
-              <Link to="/mis-productos">📦 {!collapsed && "Publicar Productos"}</Link>
-              </li>
+          <li><Link to="/mis-productos">📦 {!collapsed && "Publicar Productos"}</Link></li>
           <li><Link to="/marketplace">🛒 {!collapsed && "Marketplace"}</Link></li>
-          
           <li><Link to="/perfil">👤 {!collapsed && "Mi perfil"}</Link></li>
           <li><Link to="/rancho">👤 {!collapsed && "Rancho"}</Link></li>
           <li><Link to="/trazabilidad">👤 {!collapsed && "Trazabilidad"}</Link></li>
@@ -145,13 +155,13 @@ const MisPedidos = () => {
         </section>
 
         <section className="grid">
-          {/* TABLA DE HISTORIAL */}
+          {/* TABLA DE HISTORIAL TOTALMENTE CONECTADA A LA BD */}
           <div className="orders">
             <h3>Historial de Compras</h3>
             <table>
               <thead>
                 <tr>
-                  <th>ID</th>
+                  <th>ID Transacción</th>
                   <th>Producto</th>
                   <th>Monto</th>
                   <th>Estado</th>
@@ -160,19 +170,21 @@ const MisPedidos = () => {
               </thead>
               <tbody>
                 {pedidos.length > 0 ? pedidos.map((p) => (
-                  <tr key={p.id_pedido}>
-                    <td>{typeof p.id_pedido === 'number' ? `#${p.id_pedido}` : p.id_pedido}</td>
-                    <td>{p.producto_nombre}</td>
-                    <td>{p.monto ? `$${p.monto} MXN` : "—"}</td>
+                  <tr key={p.id_compra}>
+                    <td style={{ fontFamily: 'monospace', fontSize: '12px', color: '#A5D6A7' }}>
+                      {p.id_transaccion}
+                    </td>
+                    <td>{p.producto?.nombre || `Producto ID: ${p.id_producto}`}</td>
+                    <td>${p.total} MXN</td>
                     <td>
-                      <span className={`badge ${p.estado === "Enviado" ? "shipped" : p.estado === "Procesando" ? "pending" : "delivered"}`}>
-                        {p.estado}
+                      <span className="badge delivered">
+                        {p.estado || "Completado"}
                       </span>
                     </td>
-                    <td>{p.fecha}</td>
+                    <td>{p.created_at ? p.created_at.substring(0, 10) : "—"}</td>
                   </tr>
                 )) : (
-                  <tr><td colSpan={5} style={{textAlign: 'center'}}>No tienes pedidos anteriores.</td></tr>
+                  <tr><td colSpan={5} style={{textAlign: 'center', padding: '20px', color: '#888'}}>No tienes pedidos anteriores en tu cuenta.</td></tr>
                 )}
               </tbody>
             </table>
@@ -192,7 +204,7 @@ const MisPedidos = () => {
                         <p>${item.price.toFixed(2)} x {item.quantity}</p>
                         <button 
                           onClick={() => removeItem(item.name)}
-                          style={{ background: '#e53935', padding: '4px 8px', fontSize: '11px', marginTop: '5px' }}
+                          style={{ background: '#e53935', padding: '4px 8px', fontSize: '11px', marginTop: '5px', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                         >
                           Quitar
                         </button>

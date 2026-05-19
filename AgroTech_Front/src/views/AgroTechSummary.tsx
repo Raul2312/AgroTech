@@ -5,6 +5,7 @@ import '../css/AgroTechSummary.css';
 
 // Definimos el tipo basado en tu Marketplace
 type CartItem = {
+  id_productos:number,
   name: string;
   price: number;
   image: string;

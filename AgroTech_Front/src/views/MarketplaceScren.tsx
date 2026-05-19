@@ -22,6 +22,7 @@ import {
 } from "react-icons/fa";
 
 type CartItem = {
+  id:number;
   name: string;
   price: number;
   image: string;
@@ -146,6 +147,7 @@ const Marketplace: React.FC = () => {
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
   const addToCart = (
+    id_productos:number,
     name: string,
     price: string | number,
     image: string,
@@ -157,19 +159,19 @@ const Marketplace: React.FC = () => {
     }
 
     const priceNumber = Number(price);
-
-    setCart((prev) => {
-      const existing = prev.find((item) => item.name === name);
+ 
+    setCart((prev:any) => {
+      const existing = prev.find((item:any) => item.name === name);
 
       if (existing) {
-        return prev.map((item) =>
+        return prev.map((item:any) =>
           item.name === name
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       }
 
-      return [...prev, { name, price: priceNumber, image, quantity }];
+      return [...prev, {id_productos, name, price: priceNumber, image, quantity }];
     });
 
     setIsOpen(true);
@@ -440,6 +442,7 @@ const Marketplace: React.FC = () => {
                     onClick={(e) => {
                       e.stopPropagation();
                       addToCart(
+                        product.id_productos,
                         product.nombre,
                         product.precio,
                         product.imagen

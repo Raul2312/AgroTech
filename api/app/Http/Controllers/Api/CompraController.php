@@ -9,9 +9,15 @@ use Illuminate\Support\Facades\Auth;
 
 class CompraController extends Controller
 {
-    public function index() {
-        // Filtra automáticamente por el usuario logueado (ID 10)
-        return Compra::where('id_comprador', Auth::id())->latest()->get();
+    public function index(Request $request) {
+        // Buscamos el ID por Auth (token) o lo agarramos de la URL (?id_usuario=X)
+        $userId = Auth::id() ?: $request->query('id_usuario');
+
+        // Retornamos las compras de ese usuario incluyendo la relación del producto
+        return Compra::with('producto')
+                ->where('id_comprador', $userId)
+                ->latest()
+                ->get();
     }
 
     public function store(Request $request)
@@ -19,18 +25,16 @@ class CompraController extends Controller
         try {
             $data = $request->all();
             
-            // Forzamos el ID del comprador desde la sesión activa
-            $data['id_comprador'] = Auth::id(); 
+            // Mismo truco aquí por si el Auth::id() falla al guardar
+            $data['id_comprador'] = Auth::id() ?: $request->input('id_comprador'); 
             
-            // Aseguramos valores numéricos para evitar errores de base de datos
             $data['iva'] = $request->input('iva', 0);
             $data['total'] = (float)$request->input('total');
-            
+            $data['id_vendedor']=Producto::find( $data['id_producto'])->id_usuario;
             $registro = Compra::create($data);
             
             return response()->json($registro, 201);
         } catch (\Exception $e) {
-            // Esto devolverá el error exacto en caso de fallo 500
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }

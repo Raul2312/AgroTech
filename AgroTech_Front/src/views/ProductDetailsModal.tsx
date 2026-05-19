@@ -18,6 +18,7 @@ type Props = {
   product: Producto;
   onClose: () => void;
   addToCart: (
+    id_productos:number,
     name: string,
     price: string | number,
     image: string,
@@ -117,6 +118,7 @@ const ProductDetailsModal: React.FC<Props> = ({
               className="add-cart-btn"
               onClick={() => {
                 addToCart(
+                 product.id_productos,
                   product.nombre,
                   product.precio,
                   product.imagen,

@@ -20,31 +20,41 @@ const PayPalPayment: React.FC = () => {
   const userData = sessionData?.user || sessionData?.usuario;
 
   // FUNCIÓN PARA REGISTRAR EN TU BASE DE DATOS
-  const registrarCompraEnBD = async (orderID: string) => {
+ const registrarCompraEnBD = async (orderID: string) => {
     try {
       const cart = JSON.parse(localStorage.getItem("agroCart") || "[]");
-      if (cart.length === 0) return;
+      if (cart.length === 0) {
+        console.warn("El carrito está vacío, no hay producto para registrar.");
+        return;
+      }
 
       const item = cart[0]; 
+      
+      // Obtenemos tu ID dinámicamente desde la sesión
+      const miId = userData?.id_usuario || userData?.id;
 
       const payload = {
-        id_transaccion: orderID,
-        id_producto: item.id, 
+        id_transaccion: orderID, // Ojo: PayPal manda letras y números
+        id_producto: item.id_productos || item.id, // Cubrimos ambas opciones
         id_vendedor: item.id_usuario || item.id_vendedor,
-        id_comprador: 10, // Tu ID de usuario
+        id_comprador: miId, // Ahora sí tomará tu ID real
         total: amount,
         iva: 0
       };
 
-      await axios.post(`${apiURl}compras`, payload, {
+      console.log("Datos listos para guardar en BD:", payload);
+
+      const respuesta = await axios.post(`${apiURl}compras`, payload, {
         headers: { 
           'Authorization': `Bearer ${sessionData.token}`,
           'Content-Type': 'application/json'
         }
       });
-      console.log("Registro guardado en Laravel");
+      
+      console.log("¡Registro guardado exitosamente en Laravel!", respuesta.data);
+      
     } catch (error: any) {
-      console.error("Error al registrar en BD:", error.response?.data || error.message);
+      console.error("Fallo al registrar en la BD:", error.response?.data || error.message);
     }
   };
 
