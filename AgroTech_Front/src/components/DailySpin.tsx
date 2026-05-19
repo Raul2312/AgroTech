@@ -11,15 +11,6 @@ interface Prize {
   type: string;
 }
 
-interface DailySpinStatusResponse {
-  can_spin: boolean;
-  message?: string;
-}
-
-interface SpinResponse {
-  reward: Prize;
-}
-
 const prizes: Prize[] = [
   { label: '10 Puntos', value: 10, type: 'points' },
   { label: '20 Puntos', value: 20, type: 'points' },
@@ -39,173 +30,117 @@ export default function DailySpin() {
   const [rotation, setRotation] = useState<number>(0);
   const [result, setResult] = useState<Prize | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [visible, setVisible] = useState<boolean>(true);
+  const [visible, setVisible] = useState<boolean>(false); 
 
   useEffect(() => {
     loadStatus();
   }, []);
 
-  // REEMPLAZA COMPLETAMENTE la función loadStatus() en DailySpin.tsx
-// Así el frontend funcionará con tu backend actual SIN modificar Laravel.
+  const loadStatus = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      const data: any = await getDailySpinStatus();
+      console.log('Ruleta - Datos del Backend:', data);
 
-const loadStatus = async (): Promise<void> => {
-  try {
-    setLoading(true);
+      // Obtener la fecha de hoy local en formato estricto YYYY-MM-DD
+      const localDate = new Date();
+      const year = localDate.getFullYear();
+      const month = String(localDate.getMonth() + 1).padStart(2, '0');
+      const day = String(localDate.getDate()).padStart(2, '0');
+      const today = `${year}-${month}-${day}`; 
 
-    // Tu backend actual devuelve:
-    // {
-    //   id,
-    //   user_id,
-    //   points,
-    //   last_spin_date,
-    //   last_reward_type,
-    //   ...
-    // }
-    const data: any = await getDailySpinStatus();
+      let canSpinToday = true;
 
-    console.log('Reward data:', data);
+      // CONTROL DE ESCENARIO B: Validamos que data realmente tenga la propiedad, si no, asumimos que es cuenta nueva y puede girar.
+      if (data && data.last_spin_date) {
+        const cleanBackendDate = data.last_spin_date.substring(0, 10).replace(/\//g, '-');
+        canSpinToday = cleanBackendDate !== today;
+      }
 
-    // Fecha actual en formato YYYY-MM-DD
-    const today = new Date().toISOString().split('T')[0];
+      setCanSpin(canSpinToday);
 
-    // Puede girar si no existe last_spin_date
-    // o si last_spin_date es diferente al día de hoy
-    const canSpinToday =
-      !data.last_spin_date ||
-      data.last_spin_date !== today;
+      if (canSpinToday) {
+        setVisible(true);
+        setMessage('¡Tienes un giro disponible hoy!');
+      } else {
+        setVisible(false);
+        setMessage('Ya utilizaste tu giro diario. Regresa mañana.');
+      }
+    } catch (error: any) {
+      console.error('Error al obtener estado del giro:', error);
+      
+      // CONTROL DE ESCENARIO A: Si el error es un 401 o 403, avisa en consola que falta el Token correcto
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        console.warn("La ruleta no se muestra porque el token de la cuenta no es válido o expiró.");
+      }
 
-    setCanSpin(canSpinToday);
-
-    // Mostrar siempre el popup
-    setVisible(true);
-
-    if (canSpinToday) {
-      setMessage('¡Tienes un giro disponible hoy!');
-    } else {
-      setMessage(
-        'Ya utilizaste tu giro diario. Regresa mañana.'
-      );
+      setCanSpin(false);
+      setVisible(false);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Error al obtener estado:', error);
-
-    // En caso de error, mostrar la ruleta para pruebas
-    setCanSpin(true);
-    setVisible(true);
-    setMessage('¡Tienes un giro disponible hoy!');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const closePopup = (): void => {
     setVisible(false);
   };
 
-  // REEMPLAZA COMPLETAMENTE la función handleSpin() en DailySpin.tsx
-// Esto asegura que SIEMPRE se llame al endpoint POST /rewards/spin,
-// que es el que guarda last_spin_date y la recompensa en la base de datos.
+  const handleSpin = async (): Promise<void> => {
+    if (!canSpin || spinning) return;
 
-const handleSpin = async (): Promise<void> => {
-  if (!canSpin || spinning) return;
+    try {
+      setSpinning(true);
+      const data: any = await spinDailyWheel();
+      console.log('Resultado del spin:', data);
 
-  try {
-    setSpinning(true);
+      const reward = data.reward;
 
-    // LLAMADA REAL AL BACKEND
-    // Este endpoint guarda en la BD:
-    // - last_spin_date
-    // - last_reward_type
-    // - last_reward_value
-    // - last_reward_label
-    // - points
-    const data: any = await spinDailyWheel();
-
-    console.log('Resultado del spin:', data);
-
-    // La respuesta del backend es:
-    // {
-    //   points: ...,
-    //   reward: {
-    //     type,
-    //     value,
-    //     label
-    //   }
-    // }
-
-    const reward = data.reward;
-
-    // Buscar índice del premio en la ruleta
-    const index = prizes.findIndex(
-      (p) =>
-        p.label.toLowerCase() === reward.label.toLowerCase() ||
-        (p.type === reward.type &&
-          p.value === reward.value)
-    );
-
-    const selectedIndex = index >= 0 ? index : 0;
-
-    const segmentAngle = 360 / prizes.length;
-    const extraTurns = 6 * 360;
-
-    const targetAngle =
-      360 -
-      selectedIndex * segmentAngle -
-      segmentAngle / 2;
-
-    const finalRotation =
-      rotation + extraTurns + targetAngle;
-
-    // Animar ruleta
-    setRotation(finalRotation);
-
-    // Esperar a que termine la animación
-    setTimeout(() => {
-      setResult({
-        label: reward.label,
-        value: reward.value,
-        type: reward.type,
-      });
-
-      setShowModal(true);
-      setCanSpin(false);
-
-      setMessage(
-        'Ya utilizaste tu giro diario. Regresa mañana.'
+      const index = prizes.findIndex(
+        (p) =>
+          p.label.toLowerCase() === reward.label.toLowerCase() ||
+          (p.type === reward.type && p.value === reward.value)
       );
 
+      const selectedIndex = index >= 0 ? index : 0;
+      const segmentAngle = 360 / prizes.length;
+      const extraTurns = 6 * 360;
+
+      const targetAngle =
+        360 - selectedIndex * segmentAngle - segmentAngle / 2;
+
+      const finalRotation = rotation + extraTurns + targetAngle;
+
+      setRotation(finalRotation);
+
+      setTimeout(() => {
+        setResult({
+          label: reward.label,
+          value: reward.value,
+          type: reward.type,
+        });
+
+        setShowModal(true);
+        setCanSpin(false);
+        setMessage('Ya utilizaste tu giro diario. Regresa mañana.');
+        setSpinning(false);
+      }, 5000);
+
+    } catch (error: any) {
+      console.error('Error al girar:', error);
+      const msg = error?.response?.data?.message || 'Ocurrió un error al girar la ruleta.';
+      alert(msg);
       setSpinning(false);
-    }, 5000);
-  } catch (error: any) {
-    console.error('Error al girar:', error);
+    }
+  };
 
-    const msg =
-      error?.response?.data?.message ||
-      'Ocurrió un error al girar la ruleta.';
-
-    alert(msg);
-    setSpinning(false);
-  }
-};
-
-  // Mientras carga, no mostrar nada
-  if (loading) {
-    return null;
-  }
-
-  // Si no debe mostrarse, no renderizar
-  if (!visible) {
+  if (loading || !visible) {
     return null;
   }
 
   return (
     <div className="daily-spin-overlay">
       <div className="daily-spin-container">
-        {/* Botón cerrar */}
-        <button
-          className="daily-spin-close"
-          onClick={closePopup}
-        >
+        <button className="daily-spin-close" onClick={closePopup}>
           ✕
         </button>
 
@@ -214,7 +149,6 @@ const handleSpin = async (): Promise<void> => {
 
         <div className="wheel-wrapper">
           <div className="pointer"></div>
-
           <div
             className="wheel"
             style={{
@@ -222,10 +156,7 @@ const handleSpin = async (): Promise<void> => {
             }}
           >
             {prizes.map((prize, index) => (
-              <div
-                key={index}
-                className={`segment segment-${index}`}
-              >
+              <div key={index} className={`segment segment-${index}`}>
                 <span>{prize.label}</span>
               </div>
             ))}
@@ -237,11 +168,7 @@ const handleSpin = async (): Promise<void> => {
           onClick={handleSpin}
           disabled={!canSpin || spinning}
         >
-          {spinning
-            ? 'Girando...'
-            : canSpin
-            ? '¡Girar Ruleta!'
-            : 'Sin giros disponibles'}
+          {spinning ? 'Girando...' : '¡Girar Ruleta!'}
         </button>
 
         {showModal && result && (
@@ -250,11 +177,10 @@ const handleSpin = async (): Promise<void> => {
               <h2>🎉 ¡Felicidades!</h2>
               <p>Has ganado:</p>
               <h3>{result.label}</h3>
-
               <button
                 onClick={() => {
                   setShowModal(false);
-                  setVisible(false);
+                  setVisible(false); 
                 }}
               >
                 Aceptar
