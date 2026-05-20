@@ -97,20 +97,41 @@ const AdminCompradores = () => {
           <img src={logo} className="logo-img" alt="Logo" />
           {!collapsed && <span className="logo-text">AgroTech</span>}
         </div>
-        <ul className="menu">
-          <li><Link to="/indexscreen">🏠 {!collapsed && "Inicio"}</Link></li>
-          <li><Link to="/areacliente">🏠 {!collapsed && "Dashboard"}</Link></li>
-          <li><Link to="/mis-pedidos">📦 {!collapsed && "Mis pedidos"}</Link></li>
-          <li><Link to="/mis-productos">📦 {!collapsed && "Publicar Productos"}</Link></li>
-          <li><Link to="/marketplace">🛒 {!collapsed && "Marketplace"}</Link></li>
-          <li className="active"><Link to="/admin/compradores">👤 {!collapsed && "Admin Compradores"}</Link></li>
-          <li><Link to="/perfil">👤 {!collapsed && "Mi perfil"}</Link></li>
-          <li><Link to="/rancho">👤 {!collapsed && "Rancho"}</Link></li>
-          <li><Link to="/trazabilidad">👤 {!collapsed && "Trazabilidad"}</Link></li>
-          <li className="logout">
-            <button onClick={logout}>❌ {!collapsed && "Cerrar sesión"}</button>
-          </li>
-        </ul>
+         <ul className="menu">
+                <li><Link to="/indexscreen">🏠 {!collapsed && "Inicio"}</Link></li>
+        
+                <li className={location.pathname === "/dashboard" ? "active" : ""}>
+                  <Link to="/dashboard">📊 {!collapsed && "Dashboard"}</Link>
+                </li>
+        
+                <li className={location.pathname === "/usuarios" ? "active" : ""}>
+                  <Link to="/usuarios">👥 {!collapsed && "Usuarios"}</Link>
+                </li>
+        
+                <li className={location.pathname === "/productores" ? "active" : ""}>
+                  <Link to="/productores">🚜 {!collapsed && "Productores"}</Link>
+                </li>
+        
+                <li className={location.pathname === "/admin/compradores" ? "active" : ""}>
+                  <Link to="/admin/compradores">🛒 {!collapsed && "Compradores"}</Link>
+                </li>
+        
+                <li className={location.pathname === "/marketplace" ? "active" : ""}>
+                  <Link to="/marketplace">👥 {!collapsed && "Marketplace"}</Link>
+                </li>
+        
+                <li className={location.pathname === "/productos" ? "active" : ""}>
+                  <Link to="/productos">📦 {!collapsed && "Productos"}</Link>
+                </li>
+        
+               
+        
+                <li className="logout">
+                  <button onClick={logout}>
+                    ❌ {!collapsed && "Cerrar sesión"}
+                  </button>
+                </li>
+              </ul>
       </aside>
 
       {/* CONTENIDO PRINCIPAL */}

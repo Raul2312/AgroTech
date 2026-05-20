@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, logout }) => {
           <Link to="/productores">🚜 {!collapsed && "Productores"}</Link>
         </li>
 
-        <li className={location.pathname === "/compradores" ? "active" : ""}>
+        <li className={location.pathname === "/admin/compradores" ? "active" : ""}>
           <Link to="/admin/compradores">🛒 {!collapsed && "Compradores"}</Link>
         </li>
 
