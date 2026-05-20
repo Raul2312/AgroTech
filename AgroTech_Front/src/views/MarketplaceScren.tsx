@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../css/marketplace.css";
 import logo from "../assets/img/agro.png";
-import ProductDetailsModal from "./ProductDetailsModal";
 import DailySpin from "../components/DailySpin";
 
 import {
@@ -18,11 +17,19 @@ import {
   FaTimes,
   FaTag,
   FaLeaf,
-  FaTrashAlt
+  FaTrashAlt,
+  FaArrowRight,
+  FaCrown,
+  FaCheckCircle,
+  FaPercent,
+  FaArrowLeft,
+  FaTags,
+  FaIdCard,
+  FaCalendarAlt
 } from "react-icons/fa";
 
 type CartItem = {
-  id:number;
+  id_productos: number;
   name: string;
   price: number;
   image: string;
@@ -53,7 +60,7 @@ type Categoria = {
 const apiUrl = import.meta.env.VITE_API;
 
 const getImageUrl = (img: string) => {
-  if (!img) return "https://via.placeholder.com/150?text=Sin+Imagen";
+  if (!img) return "https://via.placeholder.com/250?text=Sin+Imagen";
   if (img.startsWith("http")) return img;
   return apiUrl.replace("api/", "") + `products/${img}`;
 };
@@ -63,21 +70,19 @@ const Marketplace: React.FC = () => {
   const [products, setProducts] = useState<Producto[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  
-  // Inicialización optimizada para persistencia inmediata
   const [cart, setCart] = useState<CartItem[]>(() => {
     const savedCart = localStorage.getItem("agroCart");
     return savedCart ? JSON.parse(savedCart) : [];
   });
-
   const [discount, setDiscount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [search, setSearch] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
-
+  
+  // Control de la vista dedicada de detalles
   const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailQuantity, setDetailQuantity] = useState(1);
 
   const adminEmails = [
     "22cg0095@itsncg.edu.mx",
@@ -90,7 +95,6 @@ const Marketplace: React.FC = () => {
     fetchCategories();
   }, []);
 
-  // Efecto que guarda en localStorage cada vez que el carrito cambia
   useEffect(() => {
     localStorage.setItem("agroCart", JSON.stringify(cart));
   }, [cart]);
@@ -114,24 +118,19 @@ const Marketplace: React.FC = () => {
   };
 
   const checkSession = () => {
-    const session =
-      localStorage.getItem("agroSession") ||
-      sessionStorage.getItem("agroSession");
+    const session = localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession");
     return session ? true : false;
   };
 
   const goPanel = () => {
     const sessionStr = localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession");
-
     if (!sessionStr) {
       navigate("/login");
       return;
     }
-
     try {
       const sessionData = JSON.parse(sessionStr);
       const userEmail = sessionData.user?.email;
-
       if (userEmail && adminEmails.includes(userEmail)) {
         navigate("/dashboard");
       } else {
@@ -145,9 +144,19 @@ const Marketplace: React.FC = () => {
 
   const toggleCart = () => setIsOpen(!isOpen);
   const toggleMenu = () => setMenuOpen(!menuOpen);
+  useEffect(() => {
+  if (isOpen) {
+    document.body.classList.add("cart-open");
+  } else {
+    document.body.classList.remove("cart-open");
+  }
+  
+  // Limpieza al desmontar
+  return () => document.body.classList.remove("cart-open");
+}, [isOpen]);
 
   const addToCart = (
-    id_productos:number,
+    id_productos: number,
     name: string,
     price: string | number,
     image: string,
@@ -157,23 +166,16 @@ const Marketplace: React.FC = () => {
       navigate("/login");
       return;
     }
-
     const priceNumber = Number(price);
- 
-    setCart((prev:any) => {
-      const existing = prev.find((item:any) => item.name === name);
-
+    setCart((prev) => {
+      const existing = prev.find((item) => item.name === name);
       if (existing) {
-        return prev.map((item:any) =>
-          item.name === name
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
+        return prev.map((item) =>
+          item.name === name ? { ...item, quantity: item.quantity + quantity } : item
         );
       }
-
-      return [...prev, {id_productos, name, price: priceNumber, image, quantity }];
+      return [...prev, { id_productos, name, price: priceNumber, image, quantity }];
     });
-
     setIsOpen(true);
   };
 
@@ -181,9 +183,7 @@ const Marketplace: React.FC = () => {
     setCart((prev) =>
       prev
         .map((item, i) =>
-          i === index
-            ? { ...item, quantity: Math.max(item.quantity + change, 0) }
-            : item
+          i === index ? { ...item, quantity: Math.max(item.quantity + change, 0) } : item
         )
         .filter((item) => item.quantity > 0)
     );
@@ -212,12 +212,12 @@ const Marketplace: React.FC = () => {
 
   const openDetails = (product: Producto) => {
     setSelectedProduct(product);
-    setDetailsOpen(true);
+    setDetailQuantity(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const closeDetails = () => {
     setSelectedProduct(null);
-    setDetailsOpen(false);
   };
 
   const filteredProducts = products.filter(
@@ -226,24 +226,26 @@ const Marketplace: React.FC = () => {
       (selectedCategory === null || product.id_categoria === selectedCategory)
   );
 
-  const subtotal = cart.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  );
-
+  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const shipping = subtotal > 300 ? 0 : subtotal === 0 ? 0 : 150;
   const total = subtotal + shipping - discount;
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <div className="marketplace-page">
-      <header className="marketplace-header">
+    <div className="marketplace-page animated-reveal">
+      <div className="ambient-glow glow-1"></div>
+      <div className="ambient-glow glow-2"></div>
+
+      {/* HEADER GLOBAL */}
+      <header className="marketplace-header glassmorphism">
         <div className="header-left">
           <div className="logo-section">
-            <img src={logo} alt="AgroTech Logo" />
+            <div className="logo-glow-wrapper">
+              <img src={logo} alt="AgroTech Logo" className="pulse-logo" />
+            </div>
             <div>
-              <h1>AgroTech <span>Marketplace</span></h1>
-              <span>Soluciones para ganadería y campo</span>
+              <h1 className="typing-title">AgroTech <span className="gradient-text">Premium</span></h1>
+              <span className="subtitle-tag">Sistemas Avanzados para el Campo</span>
             </div>
           </div>
         </div>
@@ -252,258 +254,377 @@ const Marketplace: React.FC = () => {
           {menuOpen ? <FaTimes /> : <FaBars />}
         </div>
 
-        <nav className={`main-nav ${menuOpen ? "active" : ""}`}>
-          <a href="/indexScreen">Inicio</a>
-          <a href="/trazabilidad">Trazabilidad</a>
-          <a onClick={goPanel} style={{cursor: 'pointer'}}>Panel</a>
-          {!(localStorage.getItem("agroSession") ||
-            sessionStorage.getItem("agroSession")) && (
-            <a href="/Login">Login</a>
+        <nav className={`main-nav-premium ${menuOpen ? "active" : ""}`}>
+          <a href="/indexScreen" className="nav-link-modern"><span>Inicio</span></a>
+          <a href="/trazabilidad" className="nav-link-modern"><span>Trazabilidad</span></a>
+          <a onClick={goPanel} className="nav-link-modern highlight"><span>Panel de Control</span></a>
+          {!(localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession")) && (
+            <a href="/Login" className="nav-link-modern login-btn-nav">Ingresar</a>
           )}
         </nav>
 
         <div className="header-actions">
-          <button className="profile-btn pill" onClick={goPanel}>
-            <FaUserCircle />
+          <button className="premium-profile-btn" onClick={goPanel}>
+            <FaUserCircle className="icon" />
             <span>Mi Cuenta</span>
           </button>
 
-          <div className="cart-icon-wrapper" onClick={toggleCart}>
-            <FaShoppingCart />
-            <span className="badge">{cartCount}</span>
+          <div className="premium-cart-trigger" onClick={toggleCart}>
+            <div className="icon-badge-container">
+              <FaShoppingCart className="cart-icon-svg" />
+              {cartCount > 0 && <span className="premium-badge pulse-badge">{cartCount}</span>}
+            </div>
           </div>
         </div>
       </header>
 
-      <section className="hero">
-        <div className="hero-overlay"></div>
+      {/* RENDERIZADO CONDICIONAL DE VISTAS */}
+      {selectedProduct ? (
+        /* VISTA 1: DETALLES DEDICADOS DEL PRODUCTO (PÁGINA COMPLETA) */
+        <div className="product-view-dedicated animated-reveal">
+          <button className="premium-back-btn" onClick={closeDetails}>
+            <FaArrowLeft /> <span>Volver al Catálogo</span>
+          </button>
 
-        <div className="hero-content">
-          <div className="hero-badge pill">
-            <FaLeaf /> Marketplace #1 para el sector ganadero
-          </div>
-
-          <h1>Todo para tu rancho, granja y producción agropecuaria</h1>
-
-          <p>
-            Encuentra alimento, medicamentos, herramientas, maquinaria y
-            accesorios profesionales en un solo lugar.
-          </p>
-
-          <div className="search-container">
-            <div className="search-wrapper pill">
-              <FaSearch className="search-icon" />
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Buscar alimento, vacunas, maquinaria..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <button className="search-button pill">Buscar</button>
-            </div>
-          </div>
-
-          <div className="hero-features">
-            <div className="hero-feature-card pill">
-              <FaTruck />
-              <span>Envíos a todo México</span>
-            </div>
-
-            <div className="hero-feature-card pill">
-              <FaShieldAlt />
-              <span>Compra segura</span>
-            </div>
-
-            <div className="hero-feature-card pill">
-              <FaTag />
-              <span>Ofertas exclusivas</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="benefits-section">
-        <div className="benefit-card">
-          <div className="benefit-icon"><FaTruck /></div>
-          <div>
-            <h4>Envío Gratis</h4>
-            <p>En compras mayores a $300 MXN</p>
-          </div>
-        </div>
-
-        <div className="benefit-card">
-          <div className="benefit-icon"><FaShieldAlt /></div>
-          <div>
-            <h4>Pago Seguro</h4>
-            <p>Protección en todas tus compras</p>
-          </div>
-        </div>
-
-        <div className="benefit-card">
-          <div className="benefit-icon"><FaFire /></div>
-          <div>
-            <h4>Promociones</h4>
-            <p>Descuentos y productos destacados</p>
-          </div>
-        </div>
-      </section>
-
-          {/* Daily Spin Popup */}
-{(localStorage.getItem("agroSession") ||
-  sessionStorage.getItem("agroSession")) && (
-  <DailySpin />
-)}
-
-      <section className="categories">
-        <div className="section-header">
-          <h2>Categorías</h2>
-          <p>Explora productos por categoría</p>
-        </div>
-
-        <div className="category-grid">
-          <div
-            className={`category-card pill ${selectedCategory === null ? "active" : ""}`}
-            onClick={() => filterByCategory(null)}
-          >
-            🌎 Todas
-          </div>
-
-          {categories.map((cat) => (
-            <div
-              key={cat.id}
-              className={`category-card pill ${
-                selectedCategory === cat.id ? "active" : ""
-              }`}
-              onClick={() => filterByCategory(cat.id)}
-            >
-              {cat.nombre}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="products">
-        <div className="section-header">
-          <h2>Productos Destacados</h2>
-          <p>{filteredProducts.length} productos encontrados</p>
-        </div>
-
-        <div className="product-grid">
-          {filteredProducts.map((product) => (
-            <div
-              key={product.id_productos}
-              className="product-card"
-              onClick={() => openDetails(product)}
-            >
-              <div className="product-image-wrapper">
-                <span className="product-badge pill">Top Venta</span>
+          <div className="dedicated-layout-grid">
+            {/* PANEL IZQUIERDO: VISUALIZACIÓN MÁXIMA DE IMAGEN */}
+            <div className="dedicated-visual-showcase">
+              <span className="showcase-badge-floating"><FaStar /> Producto Homologado</span>
+              <div className="dedicated-image-container">
                 <img
-                  src={getImageUrl(product.imagen)}
-                  alt={product.nombre}
+                  className="dedicated-image-main"
+                  src={getImageUrl(selectedProduct.imagen)}
+                  alt={selectedProduct.nombre}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = "https://via.placeholder.com/250?text=Sin+Imagen";
+                  }}
                 />
               </div>
+            </div>
 
-              <div className="product-info">
-                <p className="brand">AgroTech Premium</p>
-                <h3>{product.nombre}</h3>
-
-                <div className="rating">
-                  <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
-                  <span>(4.8)</span>
+            {/* PANEL DERECHO: PANEL DE DATOS TÉCNICOS INTEGRAL */}
+            <div className="dedicated-specs-showcase">
+              <div className="header-specs-title">
+                <span className="brand-label-specs"><FaTags /> AgroTech Premium Line</span>
+                <h1>{selectedProduct.nombre}</h1>
+                <div className="badge-row-specs" style={{ display: "flex", gap: "15px" }}>
+                  <span className="condition-badge"><FaCheckCircle /> {selectedProduct.estado || "Excelente"}</span>
+                  <span className={`stock-badge-specs ${selectedProduct.stock > 0 ? "in" : "out"}`}>
+                    {selectedProduct.stock > 0 ? `Unidades Disponibles: ${selectedProduct.stock}` : "Agotado Temporalmente"}
+                  </span>
                 </div>
+              </div>
 
-                <p className="product-description">
-                  {product.descripcion?.slice(0, 80)}...
+              <div className="dedicated-price-box">
+                <span className="price-tag-label">Costo Operativo Especial</span>
+                <p className="price-value-specs">
+                  ${Number(selectedProduct.precio).toLocaleString('es-MX', { minimumFractionDigits: 2 })} 
+                  <span className="currency-type-specs">{selectedProduct.moneda || "MXN"}</span>
                 </p>
+              </div>
 
-                <div className="price-row">
-                  <div className="price">
-                    ${Number(product.precio).toFixed(2)} MXN
-                  </div>
-                  <div className={`stock-status-pill ${product.stock > 0 ? "in-stock" : "out-stock"}`}>
-                    {product.stock > 0 ? "Disponible" : "Agotado"}
+              <div className="technical-scroll-description">
+                <h3>Ficha Descriptiva</h3>
+                <p className="dedicated-desc-text">
+                  {selectedProduct.descripcion || "Este producto cuenta con las certificaciones estándar de AgroTech. No se ha adjuntado descripción complementaria."}
+                </p>
+              </div>
+
+              <div className="metadata-specs-grid">
+                <div className="meta-spec-item">
+                  <div className="meta-icon"><FaIdCard /></div>
+                  <div className="meta-label">
+                    <span>ID Registro</span>
+                    <strong>#00{selectedProduct.id_productos}</strong>
                   </div>
                 </div>
 
-                <div className="product-actions">
-                  <button
-                    className="details-btn pill"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openDetails(product);
-                    }}
-                  >
-                    Detalles
-                  </button>
+                <div className="meta-spec-item">
+                  <div className="meta-icon"><FaCalendarAlt /></div>
+                  <div className="meta-label">
+                    <span>Alta en Red</span>
+                    <strong>{selectedProduct.fecha_publicacion || "Reciente"}</strong>
+                  </div>
+                </div>
+              </div>
 
-                  <button
-                    className="buy-btn pill"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addToCart(
-                        product.id_productos,
-                        product.nombre,
-                        product.precio,
-                        product.imagen
-                      );
-                    }}
-                  >
-                    Agregar
+              <div className="interactive-checkout-specs-row">
+                <div className="quantity-panel-specs">
+                  <span className="quantity-panel-label">Volumen</span>
+                  <div className="quantity-stepper-premium">
+                    <button type="button" onClick={() => setDetailQuantity((prev) => Math.max(prev - 1, 1))}>−</button>
+                    <span className="stepper-value">{detailQuantity}</span>
+                    <button type="button" onClick={() => setDetailQuantity((prev) => prev + 1)}>+</button>
+                  </div>
+                </div>
+
+                <button
+                  className="specs-add-to-cart-action-btn"
+                  disabled={selectedProduct.stock <= 0}
+                  onClick={() => {
+                    addToCart(selectedProduct.id_productos, selectedProduct.nombre, selectedProduct.precio, selectedProduct.imagen, detailQuantity);
+                  }}
+                >
+                  <FaShoppingCart />
+                  <span>Incorporar a la Orden</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* VISTA 2: HOME Y CATÁLOGO PRINCIPAL */
+        <>
+          <section className="hero-epic">
+            <div className="hero-video-overlay"></div>
+            <div className="hero-grid-overlay"></div>
+
+            <div className="hero-content-epic">
+              <div className="hero-badge-premium floating-badge">
+                <FaCrown className="crown-icon" />
+                <span>El Mercado Agropecuario del Futuro</span>
+              </div>
+
+              <h1 className="epic-title">
+                Potencia Tu Producción <br /> Con Tecnología <span className="gradient-text-alt">Líder</span>
+              </h1>
+
+              <p className="epic-subtitle">
+                Maquinaria industrial, biotecnología avanzada y herramientas de precisión certificadas con envíos inmediatos y rastreables.
+              </p>
+
+              <div className="search-container-epic">
+                <div className="search-wrapper-epic">
+                  <FaSearch className="search-icon-epic" />
+                  <input
+                    type="text"
+                    className="search-input-epic"
+                    placeholder="Buscar insumos, vacunas, tractores, tecnología..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                  <button className="search-button-epic">
+                    <span>Buscar Catálogo</span>
+                    <FaArrowRight />
                   </button>
                 </div>
               </div>
+
+              <div className="hero-live-stats">
+                <div className="stat-pill"><FaCheckCircle className="green" /> +15k Ganaderos Activos</div>
+                <div className="stat-pill"><FaTruck className="blue" /> Entregas Express Monitoreadas</div>
+              </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </section>
 
-      <section className="ad-section">
-        <div className="ad-content">
-          <h2>📢 ¿Quieres vender con nosotros?</h2>
-          <p>Llega a miles de ganaderos en todo México publicando tus productos en nuestra red.</p>
-          <button className="pill">Quiero anunciarme</button>
-        </div>
-      </section>
+          <section className="premium-benefits">
+            <div className="benefit-card-epic glass-card card-hover-3d">
+              <div className="icon-wrapper-epic bg-gradient-green"><FaTruck /></div>
+              <div className="benefit-text">
+                <h4>Logística Avanzada</h4>
+                <p>Envío sin costo en compras desde $300 MXN</p>
+              </div>
+            </div>
 
-      <footer className="footer">
-        <div className="footer-info">
-          <h3>AgroTech Marketplace</h3>
-          <p>La mejor plataforma para productos del sector agropecuario.</p>
+            <div className="benefit-card-epic glass-card card-hover-3d">
+              <div className="icon-wrapper-epic bg-gradient-blue"><FaShieldAlt /></div>
+              <div className="benefit-text">
+                <h4>Transacciones Encriptadas</h4>
+                <p>Garantía de protección total al comprador</p>
+              </div>
+            </div>
+
+            <div className="benefit-card-epic glass-card card-hover-3d">
+              <div className="icon-wrapper-epic bg-gradient-gold"><FaFire /></div>
+              <div className="benefit-text">
+                <h4>Precios Directos de Fábrica</h4>
+                <p>Descuentos por volumen y promociones activas</p>
+              </div>
+            </div>
+          </section>
+
+          {(localStorage.getItem("agroSession") || sessionStorage.getItem("agroSession")) && (
+            <div className="spin-wrapper-premium">
+              <DailySpin />
+            </div>
+          )}
+
+          <section className="categories-premium-section">
+            <div className="premium-section-header">
+              <div className="tag-decor">EXPLORA</div>
+              <h2>Categorías Especializadas</h2>
+            </div>
+
+            <div className="category-scroll-container">
+              <div
+                className={`category-pill-premium ${selectedCategory === null ? "active-premium" : ""}`}
+                onClick={() => filterByCategory(null)}
+              >
+                <span className="pill-dot"></span>
+                🌎 Todas las Soluciones
+              </div>
+
+              {categories.map((cat) => (
+                <div
+                  key={cat.id}
+                  className={`category-pill-premium ${selectedCategory === cat.id ? "active-premium" : ""}`}
+                  onClick={() => filterByCategory(cat.id)}
+                >
+                  <span className="pill-dot"></span>
+                  {cat.nombre}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="products-premium-section">
+            <div className="premium-section-header">
+              <div className="tag-decor">PRODUCTOS</div>
+              <h2>Línea de Alta Disponibilidad</h2>
+              <p className="count-indicator">{filteredProducts.length} Equipos listos para despacho inmediato</p>
+            </div>
+
+            <div className="product-grid-premium">
+              {filteredProducts.map((product) => (
+                <div
+                  key={product.id_productos}
+                  className="product-card-premium glass-card"
+                  onClick={() => openDetails(product)}
+                >
+                  <div className="product-img-frame">
+                    <div className="badge-ribbon">Premium</div>
+                    <img
+                      src={getImageUrl(product.imagen)}
+                      alt={product.nombre}
+                      className="zoom-image"
+                    />
+                    <div className="img-overlay-actions">
+                      <span className="action-view-tag">Ver Ficha Técnica</span>
+                    </div>
+                  </div>
+
+                  <div className="product-details-frame">
+                    <span className="product-brand-tag"><FaCrown /> AgroTech Oficial</span>
+                    <h3>{product.nombre}</h3>
+
+                    <div className="rating-stars-premium">
+                      <div className="stars"><FaStar /><FaStar /><FaStar /><FaStar /><FaStar /></div>
+                      <span className="rating-value">5.0 Certificado</span>
+                    </div>
+
+                    <p className="product-short-desc">
+                      {product.descripcion?.slice(0, 95)}...
+                    </p>
+
+                    <div className="product-price-row-premium">
+                      <div className="price-box">
+                        <span className="currency-label">Precio Neto</span>
+                        <p className="main-price">${Number(product.precio).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="mxn-tag">MXN</span></p>
+                      </div>
+                      <div className={`stock-indicator-pill ${product.stock > 0 ? "in-stock" : "out-stock"}`}>
+                        <span className="indicator-circle"></span>
+                        {product.stock > 0 ? `Stock: ${product.stock} un.` : "Agotado"}
+                      </div>
+                    </div>
+
+                    <div className="product-btn-group-premium">
+                      <button
+                        className="premium-btn-secondary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openDetails(product);
+                        }}
+                      >
+                        Ficha Técnica
+                      </button>
+
+                      <button
+                        className="premium-btn-primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToCart(product.id_productos, product.nombre, product.precio, product.imagen);
+                        }}
+                      >
+                        <span>Añadir</span>
+                        <FaShoppingCart />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="ad-banner-epic">
+            <div className="banner-bg-graphics">
+              <div className="circle-graphic visual-1"></div>
+              <div className="circle-graphic visual-2"></div>
+            </div>
+            <div className="ad-banner-content">
+              <h2>Conviértete en Proveedor Homologado</h2>
+              <p>Integra tu catálogo de productos ganaderos y llega a toda la red nacional de distribución de AgroTech.</p>
+              <button className="banner-cta-btn">
+                <span>Iniciar Registro de Empresa</span>
+                <FaArrowRight />
+              </button>
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* FOOTER PREMIUM */}
+      <footer className="footer-premium">
+        <div className="footer-top-grid">
+          <div className="footer-brand-info">
+            <h3>AgroTech <span className="gradient-text">Marketplace</span></h3>
+            <p>Ecosistema digital avanzado enfocado en la trazabilidad, optimización y comercio tecnológico para el sector agropecuario mexicano.</p>
+          </div>
+          <div className="footer-links-group">
+            <h4>Infraestructura</h4>
+            <a href="/trazabilidad">Plataforma de Trazabilidad</a>
+            <a href="/indexScreen">Portal de Inicio</a>
+          </div>
         </div>
-        <div className="footer-copy">
-          <p>© 2026 AgroTech - Marketplace Profesional</p>
+        <div className="footer-bottom-bar">
+          <p>© 2026 AgroTech Industrial S.A. de C.V. — Ecosistema de Comercio Seguro Profesional.</p>
         </div>
       </footer>
 
-      {isOpen && (
-        <div className="cart-overlay active" onClick={toggleCart}></div>
-      )}
+      {/* OVERLAY Y SIDEBAR DEL CARRITO (GLOBALES) */}
+      {isOpen && <div className="premium-sidebar-overlay active" onClick={toggleCart}></div>}
 
-      {/* CARRITO MEJORADO */}
-      <div className={`cart-sidebar ${isOpen ? "active" : ""}`}>
-        <div className="cart-header">
-          <h3><FaShoppingCart /> Tu Carrito</h3>
-          <button className="close-cart" onClick={toggleCart}>✕</button>
+      <div className={`premium-cart-sidebar ${isOpen ? "active" : ""}`}>
+        <div className="cart-sidebar-header">
+          <div className="title-area">
+            <FaShoppingCart className="icon-cart" />
+            <h3>Carro de Distribución</h3>
+          </div>
+          <button className="close-sidebar-btn" onClick={toggleCart}>✕</button>
         </div>
 
-        <div className="cart-body">
+        <div className="cart-sidebar-body">
           {cart.length === 0 ? (
-            <div className="empty-cart-msg">Tu carrito está vacío</div>
+            <div className="empty-cart-state">
+              <div className="animated-box-icon">🛒</div>
+              <h4>El carro se encuentra vacío</h4>
+              <p>Explora el catálogo y añade soluciones tecnológicas a tu orden.</p>
+            </div>
           ) : (
             cart.map((item, index) => (
-              <div key={index} className="cart-item-modern">
-                <img src={getImageUrl(item.image)} alt={item.name} />
-                <div className="cart-item-details">
+              <div key={index} className="premium-cart-item-card">
+                <div className="item-image-holder">
+                  <img src={getImageUrl(item.image)} alt={item.name} />
+                </div>
+                <div className="item-details-holder">
                   <h4>{item.name}</h4>
-                  <p className="item-price">${(item.price * item.quantity).toFixed(2)} MXN</p>
-                  <div className="item-controls">
-                    <div className="qty-pill">
+                  <p className="item-computed-price">${(item.price * item.quantity).toFixed(2)} MXN</p>
+                  <div className="item-interactive-row">
+                    <div className="premium-qty-selector">
                       <button onClick={() => changeQty(index, -1)}>−</button>
-                      <span>{item.quantity}</span>
+                      <span className="qty-value">{item.quantity}</span>
                       <button onClick={() => changeQty(index, 1)}>+</button>
                     </div>
-                    <button className="trash-btn" onClick={() => removeItem(index)}>
+                    <button className="premium-trash-btn" onClick={() => removeItem(index)}>
                       <FaTrashAlt />
                     </button>
                   </div>
@@ -513,34 +634,49 @@ const Marketplace: React.FC = () => {
           )}
         </div>
 
-        <div className="cart-footer-modern">
-          <div className="coupon-row">
-            <input 
-              type="text" 
-              placeholder="Código" 
-              value={couponInput} 
-              onChange={(e) => setCouponInput(e.target.value)} 
-            />
-            <button className="pill" onClick={applyCoupon}>OK</button>
-          </div>
-          <div className="summary-details">
-            <div className="summary-line"><span>Subtotal:</span> <span>${subtotal.toFixed(2)}</span></div>
-            <div className="summary-line"><span>Envío:</span> <span>${shipping.toFixed(2)}</span></div>
-            <div className="summary-line total"><span>Total:</span> <span>${total.toFixed(2)} MXN</span></div>
-          </div>
-          <button className="checkout-btn pill" onClick={() => navigate("/resumen-compra")}>
-            Finalizar Compra
-          </button>
-        </div>
-      </div>
+        {cart.length > 0 && (
+          <div className="cart-sidebar-footer-premium">
+            <div className="coupon-premium-box">
+              <div className="input-with-icon">
+                <FaPercent className="coupon-icon-label" />
+                <input
+                  type="text"
+                  placeholder="Insertar Código Promocional"
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value)}
+                />
+              </div>
+              <button onClick={applyCoupon}>Validar</button>
+            </div>
 
-      {detailsOpen && selectedProduct && (
-        <ProductDetailsModal
-          product={selectedProduct}
-          onClose={closeDetails}
-          addToCart={addToCart}
-        />
-      )}
+            <div className="financial-summary-sheet">
+              <div className="summary-row-sheet">
+                <span>Subtotal Neto:</span>
+                <span>${subtotal.toFixed(2)} MXN</span>
+              </div>
+              <div className="summary-row-sheet">
+                <span>Costo Logístico (Envío):</span>
+                <span>{shipping === 0 ? <strong className="free-shipping-label">GRATIS</strong> : `$${shipping.toFixed(2)} MXN`}</span>
+              </div>
+              {discount > 0 && (
+                <div className="summary-row-sheet discount">
+                  <span>Descuento Aplicado:</span>
+                  <span>-${discount.toFixed(2)} MXN</span>
+                </div>
+              )}
+              <div className="summary-row-sheet final-total-row">
+                <span>Total de la Orden:</span>
+                <span className="total-numeric">${total.toFixed(2)} MXN</span>
+              </div>
+            </div>
+
+            <button className="premium-checkout-action-btn" onClick={() => navigate("/resumen-compra")}>
+              <span>Proceder con la Compra</span>
+              <FaArrowRight />
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
